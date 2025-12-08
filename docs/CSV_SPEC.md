@@ -16,6 +16,8 @@ week,day,workout_name,exercise,set,reps,weight,rir,notes
 2,1,Upper Power,Bench Press,1,5,140lbs,2,
 ```
 
+**Note**: This example shows optional columns `rir` and `notes`. See Optional Columns section for all available columns including `exercise_group` for supersets.
+
 ## Required Columns
 
 | Column | Type | Description | Example |
@@ -37,8 +39,11 @@ These columns are auto-detected if present:
 | `rir` | Integer | Reps in Reserve (0-5) | `2`, `1`, `0` |
 | `rpe` | Integer | Rate of Perceived Exertion (1-10) | `7`, `8`, `9` |
 | `notes` | String | Exercise-specific notes | `Pause at bottom`, `Explode up` |
+| `exercise_group` | String | Groups exercises for supersets/circuits | `A`, `B`, `C` or `1`, `2`, `3` |
 
-**Note**: Use either `rir` OR `rpe`, not both.
+**Notes**:
+- Use either `rir` OR `rpe`, not both.
+- `exercise_group` indicates exercises performed back-to-back (supersets) or in sequence (circuits)
 
 ## Weight Format Options
 
@@ -113,6 +118,24 @@ week,day,workout_name,exercise,set,reps,weight
 2,1,Press,Overhead Press,3,3,90%
 ```
 
+### With Supersets (Using exercise_group)
+
+```csv
+week,day,workout_name,exercise,exercise_group,set,reps,weight
+1,1,Upper,Bench Press,A,1,5,135lbs
+1,1,Upper,Barbell Row,A,1,8,95lbs
+1,1,Upper,Bench Press,A,2,5,135lbs
+1,1,Upper,Barbell Row,A,2,8,95lbs
+1,1,Upper,Bench Press,A,3,5,135lbs
+1,1,Upper,Barbell Row,A,3,8,95lbs
+1,1,Upper,Bicep Curl,B,1,10,30lbs
+1,1,Upper,Tricep Extension,B,1,10,25lbs
+1,1,Upper,Bicep Curl,B,2,10,30lbs
+1,1,Upper,Tricep Extension,B,2,10,25lbs
+```
+
+**Note**: Exercises with the same `exercise_group` value (e.g., "A") are performed back-to-back as a superset. Different groups (e.g., "B") are separate exercises.
+
 ## Validation Rules
 
 ### Required Field Validation
@@ -130,6 +153,7 @@ week,day,workout_name,exercise,set,reps,weight
 - `rir`: If present, must be integer 0-5
 - `rpe`: If present, must be integer 1-10
 - `notes`: Any string (optional)
+- `exercise_group`: Any string (optional, typically single letter or number)
 
 ### Structural Validation
 
@@ -149,7 +173,6 @@ If validation fails:
 
 ## Future Enhancements
 
-- Support for supersets (e.g., `exercise_group` column)
 - Rest time specifications
 - Tempo notation (e.g., `3-1-1-0`)
 - Exercise substitutions/variations
