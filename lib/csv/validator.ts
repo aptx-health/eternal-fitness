@@ -107,13 +107,13 @@ export function validateRow(
     });
   }
 
-  // Validate reps (must be positive integer)
-  const reps = parseInt(row.reps, 10);
-  if (isNaN(reps) || reps < 1) {
+  // Validate reps (must be positive integer or range like "8-12")
+  const repsPattern = /^\d+(-\d+)?$/;
+  if (!repsPattern.test(row.reps.trim())) {
     errors.push({
       row: rowIndex,
       column: 'reps',
-      message: 'Reps must be a positive integer (≥ 1)',
+      message: 'Reps must be a number or range (e.g., "10" or "8-12")',
       value: row.reps,
     });
   }
@@ -192,7 +192,7 @@ export function parseRow(
     workoutName: row.workout_name.trim(),
     exercise: row.exercise.trim(),
     set: parseInt(row.set, 10),
-    reps: parseInt(row.reps, 10),
+    reps: row.reps.trim(), // Keep as string to support ranges like "8-12"
     weight: row.weight.trim(),
   };
 

@@ -55,25 +55,46 @@ model Workout {
   @@index([weekId])
 }
 
+model ExerciseDefinition {
+  id             String   @id @default(cuid())
+  name           String   // Canonical name: "Barbell Bench Press"
+  normalizedName String   @unique // Lowercase for fast matching
+  aliases        String[] // ["bench press", "bench", "flat bench"]
+  category       String?  // "chest", "back", "legs" (future use)
+  isSystem       Boolean  @default(false) // System vs user-created
+  createdBy      String?  // User ID (null for system exercises)
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  exercises Exercise[]
+
+  @@index([normalizedName])
+  @@index([isSystem])
+  @@index([createdBy])
+}
+
 model Exercise {
-  id            String  @id @default(cuid())
-  name          String  // "Bench Press", "Squat"
-  order         Int     // Order within workout
-  exerciseGroup String? // "A", "B", "C" for supersets/circuits
-  workoutId     String
-  workout       Workout @relation(fields: [workoutId], references: [id], onDelete: Cascade)
-  notes         String? // Optional notes from CSV
+  id                   String             @id @default(cuid())
+  name                 String             // Display name (can differ from definition)
+  exerciseDefinitionId String
+  exerciseDefinition   ExerciseDefinition @relation(fields: [exerciseDefinitionId], references: [id])
+  order                Int                // Order within workout
+  exerciseGroup        String?            // "A", "B", "C" for supersets/circuits
+  workoutId            String
+  workout              Workout            @relation(fields: [workoutId], references: [id], onDelete: Cascade)
+  notes                String?            // Optional notes from CSV
 
   prescribedSets PrescribedSet[]
   loggedSets     LoggedSet[]
 
   @@index([workoutId])
+  @@index([exerciseDefinitionId])
 }
 
 model PrescribedSet {
   id         String   @id @default(cuid())
   setNumber  Int      // 1, 2, 3...
-  reps       Int      // Target reps
+  reps       String   // Target reps or range: "10" or "8-12"
   weight     String?  // Flexible: "135lbs", "65%", "RPE 8", etc.
   rpe        Int?     // Rated Perceived Exertion (1-10)
   rir        Int?     // Reps in Reserve (0-5)

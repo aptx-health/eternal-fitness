@@ -22,7 +22,7 @@ export interface ParsedCsvRow {
   workoutName: string;
   exercise: string;
   set: number;
-  reps: number;
+  reps: string; // Changed from number to support ranges like "8-12"
   weight: string;
   rir?: number;
   rpe?: number;
@@ -81,6 +81,7 @@ export interface StructuredWorkout {
 
 export interface StructuredExercise {
   name: string;
+  // Note: exerciseDefinitionId is matched during DB import, not during structuring
   order: number;
   exerciseGroup?: string;
   notes?: string;
@@ -89,7 +90,7 @@ export interface StructuredExercise {
 
 export interface StructuredPrescribedSet {
   setNumber: number;
-  reps: number;
+  reps: string; // Changed from number to support ranges like "8-12"
   weight: string;
   rpe?: number;
   rir?: number;

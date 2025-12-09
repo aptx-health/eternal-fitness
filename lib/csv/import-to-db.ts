@@ -11,6 +11,46 @@ import type {
 } from './types';
 
 /**
+ * Match exercise name to ExerciseDefinition
+ * Uses 3-stage matching: exact name -> alias -> create custom
+ */
+async function matchExerciseDefinition(
+  exerciseName: string,
+  userId: string,
+  tx: any
+): Promise<string> {
+  const normalized = exerciseName.trim().toLowerCase();
+
+  // Stage 1: Exact name match (case-insensitive)
+  let definition = await tx.exerciseDefinition.findFirst({
+    where: { normalizedName: normalized },
+  });
+
+  // Stage 2: Alias match
+  if (!definition) {
+    definition = await tx.exerciseDefinition.findFirst({
+      where: {
+        aliases: { has: normalized },
+      },
+    });
+  }
+
+  // Stage 3: Create custom exercise for user
+  if (!definition) {
+    definition = await tx.exerciseDefinition.create({
+      data: {
+        name: exerciseName,
+        normalizedName: normalized,
+        isSystem: false,
+        createdBy: userId,
+      },
+    });
+  }
+
+  return definition.id;
+}
+
+/**
  * Structure parsed CSV rows into program hierarchy
  */
 export function structureProgram(
@@ -151,9 +191,17 @@ export async function importProgramToDatabase(
         });
 
         for (const exercise of workout.exercises) {
+          // Match exercise to definition (exact/alias/create custom)
+          const exerciseDefinitionId = await matchExerciseDefinition(
+            exercise.name,
+            userId,
+            tx
+          );
+
           const exerciseRecord = await tx.exercise.create({
             data: {
               name: exercise.name,
+              exerciseDefinitionId, // NEW: Link to exercise definition
               order: exercise.order,
               exerciseGroup: exercise.exerciseGroup,
               notes: exercise.notes,
@@ -161,11 +209,11 @@ export async function importProgramToDatabase(
             },
           });
 
-          // Create prescribed sets
+          // Create prescribed sets (reps now string)
           await tx.prescribedSet.createMany({
             data: exercise.prescribedSets.map((set) => ({
               setNumber: set.setNumber,
-              reps: set.reps,
+              reps: set.reps, // Already string from validator
               weight: set.weight,
               rpe: set.rpe,
               rir: set.rir,
