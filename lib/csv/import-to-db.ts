@@ -12,46 +12,6 @@ import type {
 } from './types';
 
 /**
- * Match exercise name to ExerciseDefinition
- * Uses 3-stage matching: exact name -> alias -> create custom
- */
-async function matchExerciseDefinition(
-  exerciseName: string,
-  userId: string,
-  tx: Prisma.TransactionClient
-): Promise<string> {
-  const normalized = exerciseName.trim().toLowerCase();
-
-  // Stage 1: Exact name match (case-insensitive)
-  let definition = await tx.exerciseDefinition.findFirst({
-    where: { normalizedName: normalized },
-  });
-
-  // Stage 2: Alias match
-  if (!definition) {
-    definition = await tx.exerciseDefinition.findFirst({
-      where: {
-        aliases: { has: normalized },
-      },
-    });
-  }
-
-  // Stage 3: Create custom exercise for user
-  if (!definition) {
-    definition = await tx.exerciseDefinition.create({
-      data: {
-        name: exerciseName,
-        normalizedName: normalized,
-        isSystem: false,
-        createdBy: userId,
-      },
-    });
-  }
-
-  return definition.id;
-}
-
-/**
  * Structure parsed CSV rows into program hierarchy
  */
 export function structureProgram(
@@ -156,7 +116,50 @@ export async function importProgramToDatabase(
   structuredProgram: StructuredProgram,
   userId: string
 ): Promise<{ programId: string }> {
-  // Use a transaction to ensure all-or-nothing import
+  // Pre-match all unique exercises BEFORE the transaction to avoid timeout
+  const uniqueExerciseNames = new Set<string>();
+  structuredProgram.weeks.forEach((week) => {
+    week.workouts.forEach((workout) => {
+      workout.exercises.forEach((exercise) => {
+        uniqueExerciseNames.add(exercise.name.trim().toLowerCase());
+      });
+    });
+  });
+
+  // Build exercise definition map outside transaction
+  const exerciseDefinitionMap = new Map<string, string>();
+
+  for (const exerciseName of uniqueExerciseNames) {
+    const normalized = exerciseName.toLowerCase();
+
+    // Stage 1: Exact name match
+    let definition = await prisma.exerciseDefinition.findFirst({
+      where: { normalizedName: normalized },
+    });
+
+    // Stage 2: Alias match
+    if (!definition) {
+      definition = await prisma.exerciseDefinition.findFirst({
+        where: { aliases: { has: normalized } },
+      });
+    }
+
+    // Stage 3: Create custom exercise
+    if (!definition) {
+      definition = await prisma.exerciseDefinition.create({
+        data: {
+          name: exerciseName,
+          normalizedName: normalized,
+          isSystem: false,
+          createdBy: userId,
+        },
+      });
+    }
+
+    exerciseDefinitionMap.set(normalized, definition.id);
+  }
+
+  // Now do the transaction with cached exercise definitions
   const result = await prisma.$transaction(async (tx) => {
     // Deactivate any existing active programs
     await tx.program.updateMany({
@@ -192,17 +195,19 @@ export async function importProgramToDatabase(
         });
 
         for (const exercise of workout.exercises) {
-          // Match exercise to definition (exact/alias/create custom)
-          const exerciseDefinitionId = await matchExerciseDefinition(
-            exercise.name,
-            userId,
-            tx
+          // Get cached exercise definition ID
+          const exerciseDefinitionId = exerciseDefinitionMap.get(
+            exercise.name.trim().toLowerCase()
           );
+
+          if (!exerciseDefinitionId) {
+            throw new Error(`Exercise definition not found for: ${exercise.name}`);
+          }
 
           const exerciseRecord = await tx.exercise.create({
             data: {
               name: exercise.name,
-              exerciseDefinitionId, // NEW: Link to exercise definition
+              exerciseDefinitionId,
               order: exercise.order,
               exerciseGroup: exercise.exerciseGroup,
               notes: exercise.notes,
@@ -226,6 +231,8 @@ export async function importProgramToDatabase(
     }
 
     return { programId: program.id };
+  }, {
+    timeout: 30000, // Increase timeout to 30 seconds
   });
 
   return result;
