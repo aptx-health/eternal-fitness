@@ -19,6 +19,7 @@ type Props = {
 export default function ProgramsList({ programs }: Props) {
   const router = useRouter()
   const [activatingId, setActivatingId] = useState<string | null>(null)
+  const [deletingId, setDeletingId] = useState<string | null>(null)
 
   const activeProgram = programs.find((p) => p.isActive)
 
@@ -43,13 +44,38 @@ export default function ProgramsList({ programs }: Props) {
     }
   }
 
+  const handleDelete = async (programId: string, programName: string) => {
+    if (!confirm(`Are you sure you want to delete "${programName}"? This cannot be undone.`)) {
+      return
+    }
+
+    setDeletingId(programId)
+    try {
+      const response = await fetch(`/api/programs/${programId}/delete`, {
+        method: 'DELETE',
+      })
+
+      if (!response.ok) {
+        throw new Error('Failed to delete program')
+      }
+
+      // Refresh the page to show updated state
+      router.refresh()
+    } catch (error) {
+      console.error('Error deleting program:', error)
+      alert('Failed to delete program. Please try again.')
+    } finally {
+      setDeletingId(null)
+    }
+  }
+
   return (
     <div className="space-y-4">
       {/* Active Program */}
       {activeProgram && (
         <div className="bg-blue-50 border-2 border-blue-200 rounded-lg p-6">
           <div className="flex justify-between items-start mb-2">
-            <div>
+            <div className="flex-1">
               <span className="inline-block px-2 py-1 bg-blue-600 text-white text-xs font-semibold rounded mb-2">
                 ACTIVE
               </span>
@@ -58,6 +84,14 @@ export default function ProgramsList({ programs }: Props) {
                 <p className="text-gray-600 mt-1">{activeProgram.description}</p>
               )}
             </div>
+            <button
+              onClick={() => handleDelete(activeProgram.id, activeProgram.name)}
+              disabled={deletingId === activeProgram.id}
+              className="text-red-600 hover:text-red-700 font-medium disabled:opacity-50"
+              title="Delete program"
+            >
+              {deletingId === activeProgram.id ? 'Deleting...' : 'Delete'}
+            </button>
           </div>
           <Link
             href={`/programs/${activeProgram.id}`}
@@ -76,10 +110,22 @@ export default function ProgramsList({ programs }: Props) {
             key={program.id}
             className="bg-white rounded-lg p-6 hover:shadow-md transition"
           >
-            <h2 className="text-xl font-semibold">{program.name}</h2>
-            {program.description && (
-              <p className="text-gray-600 mt-1">{program.description}</p>
-            )}
+            <div className="flex justify-between items-start mb-2">
+              <div className="flex-1">
+                <h2 className="text-xl font-semibold">{program.name}</h2>
+                {program.description && (
+                  <p className="text-gray-600 mt-1">{program.description}</p>
+                )}
+              </div>
+              <button
+                onClick={() => handleDelete(program.id, program.name)}
+                disabled={deletingId === program.id}
+                className="text-red-600 hover:text-red-700 font-medium disabled:opacity-50"
+                title="Delete program"
+              >
+                {deletingId === program.id ? 'Deleting...' : 'Delete'}
+              </button>
+            </div>
             <div className="mt-4 space-x-2">
               <Link
                 href={`/programs/${program.id}`}
