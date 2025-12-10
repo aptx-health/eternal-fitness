@@ -6,13 +6,11 @@ import type {
   ParsedCsvRow,
   ParseResult,
   ValidationError,
-  DetectedColumns,
 } from './types';
 import {
   validateHeaders,
   detectOptionalColumns,
   parseRow,
-  REQUIRED_COLUMNS,
 } from './validator';
 
 /**

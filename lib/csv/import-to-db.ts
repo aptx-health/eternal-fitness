@@ -17,7 +17,7 @@ import type {
 async function matchExerciseDefinition(
   exerciseName: string,
   userId: string,
-  tx: any
+  tx: Omit<typeof prisma, '$on' | '$connect' | '$disconnect' | '$use' | '$transaction' | '$extends'>
 ): Promise<string> {
   const normalized = exerciseName.trim().toLowerCase();
 
@@ -84,7 +84,7 @@ export function structureProgram(
     // Build structured workouts
     const workouts: StructuredWorkout[] = [];
 
-    workoutMap.forEach((workoutRows, key) => {
+    workoutMap.forEach((workoutRows) => {
       const firstRow = workoutRows[0];
 
       // Group by exercise

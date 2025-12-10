@@ -255,7 +255,7 @@ export default function ExerciseLoggingModal({
 
           {/* Prescribed Sets Reference */}
           <div className="mb-4">
-            <h4 className="text-sm font-semibold text-gray-700 mb-2">Today's Target</h4>
+            <h4 className="text-sm font-semibold text-gray-700 mb-2">Today&apos;s Target</h4>
             <div className="bg-gray-50 rounded-lg p-3 space-y-1">
               {currentPrescribedSets.map((set) => (
                 <div key={set.id} className="text-sm text-gray-700">
