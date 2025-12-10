@@ -8,7 +8,7 @@ export interface CsvRow {
   exercise: string;
   set: string;
   reps: string;
-  weight: string;
+  weight?: string;
   rir?: string;
   rpe?: string;
   notes?: string;
@@ -23,7 +23,7 @@ export interface ParsedCsvRow {
   exercise: string;
   set: number;
   reps: string; // Changed from number to support ranges like "8-12"
-  weight: string;
+  weight?: string;
   rir?: number;
   rpe?: number;
   notes?: string;
@@ -32,6 +32,7 @@ export interface ParsedCsvRow {
 
 // Detected optional columns
 export interface DetectedColumns {
+  hasWeight: boolean;
   hasRir: boolean;
   hasRpe: boolean;
   hasNotes: boolean;
@@ -91,7 +92,7 @@ export interface StructuredExercise {
 export interface StructuredPrescribedSet {
   setNumber: number;
   reps: string; // Changed from number to support ranges like "8-12"
-  weight: string;
+  weight?: string;
   rpe?: number;
   rir?: number;
 }

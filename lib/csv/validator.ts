@@ -10,11 +10,10 @@ export const REQUIRED_COLUMNS = [
   'exercise',
   'set',
   'reps',
-  'weight',
 ] as const;
 
 // Optional columns that can be auto-detected
-export const OPTIONAL_COLUMNS = ['rir', 'rpe', 'notes', 'exercise_group'] as const;
+export const OPTIONAL_COLUMNS = ['weight', 'rir', 'rpe', 'notes', 'exercise_group'] as const;
 
 // Validate that all required columns are present
 export function validateHeaders(headers: string[]): ValidationError[] {
@@ -39,6 +38,7 @@ export function detectOptionalColumns(headers: string[]): DetectedColumns {
   const lowerHeaders = headers.map(h => h.toLowerCase().trim());
 
   return {
+    hasWeight: lowerHeaders.includes('weight'),
     hasRir: lowerHeaders.includes('rir'),
     hasRpe: lowerHeaders.includes('rpe'),
     hasNotes: lowerHeaders.includes('notes'),
@@ -118,15 +118,7 @@ export function validateRow(
     });
   }
 
-  // Validate weight (cannot be empty)
-  if (!row.weight || row.weight.trim() === '') {
-    errors.push({
-      row: rowIndex,
-      column: 'weight',
-      message: 'Weight cannot be empty',
-      value: row.weight,
-    });
-  }
+  // Weight is now optional - no validation needed
 
   // Validate RIR if present (must be 0-5)
   if (detectedColumns.hasRir && row.rir !== undefined && row.rir.trim() !== '') {
@@ -193,10 +185,13 @@ export function parseRow(
     exercise: row.exercise.trim(),
     set: parseInt(row.set, 10),
     reps: row.reps.trim(), // Keep as string to support ranges like "8-12"
-    weight: row.weight.trim(),
   };
 
   // Add optional fields if present and valid
+  if (detectedColumns.hasWeight && row.weight && row.weight.trim() !== '') {
+    parsedRow.weight = row.weight.trim();
+  }
+
   if (detectedColumns.hasRir && row.rir && row.rir.trim() !== '') {
     parsedRow.rir = parseInt(row.rir, 10);
   }

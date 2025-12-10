@@ -1,7 +1,6 @@
 // Database Import Logic for CSV Programs
 
 import { prisma } from '@/lib/db';
-import type { Prisma } from '@prisma/client';
 import type {
   ParsedCsvRow,
   StructuredProgram,

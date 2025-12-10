@@ -68,12 +68,6 @@ export default function CsvSpecPage() {
                 <td>Target reps (number or range)</td>
                 <td>5, 10, 8-12</td>
               </tr>
-              <tr>
-                <td><code>weight</code></td>
-                <td>String</td>
-                <td>Target weight</td>
-                <td>135lbs, 60kg, bodyweight</td>
-              </tr>
             </tbody>
           </table>
 
@@ -89,6 +83,12 @@ export default function CsvSpecPage() {
               </tr>
             </thead>
             <tbody>
+              <tr>
+                <td><code>weight</code></td>
+                <td>String</td>
+                <td>Target weight (flexible format)</td>
+                <td>135lbs, 60kg, bodyweight</td>
+              </tr>
               <tr>
                 <td><code>rir</code></td>
                 <td>Integer</td>
@@ -177,7 +177,6 @@ export default function CsvSpecPage() {
             <li><code>exercise</code>: Cannot be empty</li>
             <li><code>set</code>: Must be positive integer (≥ 1)</li>
             <li><code>reps</code>: Must be a positive integer (e.g., 10) or a range (e.g., 8-12)</li>
-            <li><code>weight</code>: Cannot be empty</li>
             <li><code>rir</code>: If present, must be integer 0-5</li>
             <li><code>rpe</code>: If present, must be integer 1-10</li>
           </ul>

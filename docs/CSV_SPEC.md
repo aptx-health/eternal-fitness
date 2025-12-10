@@ -28,7 +28,6 @@ week,day,workout_name,exercise,set,reps,weight,rir,notes
 | `exercise` | String | Exercise name | `Bench Press`, `Squat`, `Deadlift` |
 | `set` | Integer | Set number | `1`, `2`, `3` |
 | `reps` | String | Target reps (number or range) | `5`, `10`, `8-12` |
-| `weight` | String | Target weight (flexible) | `135lbs`, `65%`, `RPE 8` |
 
 ## Optional Columns
 
@@ -36,6 +35,7 @@ These columns are auto-detected if present:
 
 | Column | Type | Description | Example |
 |--------|------|-------------|---------|
+| `weight` | String | Target weight (flexible format) | `135lbs`, `65%`, `bodyweight` |
 | `rir` | Integer | Reps in Reserve (0-5) | `2`, `1`, `0` |
 | `rpe` | Integer | Rate of Perceived Exertion (1-10) | `7`, `8`, `9` |
 | `notes` | String | Exercise-specific notes | `Pause at bottom`, `Explode up` |
@@ -162,7 +162,6 @@ week,day,workout_name,exercise,exercise_group,set,reps,weight
 - `exercise`: Cannot be empty
 - `set`: Must be positive integer (≥ 1)
 - `reps`: Must be a positive integer (e.g., `10`) or a range (e.g., `8-12`)
-- `weight`: Cannot be empty
 
 ### Optional Field Validation
 
