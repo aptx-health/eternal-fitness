@@ -216,7 +216,7 @@ export async function importProgramToDatabase(
 
     return { programId: program.id };
   }, {
-    timeout: 10000, // Can reduce timeout now that we're faster
+    timeout: 60000, // 60 seconds for large programs on Supabase free tier
   });
 
   return result;
