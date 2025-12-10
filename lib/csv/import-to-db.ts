@@ -1,6 +1,7 @@
 // Database Import Logic for CSV Programs
 
 import { prisma } from '@/lib/db';
+import type { Prisma } from '@prisma/client';
 import type {
   ParsedCsvRow,
   StructuredProgram,
@@ -17,7 +18,7 @@ import type {
 async function matchExerciseDefinition(
   exerciseName: string,
   userId: string,
-  tx: Omit<typeof prisma, '$on' | '$connect' | '$disconnect' | '$use' | '$transaction' | '$extends'>
+  tx: Prisma.TransactionClient
 ): Promise<string> {
   const normalized = exerciseName.trim().toLowerCase();
 
