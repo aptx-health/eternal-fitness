@@ -418,14 +418,6 @@ export default function ExerciseLoggingModal({
                   </div>
                 )}
 
-                {/* Log Set Button */}
-                <button
-                  onClick={handleLogSet}
-                  disabled={!canLogSet}
-                  className="w-full py-4 bg-blue-600 text-white rounded-lg font-semibold text-lg hover:bg-blue-700 active:bg-blue-800 disabled:bg-gray-300 disabled:cursor-not-allowed transition-colors"
-                >
-                  Log Set {nextSetNumber}
-                </button>
               </div>
             </div>
           )}
@@ -446,23 +438,36 @@ export default function ExerciseLoggingModal({
         </div>
 
         {/* Bottom Actions */}
-        <div className="border-t border-gray-200 px-4 py-4 bg-gray-50 flex-shrink-0 space-y-2">
-          {currentExerciseIndex < exercises.length - 1 && (
+        <div className="border-t border-gray-200 px-4 py-4 bg-gray-50 flex-shrink-0 space-y-3">
+          {/* Log Set Button - Full width */}
+          {!hasLoggedAllPrescribed && (
             <button
-              onClick={handleNextExercise}
-              className="w-full py-3 bg-gray-700 text-white rounded-lg font-semibold hover:bg-gray-800 active:bg-gray-900 transition-colors"
+              onClick={handleLogSet}
+              disabled={!canLogSet}
+              className="w-full py-4 bg-blue-600 text-white rounded-lg font-semibold text-lg hover:bg-blue-700 active:bg-blue-800 disabled:bg-gray-300 disabled:cursor-not-allowed transition-colors"
             >
-              Next Exercise →
+              Log Set {nextSetNumber}
             </button>
           )}
 
-          <button
-            onClick={handleCompleteWorkout}
-            disabled={isSubmitting || totalLoggedSets === 0}
-            className="w-full py-3 bg-green-600 text-white rounded-lg font-semibold hover:bg-green-700 active:bg-green-800 disabled:bg-gray-300 disabled:cursor-not-allowed transition-colors"
-          >
-            {isSubmitting ? 'Saving...' : `Complete Workout (${totalLoggedSets} sets)`}
-          </button>
+          {/* Navigation buttons - Side by side */}
+          <div className="grid grid-cols-2 gap-3">
+            <button
+              onClick={handleNextExercise}
+              disabled={currentExerciseIndex === exercises.length - 1}
+              className="py-3 bg-gray-700 text-white rounded-lg font-semibold hover:bg-gray-800 active:bg-gray-900 disabled:bg-gray-300 disabled:cursor-not-allowed transition-colors"
+            >
+              Next Exercise →
+            </button>
+
+            <button
+              onClick={handleCompleteWorkout}
+              disabled={isSubmitting || totalLoggedSets === 0}
+              className="py-3 bg-green-600 text-white rounded-lg font-semibold hover:bg-green-700 active:bg-green-800 disabled:bg-gray-300 disabled:cursor-not-allowed transition-colors"
+            >
+              {isSubmitting ? 'Saving...' : `Complete (${totalLoggedSets})`}
+            </button>
+          </div>
         </div>
       </div>
     </div>
