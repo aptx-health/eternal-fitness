@@ -178,21 +178,20 @@ export default function ExerciseLoggingModal({
       {/* Modal - Full screen on mobile, centered on desktop */}
       <div className="bg-white w-full h-full sm:h-auto sm:max-h-[90vh] sm:rounded-lg sm:max-w-2xl flex flex-col">
         {/* Header */}
-        <div className="bg-blue-600 text-white px-4 py-4 sm:rounded-t-lg flex-shrink-0">
-          <div className="flex items-center justify-between mb-2">
-            <h2 className="text-xl font-bold">{workoutName}</h2>
+        <div className="bg-blue-600 text-white px-4 py-3 sm:rounded-t-lg flex-shrink-0">
+          <div className="flex items-center justify-between">
+            <div className="text-sm text-blue-100">
+              Exercise {currentExerciseIndex + 1} of {exercises.length} • {totalLoggedSets}/
+              {totalPrescribedSets} sets logged
+            </div>
             <button
               onClick={onClose}
-              className="text-white hover:text-gray-200 p-2 -mr-2"
+              className="text-white hover:text-gray-200 p-1"
             >
               <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
               </svg>
             </button>
-          </div>
-          <div className="text-sm text-blue-100">
-            Exercise {currentExerciseIndex + 1} of {exercises.length} • {totalLoggedSets}/
-            {totalPrescribedSets} sets logged
           </div>
         </div>
 
@@ -438,24 +437,24 @@ export default function ExerciseLoggingModal({
         </div>
 
         {/* Bottom Actions */}
-        <div className="border-t border-gray-200 px-4 py-4 bg-gray-50 flex-shrink-0 space-y-3">
+        <div className="border-t border-gray-200 px-4 py-3 bg-gray-50 flex-shrink-0 space-y-2">
           {/* Log Set Button - Full width */}
           {!hasLoggedAllPrescribed && (
             <button
               onClick={handleLogSet}
               disabled={!canLogSet}
-              className="w-full py-4 bg-blue-600 text-white rounded-lg font-semibold text-lg hover:bg-blue-700 active:bg-blue-800 disabled:bg-gray-300 disabled:cursor-not-allowed transition-colors"
+              className="w-full py-3 bg-blue-600 text-white rounded-lg font-semibold hover:bg-blue-700 active:bg-blue-800 disabled:bg-gray-300 disabled:cursor-not-allowed transition-colors"
             >
               Log Set {nextSetNumber}
             </button>
           )}
 
           {/* Navigation buttons - Side by side */}
-          <div className="grid grid-cols-2 gap-3">
+          <div className="grid grid-cols-2 gap-2">
             <button
               onClick={handleNextExercise}
               disabled={currentExerciseIndex === exercises.length - 1}
-              className="py-3 bg-gray-700 text-white rounded-lg font-semibold hover:bg-gray-800 active:bg-gray-900 disabled:bg-gray-300 disabled:cursor-not-allowed transition-colors"
+              className="py-2.5 bg-gray-700 text-white rounded-lg font-semibold hover:bg-gray-800 active:bg-gray-900 disabled:bg-gray-300 disabled:cursor-not-allowed transition-colors"
             >
               Next Exercise →
             </button>
@@ -463,7 +462,7 @@ export default function ExerciseLoggingModal({
             <button
               onClick={handleCompleteWorkout}
               disabled={isSubmitting || totalLoggedSets === 0}
-              className="py-3 bg-green-600 text-white rounded-lg font-semibold hover:bg-green-700 active:bg-green-800 disabled:bg-gray-300 disabled:cursor-not-allowed transition-colors"
+              className="py-2.5 bg-green-600 text-white rounded-lg font-semibold hover:bg-green-700 active:bg-green-800 disabled:bg-gray-300 disabled:cursor-not-allowed transition-colors"
             >
               {isSubmitting ? 'Saving...' : `Complete (${totalLoggedSets})`}
             </button>
