@@ -25,7 +25,7 @@ export default async function WeekPage({
     redirect('/login')
   }
 
-  // Fetch program with weeks
+  // Fetch program with the specific week and its workouts in ONE query
   const program = await prisma.program.findFirst({
     where: {
       id: programId,
@@ -33,46 +33,41 @@ export default async function WeekPage({
     },
     include: {
       weeks: {
-        orderBy: {
-          weekNumber: 'asc',
-        },
-      },
-    },
-  })
-
-  if (!program) {
-    notFound()
-  }
-
-  // Find the current week
-  const week = program.weeks.find((w) => w.weekNumber === weekNum)
-
-  if (!week) {
-    notFound()
-  }
-
-  // Fetch workouts for this week with completion status
-  const workouts = await prisma.workout.findMany({
-    where: {
-      weekId: week.id,
-    },
-    orderBy: {
-      dayNumber: 'asc',
-    },
-    include: {
-      completions: {
         where: {
-          userId: user.id,
+          weekNumber: weekNum,
         },
-        take: 1,
-        orderBy: {
-          completedAt: 'desc',
+        include: {
+          workouts: {
+            orderBy: {
+              dayNumber: 'asc',
+            },
+            include: {
+              completions: {
+                where: {
+                  userId: user.id,
+                },
+                take: 1,
+                orderBy: {
+                  completedAt: 'desc',
+                },
+              },
+            },
+          },
         },
+      },
+      _count: {
+        select: { weeks: true },
       },
     },
   })
 
-  const totalWeeks = program.weeks.length
+  if (!program || program.weeks.length === 0) {
+    notFound()
+  }
+
+  const week = program.weeks[0]
+  const workouts = week.workouts
+  const totalWeeks = program._count.weeks
 
   return (
     <WeekView
