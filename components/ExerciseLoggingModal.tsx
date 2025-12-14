@@ -55,6 +55,7 @@ type Props = {
   exerciseHistory?: Record<string, ExerciseHistory | null> // NEW: Exercise history map
 }
 
+// Capitalized Function name because it's a React Component
 export default function ExerciseLoggingModal({
   isOpen,
   onClose,
@@ -73,6 +74,7 @@ export default function ExerciseLoggingModal({
     rir: '',
   })
   const [isSubmitting, setIsSubmitting] = useState(false)
+  const [isConfirming, setIsConfirming] = useState(false)
 
   if (!isOpen) return null
 
@@ -195,7 +197,7 @@ export default function ExerciseLoggingModal({
           </div>
         </div>
 
-        {/* Exercise Navigation */}
+        {/* Exercise Navigation - Title and L/R Buttons */}
         <div className="border-b border-gray-200 px-4 py-3 flex items-center justify-between bg-gray-50 flex-shrink-0">
           <button
             onClick={handlePreviousExercise}
@@ -463,9 +465,38 @@ export default function ExerciseLoggingModal({
               onClick={handleCompleteWorkout}
               disabled={isSubmitting || totalLoggedSets === 0}
               className="py-2.5 bg-green-600 text-white rounded-lg font-semibold hover:bg-green-700 active:bg-green-800 disabled:bg-gray-300 disabled:cursor-not-allowed transition-colors"
+              onMouseDown={(e) => {
+                if (isSubmitting || totalLoggedSets === 0) return;
+                e.preventDefault();
+                setIsConfirming(true);
+              }}
             >
               {isSubmitting ? 'Saving...' : `Complete (${totalLoggedSets})`}
             </button>
+ 
+            {/* Currently, the confirmation modal's background (the bigger modal) is completely black */}
+            {isConfirming && (
+              <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center ">
+                <div className="bg-white p-6 rounded-lg text-center">
+                  <p>Complete this workout?</p>
+                  <div className="mt-4 flex justify-center space-x-3">
+                    <button
+                      onClick={() => setIsConfirming(false)}
+                      className="px-4 py-2 bg-gray-300 rounded hover:bg-gray-400"
+                    >
+                      Cancel
+                    </button>
+                    <button
+                      onClick={handleCompleteWorkout}
+                      className="px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700"
+                    >
+                      Confirm
+                    </button>
+                  </div>
+                </div>
+              </div>
+            )}
+
           </div>
         </div>
       </div>
