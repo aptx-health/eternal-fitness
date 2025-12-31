@@ -93,13 +93,41 @@ export class WorkoutSyncService {
    * Force immediate sync with current workout state (for manual sync button)
    */
   syncCurrentState = async (workoutId: string, currentSets: LoggedSet[]): Promise<void> => {
-    console.log('syncCurrentState called with workoutId:', workoutId, 'currentSets:', currentSets.length)
+    console.log('🔄 syncCurrentState called with workoutId:', workoutId, 'currentSets:', currentSets.length)
     
-    if (this.isCurrentlySyncing) {
-      console.log('Sync already in progress, skipping manual sync')
+    // Input validation
+    if (!workoutId || typeof workoutId !== 'string') {
+      console.error('❌ Invalid workoutId provided to syncCurrentState:', workoutId)
+      this.callbacks.onSyncError?.('Invalid workout ID', false)
       return
     }
 
+    if (!Array.isArray(currentSets)) {
+      console.error('❌ Invalid currentSets provided to syncCurrentState:', currentSets)
+      this.callbacks.onSyncError?.('Invalid sets data', false)
+      return
+    }
+    
+    if (this.isCurrentlySyncing) {
+      console.log('⏳ Sync already in progress, skipping manual sync')
+      return
+    }
+
+    // Validate set data before sending
+    const invalidSets = currentSets.filter(set => 
+      !set.exerciseId || 
+      typeof set.setNumber !== 'number' || 
+      typeof set.reps !== 'number' ||
+      typeof set.weight !== 'number'
+    )
+
+    if (invalidSets.length > 0) {
+      console.error('❌ Invalid set data detected:', invalidSets)
+      this.callbacks.onSyncError?.('Invalid set data structure', false)
+      return
+    }
+
+    console.log('✅ Data validation passed, proceeding with sync')
     await this.attemptSyncWithSets(workoutId, currentSets, 0)
   }
 
@@ -127,15 +155,24 @@ export class WorkoutSyncService {
     this.isCurrentlySyncing = true
     const willRetry = retryCount < this.options.maxRetries
 
-    console.log(`Manual sync attempt ${retryCount + 1} for ${sets.length} sets to workoutId: ${workoutId}`)
+    console.log(`🔄 Manual sync attempt ${retryCount + 1} for ${sets.length} sets to workoutId: ${workoutId}`)
 
     try {
-      console.log('Calling onSyncStart callback')
+      console.log('📞 Calling onSyncStart callback')
       this.callbacks.onSyncStart?.(sets.length)
 
+      // Enhanced safety logging for the payload
+      if (sets.length === 0) {
+        console.warn('⚠️ CRITICAL: Sending empty sets array - this will DELETE all server data')
+      }
+
       // Call the draft API to save current progress
-      console.log('Making API call to:', `/api/workouts/${workoutId}/draft`)
-      console.log('With payload:', { loggedSets: sets })
+      console.log('📡 Making API call to:', `/api/workouts/${workoutId}/draft`)
+      console.log('📦 Payload summary:', { 
+        setCount: sets.length, 
+        exercises: [...new Set(sets.map(s => s.exerciseId))].length,
+        operation: sets.length === 0 ? 'DELETION' : 'SYNC'
+      })
       
       const response = await fetch(`/api/workouts/${workoutId}/draft`, {
         method: 'POST',

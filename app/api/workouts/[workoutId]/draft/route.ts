@@ -34,14 +34,32 @@ export async function POST(
     const body = await request.json()
     const { loggedSets } = body as { loggedSets: LoggedSetInput[] }
 
+    // Enhanced input validation
     if (!loggedSets || !Array.isArray(loggedSets)) {
+      console.error('Draft API: Invalid input - loggedSets must be an array')
       return NextResponse.json(
         { error: 'loggedSets array is required' },
         { status: 400 }
       )
     }
 
-    // Allow empty arrays for draft saves - but still need to process deletions
+    // Log the operation type for safety monitoring
+    if (loggedSets.length === 0) {
+      console.warn(`⚠️ Draft API: Deletion-only sync for workout ${workoutId} - will remove all existing sets`)
+    } else {
+      console.log(`📝 Draft API: Sync ${loggedSets.length} sets for workout ${workoutId}`)
+    }
+
+    // Validate set data structure
+    for (const set of loggedSets) {
+      if (!set.exerciseId || typeof set.setNumber !== 'number' || typeof set.reps !== 'number') {
+        console.error('Draft API: Invalid set data structure:', set)
+        return NextResponse.json(
+          { error: 'Invalid set data structure' },
+          { status: 422 }
+        )
+      }
+    }
 
     // Verify workout exists and user owns it
     const workout = await prisma.workout.findUnique({
@@ -81,32 +99,34 @@ export async function POST(
 
     // Find or create draft completion
     const result = await prisma.$transaction(async (tx) => {
-      // Look for existing draft
-      let draftCompletion = await tx.workoutCompletion.findFirst({
+      // Look for existing draft and get current set count for safety logging
+      let existingDraft = await tx.workoutCompletion.findFirst({
         where: {
           workoutId,
           userId: user.id,
           status: 'draft',
         },
+        include: {
+          loggedSets: true
+        }
       })
 
-      // Create draft completion if it doesn't exist
-      if (!draftCompletion) {
-        draftCompletion = await tx.workoutCompletion.create({
-          data: {
-            workoutId,
-            userId: user.id,
-            status: 'draft',
-            completedAt: new Date(),
-          },
-        })
-      } else {
-        // Update timestamp of existing draft
-        draftCompletion = await tx.workoutCompletion.update({
-          where: { id: draftCompletion.id },
-          data: { completedAt: new Date() }
-        })
-      }
+      const currentSetCount = existingDraft?.loggedSets?.length || 0
+      
+      // Create or update draft completion
+      const draftCompletion = existingDraft 
+        ? await tx.workoutCompletion.update({
+            where: { id: existingDraft.id },
+            data: { completedAt: new Date() }
+          })
+        : await tx.workoutCompletion.create({
+            data: {
+              workoutId,
+              userId: user.id,
+              status: 'draft',
+              completedAt: new Date(),
+            },
+          })
 
       // Remove existing logged sets for this draft (we'll replace them)
       const deletedSets = await tx.loggedSet.deleteMany({
@@ -115,10 +135,17 @@ export async function POST(
         },
       })
       
+      // Enhanced safety logging with data transformation details
       console.log(`Draft sync: Deleted ${deletedSets.count} existing sets, creating ${loggedSets.length} new sets`)
       
       if (loggedSets.length === 0 && deletedSets.count > 0) {
-        console.log('🗑️ All sets deleted - this was a deletion-only sync')
+        console.log('🗑️ DELETION OPERATION: All sets deleted - this was a deletion-only sync')
+      } else if (currentSetCount > loggedSets.length) {
+        console.warn(`⚠️ PARTIAL DELETION: ${currentSetCount} → ${loggedSets.length} sets (${currentSetCount - loggedSets.length} sets removed)`)
+      } else if (currentSetCount < loggedSets.length) {
+        console.log(`📈 ADDITION: ${currentSetCount} → ${loggedSets.length} sets (${loggedSets.length - currentSetCount} sets added)`)
+      } else {
+        console.log(`📝 UPDATE: ${loggedSets.length} sets modified (same count)`)
       }
 
       // Create all logged sets for the draft

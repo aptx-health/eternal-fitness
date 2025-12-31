@@ -74,6 +74,12 @@ export default function ExerciseLoggingModal({
   const [isConfirming, setIsConfirming] = useState(false)
   const [showSyncDetails, setShowSyncDetails] = useState(false)
   const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false)
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState<{
+    show: boolean
+    exerciseId?: string
+    setNumber?: number
+    isDeleteAll?: boolean
+  }>({ show: false })
 
   // Enhanced persistence with localStorage backing
   const { loggedSets, setLoggedSets, isLoaded, clearStoredWorkout } = useWorkoutStorage(workoutId)
@@ -218,19 +224,51 @@ export default function ExerciseLoggingModal({
   }
 
   const handleDeleteSet = useCallback((setNumber: number) => {
-    console.log(`Deleting set ${setNumber} for exercise ${currentExercise.id}`)
+    const exerciseId = currentExercise.id
+    const exerciseSets = loggedSets.filter(s => s.exerciseId === exerciseId)
     
+    // Show confirmation for dangerous operations
+    if (exerciseSets.length === 1) {
+      // Deleting the last set for this exercise
+      setShowDeleteConfirm({
+        show: true,
+        exerciseId,
+        setNumber,
+        isDeleteAll: false
+      })
+      return
+    }
+
+    // Direct deletion for safe operations
+    performDeleteSet(exerciseId, setNumber)
+  }, [currentExercise.id, loggedSets])
+
+  const performDeleteSet = useCallback((exerciseId: string, setNumber: number) => {
+    console.log(`🗑️ Deleting set ${setNumber} for exercise ${exerciseId}`)
+    
+    const beforeCount = loggedSets.length
     setLoggedSets(prev =>
       prev.filter(
-        (s) => !(s.exerciseId === currentExercise.id && s.setNumber === setNumber)
+        (s) => !(s.exerciseId === exerciseId && s.setNumber === setNumber)
       )
     )
+    
+    // Enhanced logging for safety
+    const afterCount = loggedSets.length - 1 // Will be one less after filter
+    console.log(`📊 Deletion impact: ${beforeCount} → ${afterCount} total sets`)
     
     // Mark that we have unsaved changes (deletions)
     setHasUnsavedChanges(true)
     
     console.log('Set deleted locally - will sync with next batch or manual sync')
-  }, [currentExercise.id, setLoggedSets])
+  }, [loggedSets, setLoggedSets])
+
+  const handleConfirmDelete = useCallback(() => {
+    if (showDeleteConfirm.exerciseId && showDeleteConfirm.setNumber) {
+      performDeleteSet(showDeleteConfirm.exerciseId, showDeleteConfirm.setNumber)
+    }
+    setShowDeleteConfirm({ show: false })
+  }, [showDeleteConfirm, performDeleteSet])
 
   // Manual sync function that passes current logged sets
   const handleManualSync = useCallback(() => {
@@ -602,9 +640,9 @@ export default function ExerciseLoggingModal({
               {isSubmitting ? 'Saving...' : `Complete (${totalLoggedSets})`}
             </button>
  
-            {/* Currently, the confirmation modal's background (the bigger modal) is completely black */}
+            {/* Workout completion confirmation modal */}
             {isConfirming && (
-              <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center ">
+              <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-60">
                 <div className="bg-white p-6 rounded-lg text-center">
                   <p>Complete this workout?</p>
                   <div className="mt-4 flex justify-center space-x-3">
@@ -619,6 +657,37 @@ export default function ExerciseLoggingModal({
                       className="px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700"
                     >
                       Confirm
+                    </button>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* Deletion confirmation modal */}
+            {showDeleteConfirm.show && (
+              <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-60">
+                <div className="bg-white p-6 rounded-lg text-center max-w-sm">
+                  <div className="text-amber-600 mb-4">
+                    <svg className="w-12 h-12 mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.732-.833-2.5 0L4.268 15.5c-.77.833.192 2.5 1.732 2.5z" />
+                    </svg>
+                  </div>
+                  <h3 className="text-lg font-semibold text-gray-900 mb-2">Delete Last Set?</h3>
+                  <p className="text-sm text-gray-600 mb-4">
+                    This will remove the only remaining set for this exercise. Are you sure?
+                  </p>
+                  <div className="flex justify-center space-x-3">
+                    <button
+                      onClick={() => setShowDeleteConfirm({ show: false })}
+                      className="px-4 py-2 bg-gray-300 text-gray-700 rounded hover:bg-gray-400"
+                    >
+                      Cancel
+                    </button>
+                    <button
+                      onClick={handleConfirmDelete}
+                      className="px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700"
+                    >
+                      Delete Set
                     </button>
                   </div>
                 </div>

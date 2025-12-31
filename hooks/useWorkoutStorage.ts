@@ -129,14 +129,18 @@ export function useWorkoutStorage(workoutId: string) {
 
       try {
         localStorage.setItem(storageKey, JSON.stringify(dataToStore))
+        console.log(`💾 Saved ${loggedSets.length} sets to localStorage for workout ${workoutId}`)
       } catch (error) {
-        console.error('Error saving workout to localStorage:', error)
+        console.error('❌ Error saving workout to localStorage:', error)
+        console.log('🧹 Attempting cleanup and retry...')
         // Could be quota exceeded - maybe clean up old workouts and try again
         cleanupExpiredWorkouts()
         try {
           localStorage.setItem(storageKey, JSON.stringify(dataToStore))
+          console.log('✅ Retry successful after cleanup')
         } catch (retryError) {
-          console.error('Error saving workout after cleanup:', retryError)
+          console.error('❌ Error saving workout after cleanup:', retryError)
+          console.error('🚨 CRITICAL: Cannot save workout data locally - data may be lost!')
         }
       }
     } else {
