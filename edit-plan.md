@@ -1,220 +1,327 @@
-FitCSV Program Editing Implementation Plan
+FitCSV Program Management & Editing Implementation Plan
 
  Overview
 
- Add comprehensive editing capabilities to FitCSV programs, allowing users to add/remove
- exercises and sets, edit prescribed values, and manage exercise notes. Edits only affect
-  unlogged workouts to preserve historical data integrity.
+ Build comprehensive program creation and editing system to replace CSV-only workflow.
+ Phase 1: In-app program builder with wizard-style creation flow.
+ Phase 2: Program editing with change tracking and snapshot system.
+ Focus on user-friendly program management with muscle group visualization.
 
- User Requirements (Confirmed)
+ User Requirements (Updated)
 
- 1. Notes location: Exercise-level only (one notes field per exercise)
- 2. Edit scope: Full editing - add/remove exercises, add/remove sets, edit prescribed
- values and notes
- 3. Edit impact: Future only - edits only affect unlogged workouts, preserve historical
- data
+ **Program Creation (Priority 1)**:
+ 1. Wizard-style program builder: Type → Name → Notes → Week creation
+ 2. Week duplication for faster program building
+ 3. Exercise library with search and muscle group metadata
+ 4. Full editing for NEW programs (created post-implementation)
 
- Architecture Decision: Separate Edit Page
+ **Exercise Metadata (Priority 1)**:
+ 1. Primary/secondary muscle groups for workload visualization
+ 2. Functional aesthetic units (e.g., "upper-arm-anterior", "mid-back")
+ 3. Database integration (not reference files)
 
+ **Change Tracking (Priority 2)**:
+ 1. Program snapshots (auto: creation, manual: major changes)
+ 2. Change log with modification history
+ 3. Preserve existing CSV-imported programs as read-only initially
+
+ Architecture Decisions
+
+ **Program Builder Flow**:
+ Route: /programs/new (wizard), /programs/[id]/edit (full editing)
+
+ **Workout Editing**:
  Route: /programs/[id]/workouts/[workoutId]/edit
 
+ **Exercise Library**:
+ Database schema extensions with muscle metadata
+
  Rationale:
- - Clearer intent with dedicated URL
- - Simpler state management (no mode toggling)
- - More screen space for editing controls (mobile-friendly)
- - Easy undo/cancel (browser back)
- - Prevents accidental edits on read-only view
+ - Wizard reduces cognitive load for program creation
+ - Separate edit flows for programs vs workouts
+ - Database-driven exercise library enables rich filtering/search
+ - Change tracking provides audit trail without version complexity
 
  Implementation Phases
 
- Phase 1: Foundation & Validation
+ Phase 1: Database Schema & Exercise Library
 
  1.1 Database Schema Updates
 
  File: prisma/schema.prisma
 
- Add audit fields to Exercise and PrescribedSet models:
- model Exercise {
+ Add exercise metadata and program tracking:
+ ```prisma
+ model ExerciseDefinition {
    // ... existing fields
-   createdAt   DateTime @default(now())
-   updatedAt   DateTime @updatedAt
+   primaryMuscles    String[]  // ["upper-arm-anterior", "mid-back"]
+   secondaryMuscles  String[]  // ["rear-delts", "forearm-flexors"]
+   movementPattern   String?   // "horizontal-push", "elbow-flexion"
+   equipment         String[]  // ["barbell", "dumbbell"]
+   instructions      String?   // Setup and execution notes
+   createdAt         DateTime @default(now())
+   updatedAt         DateTime @updatedAt
  }
 
- model PrescribedSet {
+ model Program {
    // ... existing fields
-   createdAt   DateTime @default(now())
-   updatedAt   DateTime @updatedAt
+   programType       String    @default("strength") // "strength", "hypertrophy", "powerlifting"
+   isUserCreated     Boolean   @default(false) // vs CSV imported
+   createdAt         DateTime  @default(now())
+   updatedAt         DateTime  @updatedAt
+   snapshots         ProgramSnapshot[]
+   changeLogs        ProgramChangeLog[]
  }
 
- Migration: doppler run -- npx prisma migrate dev --name add_exercise_audit_fields
+ model ProgramSnapshot {
+   id          String   @id @default(cuid())
+   programId   String
+   program     Program  @relation(fields: [programId], references: [id], onDelete: Cascade)
+   name        String   // "Initial Creation", "Week 3 Exercise Swap"
+   description String?  // "Swapped incline press for flat bench due to shoulder"
+   snapshotData Json    // Full program structure at time of snapshot
+   createdAt   DateTime @default(now())
+ }
 
- 1.2 Validation Utility
+ model ProgramChangeLog {
+   id          String   @id @default(cuid())
+   programId   String
+   program     Program  @relation(fields: [programId], references: [id], onDelete: Cascade)
+   changeType  String   // "exercise_added", "exercise_removed", "sets_modified"
+   description String   // "Added 21s bicep curls to Upper Day"
+   details     Json?    // Additional metadata about the change
+   createdAt   DateTime @default(now())
+ }
+ ```
 
- File: lib/queries/workout-validation.ts (NEW)
+ Migration: doppler run -- npx prisma migrate dev --name add_program_management_schema
+
+ 1.2 Exercise Library Seeding
+
+ File: lib/exercise-library-seed.ts (NEW)
 
  /**
+  * Seed exercise library with muscle metadata
+  * Consolidate existing exercises and add new muscle group data
+  */
+ export async function seedExerciseLibrary() {
+   // Common exercises with muscle metadata
+   const exercises = [
+     {
+       name: "Barbell Bench Press",
+       aliases: ["bench press", "bench", "bb bench"],
+       primaryMuscles: ["chest", "front-delts"],
+       secondaryMuscles: ["triceps"],
+       movementPattern: "horizontal-push",
+       equipment: ["barbell", "bench"]
+     },
+     {
+       name: "Hammer Curl",
+       aliases: ["hammer curls", "neutral grip curls"],
+       primaryMuscles: ["upper-arm-anterior"], // brachialis, brachioradialis
+       secondaryMuscles: [],
+       movementPattern: "elbow-flexion",
+       equipment: ["dumbbell"]
+     }
+     // ... expand with ~100 common exercises
+   ]
+ }
+
+ 1.3 Program Validation Utilities
+
+ File: lib/queries/program-validation.ts (NEW)
+
+ /**
+  * Check if program is editable (user-created, not CSV)
   * Check if workout is editable (not completed)
-  * Returns { editable: boolean, reason?: string }
   */
- export async function isWorkoutEditable(
-   workoutId: string,
-   userId: string
- ): Promise<{ editable: boolean; reason?: string }>
+ export async function isProgramEditable(programId: string, userId: string)
+ export async function isWorkoutEditable(workoutId: string, userId: string)
+ export async function canCreateSnapshot(programId: string): Promise<boolean>
 
- 1.3 Exercise Definition Matcher
+ Phase 2: Program Creation APIs
 
- File: lib/exercise-definition-matcher.ts (NEW)
+ 2.1 Program Creation Wizard
 
- Extract matching logic from lib/csv/import-to-db.ts:
- /**
-  * Match or create exercise definition
-  * Handles exact match, alias match, or creates new custom exercise
-  */
- export async function matchOrCreateExerciseDefinition(
-   exerciseName: string,
-   userId: string
- ): Promise<string>
+ File: app/api/programs/route.ts (NEW)
 
- Phase 2: Prescribed Set CRUD APIs
+ POST: Create new program
+ ```typescript
+ {
+   name: string,
+   description?: string,
+   programType: "strength" | "hypertrophy" | "powerlifting",
+   weekCount: number
+ }
+ ```
+ - Creates empty program with specified weeks
+ - Sets isUserCreated = true
+ - Creates initial snapshot
+ - Returns program with week structure
 
- 2.1 Update Single Set
+ 2.2 Week Management
 
- File: app/api/sets/[setId]/route.ts (NEW)
+ File: app/api/programs/[id]/weeks/route.ts (NEW)
 
- - PATCH: Update reps, weight, rpe, rir, setNumber
- - DELETE: Remove prescribed set
- - Validation: Check workout not completed via isWorkoutEditable()
- - Auth: Verify user owns workout via RLS-friendly query
+ - POST: Add new week to program
+ - PUT: Duplicate existing week
+ ```typescript
+ {
+   sourceWeekId?: string, // If duplicating
+   weekNumber: number,
+   name?: string
+ }
+ ```
+ - Validation: Check program is user-created
 
- 2.2 Add Set to Exercise
+ Phase 3: Exercise Library & Search APIs
 
- File: app/api/exercises/[exerciseId]/sets/route.ts (NEW)
+ 3.1 Exercise Library Search
 
- - POST: Create new prescribed set
- - Input: { setNumber, reps, weight?, rpe?, rir? }
- - Auto-increment setNumber if not provided
- - Validation: Check workout not completed
+ File: app/api/exercises/search/route.ts (NEW)
 
- Phase 3: Exercise CRUD APIs
+ - GET: Search exercise definitions
+ ```typescript
+ {
+   query?: string,        // Name/alias search
+   muscleGroups?: string[], // Filter by primary muscles
+   equipment?: string[],    // Filter by available equipment
+   limit?: number
+ }
+ ```
+ - Returns exercises with muscle metadata
+ - Fuzzy search on names and aliases
 
- 3.1 Update/Delete Exercise
+ 3.2 Custom Exercise Creation
 
- File: app/api/exercises/[exerciseId]/route.ts (NEW)
+ File: app/api/exercises/custom/route.ts (NEW)
 
- - PATCH: Update name, notes, exerciseGroup
-   - If name changed: Use matchOrCreateExerciseDefinition() to update
- exerciseDefinitionId
- - DELETE: Hard delete exercise (cascades to PrescribedSets)
- - Validation: Check workout not completed
+ - POST: Create custom exercise definition
+ ```typescript
+ {
+   name: string,
+   aliases?: string[],
+   primaryMuscles: string[],
+   secondaryMuscles?: string[],
+   movementPattern?: string,
+   equipment?: string[],
+   instructions?: string
+ }
+ ```
+ - Sets createdBy to current user
+ - Available for user's future programs
 
- 3.2 Add Exercise & Reorder
+ Phase 4: Program Builder UI Components
 
- File: app/api/workouts/[workoutId]/exercises/route.ts (NEW)
+ 4.1 Program Creation Wizard
 
- - POST: Add new exercise to workout
-   - Input: { name, exerciseGroup?, notes?, order, prescribedSets[] }
-   - Use matchOrCreateExerciseDefinition() for exercise matching
-   - Create exercise and all prescribed sets in transaction
- - PUT: Reorder exercises
-   - Input: { exerciseOrders: [{ exerciseId, order }] }
-   - Batch update order values in transaction
+ File: components/ProgramWizard.tsx (NEW, ~200 lines)
 
- Phase 4: Edit UI Components
+ - Step 1: Program type, name, description
+ - Step 2: Number of weeks
+ - Step 3: Week 1 builder (add workouts)
+ - Step 4: Review and create
+ - Stepper UI with progress indication
+ - Props: { onComplete: (programId: string) => void }
 
- 4.1 Set Editor Row
+ 4.2 Exercise Library Browser
 
- File: components/PrescribedSetRow.tsx (NEW, ~80 lines)
+ File: components/ExerciseLibraryBrowser.tsx (NEW, ~150 lines)
 
- - Display: Set number, reps input, weight input, RPE input (conditional), RIR input
- (conditional)
- - Actions: Delete button
- - Props: { set, onUpdate, onDelete, showRpe, showRir }
+ - Search input with debounced queries
+ - Muscle group filter chips
+ - Equipment filter dropdown
+ - Exercise cards with muscle visualization
+ - "Add Custom Exercise" button
+ - Exercise selection callback
+ - Props: { onExerciseSelect: (exercise: ExerciseDefinition) => void }
 
- 4.2 Exercise Editor Card
+ 4.3 Week Builder
 
- File: components/ExerciseEditCard.tsx (NEW, ~150 lines)
+ File: components/WeekBuilder.tsx (NEW, ~120 lines)
 
- - Exercise name input
- - Notes textarea
- - Exercise group input
- - List of PrescribedSetRow components
- - Add set button
- - Move up/down buttons (reorder within workout)
- - Delete exercise button
- - Props: { exercise, onUpdate, onDelete, onMoveUp, onMoveDown, canMoveUp, canMoveDown }
+ - Week overview with workout list
+ - "Add Workout" button
+ - "Duplicate from Week X" dropdown
+ - Workout cards with exercise count
+ - Drag-and-drop reordering
+ - Props: { weekId, programId, onWeekUpdate }
 
- 4.3 Add Exercise Modal
+ 4.4 Muscle Group Visualizer
 
- File: components/AddExerciseButton.tsx (NEW, ~100 lines)
+ File: components/MuscleGroupVisualizer.tsx (NEW, ~100 lines)
 
- - Button to open modal
- - Form: exercise name, notes, exercise group, initial sets
- - Create via POST API
- - Callback with new exercise
- - Props: { workoutId, onExerciseAdded }
+ - Weekly volume by muscle group (bar chart)
+ - Exercise distribution pie chart
+ - Push/pull/legs balance indicator
+ - Warning for muscle imbalances
+ - Props: { exercises: ExerciseWithSets[] }
 
- 4.4 Main Edit Form
+ Phase 5: Program Management Pages
 
- File: components/WorkoutEditForm.tsx (NEW, ~180 lines)
+ 5.1 Program Creation Page
 
- - Local state: exercises array, dirty check
- - Render list of ExerciseEditCard components
- - Add exercise button
- - Save changes handler (batch API calls)
- - Cancel handler (navigate back)
- - Loading states during save
- - Props: { workout: WorkoutWithExercises, programId: string }
-
- Phase 5: Edit Page & Integration
-
- 5.1 Edit Page
-
- File: app/(app)/programs/[id]/workouts/[workoutId]/edit/page.tsx (NEW)
+ File: app/(app)/programs/new/page.tsx (NEW)
 
  Server component:
- - Await params (Next.js 15 pattern)
  - Check auth
- - Fetch workout with exercises, prescribed sets, exercise definitions
- - Check if completed - if so, show error + link back
- - Render <WorkoutEditForm /> with data
+ - Fetch exercise library for search
+ - Render <ProgramWizard /> with data
+ - Redirect to program detail on completion
 
- 5.2 Add Edit Button to Workout Detail
+ 5.2 Program Management Dashboard
 
- File: components/WorkoutDetail.tsx (MODIFY)
+ File: app/(app)/programs/page.tsx (MODIFY)
 
- Add edit button in header (after completion indicator):
- {!isCompleted && (
-   <Link
-     href={`/programs/${programId}/workouts/${workout.id}/edit`}
-     className="px-4 py-2 bg-gray-700 text-white rounded-lg"
-   >
-     Edit Workout
-   </Link>
- )}
+ Add program creation flow:
+ - "Create New Program" prominent button
+ - Program list with type indicators (CSV vs created)
+ - Edit/duplicate buttons for user-created programs
+ - Change log preview for recent modifications
 
- Phase 6: Polish & Edge Cases
+ Phase 6: Change Tracking & Advanced Features
 
- - Error handling and user-friendly messages
- - Loading states (disable form during save)
- - Empty state handling (exercise with no sets)
- - Validation messages (client and server)
- - Mobile responsiveness testing
- - Exercise reordering with up/down buttons
+ 6.1 Program Snapshots
+ - Auto-snapshot on program creation
+ - Manual snapshot with description
+ - Snapshot restoration (create new program from snapshot)
 
- Data Flow: Save Changes
+ 6.2 Change Logging
+ - Automatic change tracking (exercise added/removed/modified)
+ - Change history view with timestamps
+ - Visual diff for major changes
 
- WorkoutEditForm (client state)
-   ↓ User clicks "Save"
-   ↓ Batch API calls:
-     1. DELETE /api/exercises/[id] (deleted exercises)
-     2. POST /api/workouts/[id]/exercises (new exercises)
-     3. PATCH /api/exercises/[id] (updated exercises)
-     4. PUT /api/workouts/[id]/exercises (reorder)
-     5. POST /api/exercises/[id]/sets (new sets)
-     6. PATCH /api/sets/[id] (updated sets)
-     7. DELETE /api/sets/[id] (deleted sets)
+ 6.3 Workload Analytics
+ - Weekly volume calculations by muscle group
+ - Program balance analysis
+ - Exercise frequency tracking
+
+ 6.4 Polish
+ - Error handling and validation messages
+ - Loading states and optimistic updates
+ - Mobile responsiveness
+ - Exercise reordering with drag-and-drop
+
+ Data Flow: Program Creation
+
+ ProgramWizard (client state)
+   ↓ User completes wizard
+   ↓ API calls:
+     1. POST /api/programs (create program)
+     2. POST /api/programs/[id]/weeks (create weeks)
+     3. POST /api/workouts (create workouts for week 1)
+     4. POST /api/exercises/search (populate exercise library)
    ↓ Success
-   ↓ router.push() to workout detail page
+   ↓ router.push() to program detail page
+
+ Program Editing Flow:
+   ↓ User modifies program
+   ↓ Change tracking:
+     1. Log change to ProgramChangeLog
+     2. Update program timestamp
+     3. Optional: Create snapshot for major changes
+   ↓ Batch save program changes
+   ↓ Update UI with change indicators
 
  Security Enforcement
 
@@ -246,22 +353,31 @@ FitCSV Program Editing Implementation Plan
 
  New Files
 
- 1. lib/queries/workout-validation.ts - Validation helper
- 2. lib/exercise-definition-matcher.ts - Exercise matching utility
- 3. app/api/sets/[setId]/route.ts - Set CRUD
- 4. app/api/exercises/[exerciseId]/sets/route.ts - Add sets
- 5. app/api/exercises/[exerciseId]/route.ts - Exercise CRUD
- 6. app/api/workouts/[workoutId]/exercises/route.ts - Add/reorder exercises
- 7. components/PrescribedSetRow.tsx - Set editor row
- 8. components/ExerciseEditCard.tsx - Exercise editor
- 9. components/AddExerciseButton.tsx - Add exercise modal
- 10. components/WorkoutEditForm.tsx - Main edit form
- 11. app/(app)/programs/[id]/workouts/[workoutId]/edit/page.tsx - Edit page
+ **Backend/API:**
+ 1. lib/exercise-library-seed.ts - Exercise database seeding
+ 2. lib/queries/program-validation.ts - Program/workout validation
+ 3. app/api/programs/route.ts - Program CRUD
+ 4. app/api/programs/[id]/weeks/route.ts - Week management
+ 5. app/api/exercises/search/route.ts - Exercise library search
+ 6. app/api/exercises/custom/route.ts - Custom exercise creation
+ 7. app/api/programs/[id]/snapshots/route.ts - Program snapshots
+
+ **Frontend/Components:**
+ 8. components/ProgramWizard.tsx - Multi-step program creation
+ 9. components/ExerciseLibraryBrowser.tsx - Searchable exercise library
+ 10. components/WeekBuilder.tsx - Week creation and duplication
+ 11. components/MuscleGroupVisualizer.tsx - Workload visualization
+ 12. app/(app)/programs/new/page.tsx - Program creation page
+
+ **Database:**
+ 13. prisma/migrations/xxx_program_management_schema.sql - New tables
 
  Modified Files
 
- 1. prisma/schema.prisma - Add audit fields
- 2. components/WorkoutDetail.tsx - Add edit button
+ 1. prisma/schema.prisma - Add exercise metadata, program tracking, snapshots
+ 2. app/(app)/programs/page.tsx - Add "Create Program" button and management
+ 3. components/ProgramList.tsx - Show program types and edit indicators
+ 4. lib/csv/import-to-db.ts - Mark CSV programs as isUserCreated = false
 
  Testing Strategy
 
@@ -278,30 +394,74 @@ FitCSV Program Editing Implementation Plan
 
  Success Criteria
 
- - User can edit any unlogged workout
- - Can add/remove exercises and sets
- - Can edit prescribed values (reps, weight, RPE, RIR) and notes
- - Edits save successfully without data loss
- - Historical logged data remains intact
- - Edit button hidden for completed workouts
- - Mobile UI usable on small screens
- - Exercise definition matching works correctly
+ **Phase 1 (Program Creation):**
+ - User can create new programs via wizard interface
+ - Exercise library search works with muscle group filtering
+ - Week duplication reduces program building time
+ - Muscle group visualization shows training balance
+ - Program creation faster than CSV import for simple programs
+
+ **Phase 2 (Program Editing):**
+ - User-created programs fully editable (add/remove/modify)
+ - Change tracking provides audit trail of modifications
+ - Snapshots allow restoration to previous states
+ - CSV-imported programs remain protected from accidental changes
+
+ **Technical:**
+ - Exercise metadata enables rich program analysis
+ - Database performance good with ~1000+ exercises
+ - Mobile UI usable for program creation
+ - Backward compatibility with existing CSV workflow
 
  Estimated Effort
 
- - Phase 1 (Foundation): ~3 hours
- - Phase 2 (Set APIs): ~2 hours
- - Phase 3 (Exercise APIs): ~3 hours
- - Phase 4 (UI Components): ~8 hours
+ - Phase 1 (Schema & Exercise Library): ~6 hours
+   - Database migration with muscle metadata: 2 hours
+   - Exercise library seeding: 3 hours
+   - Validation utilities: 1 hour
+
+ - Phase 2 (Program Creation APIs): ~4 hours
+   - Program creation endpoint: 2 hours
+   - Week management APIs: 2 hours
+
+ - Phase 3 (Exercise Library APIs): ~4 hours
+   - Search endpoint with filtering: 2 hours
+   - Custom exercise creation: 2 hours
+
+ - Phase 4 (UI Components): ~12 hours
+   - Program wizard (multi-step): 4 hours
+   - Exercise library browser: 3 hours
+   - Week builder: 3 hours
+   - Muscle visualizer: 2 hours
+
  - Phase 5 (Integration): ~4 hours
- - Phase 6 (Polish): ~4 hours
- - Total: ~24 hours (3 full days)
+   - Program creation page: 2 hours
+   - Dashboard updates: 2 hours
+
+ - Phase 6 (Advanced Features): ~6 hours
+   - Snapshot system: 3 hours
+   - Change logging: 2 hours
+   - Analytics: 1 hour
+
+ - Total: ~36 hours (4.5 full days)
 
  Next Steps
 
- 1. Review and approve this plan
- 2. Execute Phase 1 (schema migration + utilities)
- 3. Execute Phases 2-3 (APIs) and test with API client
- 4. Execute Phases 4-5 (UI) and test in browser
- 5. Execute Phase 6 (polish) and full integration testing
+ 1. **Database Foundation** (Phase 1)
+    - Add exercise metadata fields to schema
+    - Seed exercise library with muscle group data
+    - Consolidate/clean existing exercise definitions
+
+ 2. **Program Creation MVP** (Phases 2-4)
+    - Build wizard-style program creation
+    - Implement exercise library search
+    - Week duplication functionality
+
+ 3. **Advanced Features** (Phases 5-6)
+    - Change tracking and snapshots
+    - Workload visualization
+    - Full program editing capabilities
+
+ **Immediate Priority**: Schema updates and exercise library seeding
+ This creates foundation for both program creation AND existing workout editing.
 ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
