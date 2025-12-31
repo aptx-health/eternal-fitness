@@ -1,6 +1,11 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect, useCallback } from 'react'
+import { useWorkoutStorage } from '@/hooks/useWorkoutStorage'
+import { useSyncState } from '@/hooks/useSyncState'
+import { useWorkoutSyncService } from '@/lib/sync/workoutSync'
+import SyncStatusIcon from './SyncStatusIcon'
+import SyncDetailsModal from './SyncDetailsModal'
 
 type PrescribedSet = {
   id: string
@@ -20,15 +25,8 @@ type Exercise = {
   prescribedSets: PrescribedSet[]
 }
 
-type LoggedSet = {
-  exerciseId: string
-  setNumber: number
-  reps: number
-  weight: number
-  weightUnit: string
-  rpe: number | null
-  rir: number | null
-}
+// Import LoggedSet type from the hook to ensure consistency
+import { type LoggedSet } from '@/hooks/useWorkoutStorage'
 
 type ExerciseHistorySet = {
   setNumber: number
@@ -55,16 +53,16 @@ type Props = {
   exerciseHistory?: Record<string, ExerciseHistory | null> // NEW: Exercise history map
 }
 
+// Capitalized Function name because it's a React Component
 export default function ExerciseLoggingModal({
   isOpen,
   onClose,
   exercises,
-  workoutName,
+  workoutId,
   onComplete,
   exerciseHistory,
 }: Props) {
   const [currentExerciseIndex, setCurrentExerciseIndex] = useState(0)
-  const [loggedSets, setLoggedSets] = useState<LoggedSet[]>([])
   const [currentSet, setCurrentSet] = useState({
     reps: '',
     weight: '',
@@ -73,8 +71,57 @@ export default function ExerciseLoggingModal({
     rir: '',
   })
   const [isSubmitting, setIsSubmitting] = useState(false)
+  const [isConfirming, setIsConfirming] = useState(false)
+  const [showSyncDetails, setShowSyncDetails] = useState(false)
+  const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false)
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState<{
+    show: boolean
+    exerciseId?: string
+    setNumber?: number
+    isDeleteAll?: boolean
+  }>({ show: false })
 
-  if (!isOpen) return null
+  // Enhanced persistence with localStorage backing
+  const { loggedSets, setLoggedSets, isLoaded, clearStoredWorkout } = useWorkoutStorage(workoutId)
+  
+  // Sync state management
+  const {
+    syncState,
+    startSync,
+    syncSuccess,
+    syncError,
+    startRetry,
+    addPendingSets,
+    getDisplayError,
+    getTimeSinceLastSync
+  } = useSyncState()
+
+  // Background sync service
+  const { addSets, syncRemaining, retrySync, syncCurrentState } = useWorkoutSyncService(
+    workoutId,
+    {
+      onSyncStart: (pendingCount) => {
+        startSync(pendingCount)
+        setHasUnsavedChanges(true)
+      },
+      onSyncSuccess: (syncedCount) => {
+        syncSuccess(syncedCount)
+        setHasUnsavedChanges(false)
+        // If this was a deletion-only sync (0 sets), localStorage should reflect the deletions
+        console.log('Sync successful - localStorage and server now in sync')
+      },
+      onSyncError: (error, willRetry) => {
+        syncError(error, willRetry)
+        setHasUnsavedChanges(true)
+      },
+      onRetryStart: startRetry,
+    },
+    {
+      syncThreshold: 3, // Sync every 3 sets
+      maxRetries: 3,
+      baseDelay: 2000
+    }
+  )
 
   const currentExercise = exercises[currentExerciseIndex]
   const currentPrescribedSets = currentExercise.prescribedSets
@@ -94,7 +141,7 @@ export default function ExerciseLoggingModal({
   const isSuperset = currentExercise.exerciseGroup !== null
   const supersetLabel = currentExercise.exerciseGroup
 
-  const handleLogSet = () => {
+  const handleLogSet = useCallback(() => {
     if (!currentSet.reps || !currentSet.weight) return
 
     const newLoggedSet: LoggedSet = {
@@ -107,7 +154,19 @@ export default function ExerciseLoggingModal({
       rir: currentSet.rir ? parseInt(currentSet.rir, 10) : null,
     }
 
-    setLoggedSets([...loggedSets, newLoggedSet])
+    // Update local state (automatically saves to localStorage)
+    setLoggedSets(prev => [...prev, newLoggedSet])
+    
+    console.log('About to add set to sync queue:', newLoggedSet)
+    
+    // Add to sync queue for background syncing
+    addSets([newLoggedSet])
+    addPendingSets(1)
+    setHasUnsavedChanges(true)
+    
+    console.log('Added set to sync queue and updated pending count')
+    
+    // Reset form
     setCurrentSet({
       reps: '',
       weight: '',
@@ -115,7 +174,7 @@ export default function ExerciseLoggingModal({
       rpe: '',
       rir: '',
     })
-  }
+  }, [currentSet, currentExercise.id, nextSetNumber, setLoggedSets, addSets, addPendingSets])
 
   const handleNextExercise = () => {
     if (currentExerciseIndex < exercises.length - 1) {
@@ -146,7 +205,15 @@ export default function ExerciseLoggingModal({
   const handleCompleteWorkout = async () => {
     setIsSubmitting(true)
     try {
+      // Sync any remaining sets before completing
+      await syncRemaining()
+      
+      // Complete the workout through the original API
       await onComplete(loggedSets)
+      
+      // Clear localStorage after successful completion
+      clearStoredWorkout()
+      
       onClose()
     } catch (error) {
       console.error('Error completing workout:', error)
@@ -156,12 +223,91 @@ export default function ExerciseLoggingModal({
     }
   }
 
-  const handleDeleteSet = (setNumber: number) => {
-    setLoggedSets(
-      loggedSets.filter(
-        (s) => !(s.exerciseId === currentExercise.id && s.setNumber === setNumber)
+  const handleDeleteSet = useCallback((setNumber: number) => {
+    const exerciseId = currentExercise.id
+    const exerciseSets = loggedSets.filter(s => s.exerciseId === exerciseId)
+    
+    // Show confirmation for dangerous operations
+    if (exerciseSets.length === 1) {
+      // Deleting the last set for this exercise
+      setShowDeleteConfirm({
+        show: true,
+        exerciseId,
+        setNumber,
+        isDeleteAll: false
+      })
+      return
+    }
+
+    // Direct deletion for safe operations
+    performDeleteSet(exerciseId, setNumber)
+  }, [currentExercise.id, loggedSets])
+
+  const performDeleteSet = useCallback((exerciseId: string, setNumber: number) => {
+    console.log(`🗑️ Deleting set ${setNumber} for exercise ${exerciseId}`)
+    
+    const beforeCount = loggedSets.length
+    setLoggedSets(prev =>
+      prev.filter(
+        (s) => !(s.exerciseId === exerciseId && s.setNumber === setNumber)
       )
     )
+    
+    // Enhanced logging for safety
+    const afterCount = loggedSets.length - 1 // Will be one less after filter
+    console.log(`📊 Deletion impact: ${beforeCount} → ${afterCount} total sets`)
+    
+    // Mark that we have unsaved changes (deletions)
+    setHasUnsavedChanges(true)
+    
+    console.log('Set deleted locally - will sync with next batch or manual sync')
+  }, [loggedSets, setLoggedSets])
+
+  const handleConfirmDelete = useCallback(() => {
+    if (showDeleteConfirm.exerciseId && showDeleteConfirm.setNumber) {
+      performDeleteSet(showDeleteConfirm.exerciseId, showDeleteConfirm.setNumber)
+    }
+    setShowDeleteConfirm({ show: false })
+  }, [showDeleteConfirm, performDeleteSet])
+
+  // Manual sync function that passes current logged sets
+  const handleManualSync = useCallback(() => {
+    console.log('=== MANUAL SYNC TRIGGERED ===')
+    console.log('Current logged sets:', loggedSets.length)
+    console.log('Sets by exercise:', loggedSets.reduce((acc, set) => {
+      acc[set.exerciseId] = (acc[set.exerciseId] || 0) + 1
+      return acc
+    }, {} as Record<string, number>))
+    console.log('This will REPLACE all server data with current local state')
+    console.log('Any deleted sets will be removed from server')
+    
+    syncCurrentState(loggedSets)
+  }, [syncCurrentState, loggedSets])
+
+  // Protect against accidental navigation away with unsaved changes
+  useEffect(() => {
+    if (!isOpen || loggedSets.length === 0) return
+
+    const handleBeforeUnload = (e: BeforeUnloadEvent) => {
+      if (syncState.pendingSets > 0) {
+        e.preventDefault()
+        e.returnValue = 'You have unsaved workout data. Are you sure you want to leave?'
+      }
+    }
+
+    window.addEventListener('beforeunload', handleBeforeUnload)
+    return () => window.removeEventListener('beforeunload', handleBeforeUnload)
+  }, [isOpen, loggedSets.length, syncState.pendingSets])
+
+  // Don't render until storage is loaded to prevent flash of empty state
+  if (!isLoaded) {
+    return isOpen ? (
+      <div className="fixed inset-0 z-50 bg-gray-900 bg-opacity-50 flex items-center justify-center">
+        <div className="bg-white rounded-lg p-8">
+          <div className="animate-pulse text-center">Loading workout...</div>
+        </div>
+      </div>
+    ) : null
   }
 
   const canLogSet = currentSet.reps && currentSet.weight
@@ -173,8 +319,30 @@ export default function ExerciseLoggingModal({
     0
   )
 
+  // Early returns after all hooks
+  if (!isOpen) return null
+
   return (
     <div className="fixed inset-0 z-50 bg-gray-900 bg-opacity-50 flex items-end sm:items-center justify-center">
+      {/* Sync Status Icon */}
+      <SyncStatusIcon
+        status={syncState.status}
+        pendingCount={syncState.pendingSets}
+        onClick={() => setShowSyncDetails(true)}
+      />
+
+      {/* Sync Details Modal */}
+      <SyncDetailsModal
+        isOpen={showSyncDetails}
+        onClose={() => setShowSyncDetails(false)}
+        syncState={syncState}
+        onRetrySync={retrySync}
+        onSyncNow={handleManualSync}
+        hasUnsavedChanges={hasUnsavedChanges}
+        getDisplayError={getDisplayError}
+        getTimeSinceLastSync={getTimeSinceLastSync}
+      />
+
       {/* Modal - Full screen on mobile, centered on desktop */}
       <div className="bg-white w-full h-full sm:h-auto sm:max-h-[90vh] sm:rounded-lg sm:max-w-2xl flex flex-col">
         {/* Header */}
@@ -195,7 +363,7 @@ export default function ExerciseLoggingModal({
           </div>
         </div>
 
-        {/* Exercise Navigation */}
+        {/* Exercise Navigation - Title and L/R Buttons */}
         <div className="border-b border-gray-200 px-4 py-3 flex items-center justify-between bg-gray-50 flex-shrink-0">
           <button
             onClick={handlePreviousExercise}
@@ -463,9 +631,69 @@ export default function ExerciseLoggingModal({
               onClick={handleCompleteWorkout}
               disabled={isSubmitting || totalLoggedSets === 0}
               className="py-2.5 bg-green-600 text-white rounded-lg font-semibold hover:bg-green-700 active:bg-green-800 disabled:bg-gray-300 disabled:cursor-not-allowed transition-colors"
+              onMouseDown={(e) => {
+                if (isSubmitting || totalLoggedSets === 0) return;
+                e.preventDefault();
+                setIsConfirming(true);
+              }}
             >
               {isSubmitting ? 'Saving...' : `Complete (${totalLoggedSets})`}
             </button>
+ 
+            {/* Workout completion confirmation modal */}
+            {isConfirming && (
+              <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-60">
+                <div className="bg-white p-6 rounded-lg text-center">
+                  <p>Complete this workout?</p>
+                  <div className="mt-4 flex justify-center space-x-3">
+                    <button
+                      onClick={() => setIsConfirming(false)}
+                      className="px-4 py-2 bg-gray-300 rounded hover:bg-gray-400"
+                    >
+                      Cancel
+                    </button>
+                    <button
+                      onClick={handleCompleteWorkout}
+                      className="px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700"
+                    >
+                      Confirm
+                    </button>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* Deletion confirmation modal */}
+            {showDeleteConfirm.show && (
+              <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-60">
+                <div className="bg-white p-6 rounded-lg text-center max-w-sm">
+                  <div className="text-amber-600 mb-4">
+                    <svg className="w-12 h-12 mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.732-.833-2.5 0L4.268 15.5c-.77.833.192 2.5 1.732 2.5z" />
+                    </svg>
+                  </div>
+                  <h3 className="text-lg font-semibold text-gray-900 mb-2">Delete Last Set?</h3>
+                  <p className="text-sm text-gray-600 mb-4">
+                    This will remove the only remaining set for this exercise. Are you sure?
+                  </p>
+                  <div className="flex justify-center space-x-3">
+                    <button
+                      onClick={() => setShowDeleteConfirm({ show: false })}
+                      className="px-4 py-2 bg-gray-300 text-gray-700 rounded hover:bg-gray-400"
+                    >
+                      Cancel
+                    </button>
+                    <button
+                      onClick={handleConfirmDelete}
+                      className="px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700"
+                    >
+                      Delete Set
+                    </button>
+                  </div>
+                </div>
+              </div>
+            )}
+
           </div>
         </div>
       </div>
