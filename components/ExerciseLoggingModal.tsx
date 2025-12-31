@@ -1,6 +1,11 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect, useCallback } from 'react'
+import { useWorkoutStorage } from '@/hooks/useWorkoutStorage'
+import { useSyncState } from '@/hooks/useSyncState'
+import { useWorkoutSyncService } from '@/lib/sync/workoutSync'
+import SyncStatusIcon from './SyncStatusIcon'
+import SyncDetailsModal from './SyncDetailsModal'
 
 type PrescribedSet = {
   id: string
@@ -20,15 +25,8 @@ type Exercise = {
   prescribedSets: PrescribedSet[]
 }
 
-type LoggedSet = {
-  exerciseId: string
-  setNumber: number
-  reps: number
-  weight: number
-  weightUnit: string
-  rpe: number | null
-  rir: number | null
-}
+// Import LoggedSet type from the hook to ensure consistency
+import { type LoggedSet } from '@/hooks/useWorkoutStorage'
 
 type ExerciseHistorySet = {
   setNumber: number
@@ -60,12 +58,11 @@ export default function ExerciseLoggingModal({
   isOpen,
   onClose,
   exercises,
-  workoutName,
+  workoutId,
   onComplete,
   exerciseHistory,
 }: Props) {
   const [currentExerciseIndex, setCurrentExerciseIndex] = useState(0)
-  const [loggedSets, setLoggedSets] = useState<LoggedSet[]>([])
   const [currentSet, setCurrentSet] = useState({
     reps: '',
     weight: '',
@@ -75,8 +72,50 @@ export default function ExerciseLoggingModal({
   })
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [isConfirming, setIsConfirming] = useState(false)
+  const [showSyncDetails, setShowSyncDetails] = useState(false)
+  const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false)
 
-  if (!isOpen) return null
+  // Enhanced persistence with localStorage backing
+  const { loggedSets, setLoggedSets, isLoaded, clearStoredWorkout } = useWorkoutStorage(workoutId)
+  
+  // Sync state management
+  const {
+    syncState,
+    startSync,
+    syncSuccess,
+    syncError,
+    startRetry,
+    addPendingSets,
+    getDisplayError,
+    getTimeSinceLastSync
+  } = useSyncState()
+
+  // Background sync service
+  const { addSets, syncRemaining, retrySync, syncCurrentState } = useWorkoutSyncService(
+    workoutId,
+    {
+      onSyncStart: (pendingCount) => {
+        startSync(pendingCount)
+        setHasUnsavedChanges(true)
+      },
+      onSyncSuccess: (syncedCount) => {
+        syncSuccess(syncedCount)
+        setHasUnsavedChanges(false)
+        // If this was a deletion-only sync (0 sets), localStorage should reflect the deletions
+        console.log('Sync successful - localStorage and server now in sync')
+      },
+      onSyncError: (error, willRetry) => {
+        syncError(error, willRetry)
+        setHasUnsavedChanges(true)
+      },
+      onRetryStart: startRetry,
+    },
+    {
+      syncThreshold: 3, // Sync every 3 sets
+      maxRetries: 3,
+      baseDelay: 2000
+    }
+  )
 
   const currentExercise = exercises[currentExerciseIndex]
   const currentPrescribedSets = currentExercise.prescribedSets
@@ -96,7 +135,7 @@ export default function ExerciseLoggingModal({
   const isSuperset = currentExercise.exerciseGroup !== null
   const supersetLabel = currentExercise.exerciseGroup
 
-  const handleLogSet = () => {
+  const handleLogSet = useCallback(() => {
     if (!currentSet.reps || !currentSet.weight) return
 
     const newLoggedSet: LoggedSet = {
@@ -109,7 +148,19 @@ export default function ExerciseLoggingModal({
       rir: currentSet.rir ? parseInt(currentSet.rir, 10) : null,
     }
 
-    setLoggedSets([...loggedSets, newLoggedSet])
+    // Update local state (automatically saves to localStorage)
+    setLoggedSets(prev => [...prev, newLoggedSet])
+    
+    console.log('About to add set to sync queue:', newLoggedSet)
+    
+    // Add to sync queue for background syncing
+    addSets([newLoggedSet])
+    addPendingSets(1)
+    setHasUnsavedChanges(true)
+    
+    console.log('Added set to sync queue and updated pending count')
+    
+    // Reset form
     setCurrentSet({
       reps: '',
       weight: '',
@@ -117,7 +168,7 @@ export default function ExerciseLoggingModal({
       rpe: '',
       rir: '',
     })
-  }
+  }, [currentSet, currentExercise.id, nextSetNumber, setLoggedSets, addSets, addPendingSets])
 
   const handleNextExercise = () => {
     if (currentExerciseIndex < exercises.length - 1) {
@@ -148,7 +199,15 @@ export default function ExerciseLoggingModal({
   const handleCompleteWorkout = async () => {
     setIsSubmitting(true)
     try {
+      // Sync any remaining sets before completing
+      await syncRemaining()
+      
+      // Complete the workout through the original API
       await onComplete(loggedSets)
+      
+      // Clear localStorage after successful completion
+      clearStoredWorkout()
+      
       onClose()
     } catch (error) {
       console.error('Error completing workout:', error)
@@ -158,12 +217,59 @@ export default function ExerciseLoggingModal({
     }
   }
 
-  const handleDeleteSet = (setNumber: number) => {
-    setLoggedSets(
-      loggedSets.filter(
+  const handleDeleteSet = useCallback((setNumber: number) => {
+    console.log(`Deleting set ${setNumber} for exercise ${currentExercise.id}`)
+    
+    setLoggedSets(prev =>
+      prev.filter(
         (s) => !(s.exerciseId === currentExercise.id && s.setNumber === setNumber)
       )
     )
+    
+    // Mark that we have unsaved changes (deletions)
+    setHasUnsavedChanges(true)
+    
+    console.log('Set deleted locally - will sync with next batch or manual sync')
+  }, [currentExercise.id, setLoggedSets])
+
+  // Manual sync function that passes current logged sets
+  const handleManualSync = useCallback(() => {
+    console.log('=== MANUAL SYNC TRIGGERED ===')
+    console.log('Current logged sets:', loggedSets.length)
+    console.log('Sets by exercise:', loggedSets.reduce((acc, set) => {
+      acc[set.exerciseId] = (acc[set.exerciseId] || 0) + 1
+      return acc
+    }, {} as Record<string, number>))
+    console.log('This will REPLACE all server data with current local state')
+    console.log('Any deleted sets will be removed from server')
+    
+    syncCurrentState(loggedSets)
+  }, [syncCurrentState, loggedSets])
+
+  // Protect against accidental navigation away with unsaved changes
+  useEffect(() => {
+    if (!isOpen || loggedSets.length === 0) return
+
+    const handleBeforeUnload = (e: BeforeUnloadEvent) => {
+      if (syncState.pendingSets > 0) {
+        e.preventDefault()
+        e.returnValue = 'You have unsaved workout data. Are you sure you want to leave?'
+      }
+    }
+
+    window.addEventListener('beforeunload', handleBeforeUnload)
+    return () => window.removeEventListener('beforeunload', handleBeforeUnload)
+  }, [isOpen, loggedSets.length, syncState.pendingSets])
+
+  // Don't render until storage is loaded to prevent flash of empty state
+  if (!isLoaded) {
+    return isOpen ? (
+      <div className="fixed inset-0 z-50 bg-gray-900 bg-opacity-50 flex items-center justify-center">
+        <div className="bg-white rounded-lg p-8">
+          <div className="animate-pulse text-center">Loading workout...</div>
+        </div>
+      </div>
+    ) : null
   }
 
   const canLogSet = currentSet.reps && currentSet.weight
@@ -175,8 +281,30 @@ export default function ExerciseLoggingModal({
     0
   )
 
+  // Early returns after all hooks
+  if (!isOpen) return null
+
   return (
     <div className="fixed inset-0 z-50 bg-gray-900 bg-opacity-50 flex items-end sm:items-center justify-center">
+      {/* Sync Status Icon */}
+      <SyncStatusIcon
+        status={syncState.status}
+        pendingCount={syncState.pendingSets}
+        onClick={() => setShowSyncDetails(true)}
+      />
+
+      {/* Sync Details Modal */}
+      <SyncDetailsModal
+        isOpen={showSyncDetails}
+        onClose={() => setShowSyncDetails(false)}
+        syncState={syncState}
+        onRetrySync={retrySync}
+        onSyncNow={handleManualSync}
+        hasUnsavedChanges={hasUnsavedChanges}
+        getDisplayError={getDisplayError}
+        getTimeSinceLastSync={getTimeSinceLastSync}
+      />
+
       {/* Modal - Full screen on mobile, centered on desktop */}
       <div className="bg-white w-full h-full sm:h-auto sm:max-h-[90vh] sm:rounded-lg sm:max-w-2xl flex flex-col">
         {/* Header */}
