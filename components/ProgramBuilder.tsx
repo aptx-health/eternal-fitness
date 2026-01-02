@@ -2,6 +2,7 @@
 
 import { useState, useCallback, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
+import { ChevronDown, ChevronRight } from 'lucide-react'
 import ExerciseSearchModal from './ExerciseSearchModal'
 
 type Week = {
@@ -96,6 +97,17 @@ export default function ProgramBuilder({ editMode = false, existingProgram }: Pr
   const [showExerciseModal, setShowExerciseModal] = useState(false)
   const [selectedWorkoutId, setSelectedWorkoutId] = useState<string | null>(null)
   const [editingExercise, setEditingExercise] = useState<Exercise | null>(null)
+  
+  // Workout editing state
+  const [editingWorkoutId, setEditingWorkoutId] = useState<string | null>(null)
+  const [editingWorkoutName, setEditingWorkoutName] = useState('')
+  
+  // Deletion state
+  const [deletingExerciseId, setDeletingExerciseId] = useState<string | null>(null)
+  const [deletingWorkoutId, setDeletingWorkoutId] = useState<string | null>(null)
+  
+  // Collapsed workouts state
+  const [collapsedWorkouts, setCollapsedWorkouts] = useState<Set<string>>(new Set())
 
   const createProgram = useCallback(async () => {
     if (!programName.trim()) {
@@ -228,6 +240,146 @@ export default function ProgramBuilder({ editMode = false, existingProgram }: Pr
     setSelectedWorkoutId(workoutId)
     setEditingExercise(exercise)
     setShowExerciseModal(true)
+  }, [])
+
+  const handleStartWorkoutEdit = useCallback((workoutId: string, currentName: string) => {
+    setEditingWorkoutId(workoutId)
+    setEditingWorkoutName(currentName)
+  }, [])
+
+  const handleCancelWorkoutEdit = useCallback(() => {
+    setEditingWorkoutId(null)
+    setEditingWorkoutName('')
+  }, [])
+
+  const handleSaveWorkoutName = useCallback(async (workoutId: string) => {
+    if (!editingWorkoutName.trim()) {
+      setError('Workout name cannot be empty')
+      return
+    }
+
+    setIsLoading(true)
+    setError(null)
+
+    try {
+      const response = await fetch(`/api/workouts/${workoutId}`, {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          name: editingWorkoutName.trim(),
+        }),
+      })
+
+      if (!response.ok) {
+        const error = await response.json()
+        throw new Error(error.error || 'Failed to update workout name')
+      }
+
+      const { workout: updatedWorkout } = await response.json()
+      
+      // Update the weeks state
+      setWeeks(prev => prev.map(week => ({
+        ...week,
+        workouts: week.workouts.map(workout => 
+          workout.id === workoutId 
+            ? { ...workout, name: updatedWorkout.name }
+            : workout
+        )
+      })))
+      
+      setEditingWorkoutId(null)
+      setEditingWorkoutName('')
+      
+      console.log('Workout name updated successfully:', updatedWorkout)
+    } catch (error) {
+      console.error('Error updating workout name:', error)
+      setError(error instanceof Error ? error.message : 'Failed to update workout name')
+    } finally {
+      setIsLoading(false)
+    }
+  }, [editingWorkoutName])
+
+  const handleDeleteExercise = useCallback(async (exerciseId: string, exerciseName: string) => {
+    if (!confirm(`Are you sure you want to delete "${exerciseName}"? This cannot be undone.`)) {
+      return
+    }
+
+    setDeletingExerciseId(exerciseId)
+    setError(null)
+
+    try {
+      const response = await fetch(`/api/exercises/${exerciseId}`, {
+        method: 'DELETE',
+      })
+
+      if (!response.ok) {
+        const error = await response.json()
+        throw new Error(error.error || 'Failed to delete exercise')
+      }
+      
+      // Remove exercise from weeks state
+      setWeeks(prev => prev.map(week => ({
+        ...week,
+        workouts: week.workouts.map(workout => ({
+          ...workout,
+          exercises: workout.exercises.filter(exercise => exercise.id !== exerciseId)
+        }))
+      })))
+      
+      console.log('Exercise deleted successfully')
+    } catch (error) {
+      console.error('Error deleting exercise:', error)
+      setError(error instanceof Error ? error.message : 'Failed to delete exercise')
+    } finally {
+      setDeletingExerciseId(null)
+    }
+  }, [])
+
+  const handleDeleteWorkout = useCallback(async (workoutId: string, workoutName: string) => {
+    if (!confirm(`Are you sure you want to delete "${workoutName}" and all its exercises? This cannot be undone.`)) {
+      return
+    }
+
+    setDeletingWorkoutId(workoutId)
+    setError(null)
+
+    try {
+      const response = await fetch(`/api/workouts/${workoutId}`, {
+        method: 'DELETE',
+      })
+
+      if (!response.ok) {
+        const error = await response.json()
+        throw new Error(error.error || 'Failed to delete workout')
+      }
+      
+      // Remove workout from weeks state
+      setWeeks(prev => prev.map(week => ({
+        ...week,
+        workouts: week.workouts.filter(workout => workout.id !== workoutId)
+      })))
+      
+      console.log('Workout deleted successfully')
+    } catch (error) {
+      console.error('Error deleting workout:', error)
+      setError(error instanceof Error ? error.message : 'Failed to delete workout')
+    } finally {
+      setDeletingWorkoutId(null)
+    }
+  }, [])
+
+  const toggleWorkoutCollapse = useCallback((workoutId: string) => {
+    setCollapsedWorkouts(prev => {
+      const newSet = new Set(prev)
+      if (newSet.has(workoutId)) {
+        newSet.delete(workoutId)
+      } else {
+        newSet.add(workoutId)
+      }
+      return newSet
+    })
   }, [])
 
   const handleExerciseSelect = useCallback(async (exercise: { id: string; name: string }, prescription: { sets: Array<{ setNumber: number; reps: string; intensityType: 'RIR' | 'RPE' | 'NONE'; intensityValue?: number }>; notes?: string }) => {
@@ -475,47 +627,121 @@ export default function ProgramBuilder({ editMode = false, existingProgram }: Pr
                       <div className="text-gray-500 text-sm py-2">No workouts yet</div>
                     ) : (
                       <div className="space-y-2">
-                        {week.workouts.map((workout) => (
-                          <div key={workout.id} className="bg-gray-50 rounded p-3">
-                            <div className="flex items-center justify-between mb-2">
-                              <span className="font-medium">{workout.name}</span>
-                              <button
-                                onClick={() => handleAddExercise(workout.id)}
-                                disabled={isLoading}
-                                className="px-2 py-1 bg-green-600 text-white text-xs rounded hover:bg-green-700 disabled:opacity-50"
-                              >
-                                Add Exercise
-                              </button>
+                        {week.workouts.map((workout) => {
+                          const isCollapsed = collapsedWorkouts.has(workout.id)
+                          return (
+                            <div key={workout.id} className="bg-gray-50 rounded p-3">
+                              <div className="flex items-center justify-between mb-2">
+                                {editingWorkoutId === workout.id ? (
+                                <div className="flex items-center gap-2 flex-1">
+                                  <input
+                                    type="text"
+                                    value={editingWorkoutName}
+                                    onChange={(e) => setEditingWorkoutName(e.target.value)}
+                                    className="px-2 py-1 border border-gray-300 rounded text-sm flex-1"
+                                    autoFocus
+                                    onKeyDown={(e) => {
+                                      if (e.key === 'Enter') {
+                                        handleSaveWorkoutName(workout.id)
+                                      } else if (e.key === 'Escape') {
+                                        handleCancelWorkoutEdit()
+                                      }
+                                    }}
+                                  />
+                                  <button
+                                    onClick={() => handleSaveWorkoutName(workout.id)}
+                                    disabled={isLoading}
+                                    className="px-2 py-1 bg-blue-600 text-white text-xs rounded hover:bg-blue-700 disabled:opacity-50"
+                                  >
+                                    Save
+                                  </button>
+                                  <button
+                                    onClick={handleCancelWorkoutEdit}
+                                    className="px-2 py-1 bg-gray-600 text-white text-xs rounded hover:bg-gray-700"
+                                  >
+                                    Cancel
+                                  </button>
+                                </div>
+                              ) : (
+                                <div className="flex items-center gap-2 flex-1">
+                                  <button
+                                    onClick={() => toggleWorkoutCollapse(workout.id)}
+                                    className="flex items-center gap-1 text-gray-600 hover:text-gray-800 transition-colors"
+                                  >
+                                    {isCollapsed ? <ChevronRight size={16} /> : <ChevronDown size={16} />}
+                                  </button>
+                                  <span className="font-medium">{workout.name}</span>
+                                  <span className="text-xs text-gray-500">
+                                    ({workout.exercises.length} exercise{workout.exercises.length !== 1 ? 's' : ''})
+                                  </span>
+                                  <button
+                                    onClick={() => handleStartWorkoutEdit(workout.id, workout.name)}
+                                    className="px-2 py-1 bg-gray-600 text-white text-xs rounded hover:bg-gray-700"
+                                  >
+                                    Rename
+                                  </button>
+                                </div>
+                              )}
+                              <div className="flex gap-1">
+                                <button
+                                  onClick={() => handleAddExercise(workout.id)}
+                                  disabled={isLoading || deletingWorkoutId === workout.id}
+                                  className="px-2 py-1 bg-green-600 text-white text-xs rounded hover:bg-green-700 disabled:opacity-50"
+                                >
+                                  Add Exercise
+                                </button>
+                                <button
+                                  onClick={() => handleDeleteWorkout(workout.id, workout.name)}
+                                  disabled={deletingWorkoutId === workout.id || editingWorkoutId === workout.id}
+                                  className="px-2 py-1 bg-red-600 text-white text-xs rounded hover:bg-red-700 disabled:opacity-50"
+                                >
+                                  {deletingWorkoutId === workout.id ? 'Deleting...' : 'Delete'}
+                                </button>
+                              </div>
                             </div>
                             
-                            {workout.exercises.length === 0 ? (
-                              <div className="text-gray-500 text-xs">No exercises yet</div>
-                            ) : (
-                              <div className="space-y-2">
-                                {workout.exercises.map((exercise) => (
-                                  <div key={exercise.id} className="flex items-center justify-between bg-gray-50 rounded p-2">
-                                    <div className="flex-1">
-                                      <span className="font-medium text-sm">{exercise.name}</span>
-                                      <span className="text-gray-600 text-sm ml-2">
-                                        ({exercise.prescribedSets.length} set{exercise.prescribedSets.length !== 1 ? 's' : ''})
-                                      </span>
-                                      {exercise.notes && (
-                                        <div className="text-xs text-gray-500 mt-1">{exercise.notes}</div>
-                                      )}
-                                    </div>
-                                    <button
-                                      onClick={() => handleEditExercise(exercise, workout.id)}
-                                      disabled={isLoading}
-                                      className="px-2 py-1 bg-gray-600 text-white text-xs rounded hover:bg-gray-700 disabled:opacity-50"
-                                    >
-                                      Edit
-                                    </button>
+                            {!isCollapsed && (
+                              <>
+                                {workout.exercises.length === 0 ? (
+                                  <div className="text-gray-500 text-xs">No exercises yet</div>
+                                ) : (
+                                  <div className="space-y-2">
+                                    {workout.exercises.map((exercise) => (
+                                      <div key={exercise.id} className="flex items-center justify-between bg-gray-50 rounded p-2">
+                                        <div className="flex-1">
+                                          <span className="font-medium text-sm">{exercise.name}</span>
+                                          <span className="text-gray-600 text-sm ml-2">
+                                            ({exercise.prescribedSets.length} set{exercise.prescribedSets.length !== 1 ? 's' : ''})
+                                          </span>
+                                          {exercise.notes && (
+                                            <div className="text-xs text-gray-500 mt-1">{exercise.notes}</div>
+                                          )}
+                                        </div>
+                                        <div className="flex gap-1">
+                                          <button
+                                            onClick={() => handleEditExercise(exercise, workout.id)}
+                                            disabled={isLoading || deletingExerciseId === exercise.id}
+                                            className="px-2 py-1 bg-gray-600 text-white text-xs rounded hover:bg-gray-700 disabled:opacity-50"
+                                          >
+                                            Edit
+                                          </button>
+                                          <button
+                                            onClick={() => handleDeleteExercise(exercise.id, exercise.name)}
+                                            disabled={deletingExerciseId === exercise.id}
+                                            className="px-2 py-1 bg-red-600 text-white text-xs rounded hover:bg-red-700 disabled:opacity-50"
+                                          >
+                                            {deletingExerciseId === exercise.id ? 'Deleting...' : 'Delete'}
+                                          </button>
+                                        </div>
+                                      </div>
+                                    ))}
                                   </div>
-                                ))}
-                              </div>
+                                )}
+                              </>
                             )}
                           </div>
-                        ))}
+                          )
+                        })}
                       </div>
                     )}
                   </div>

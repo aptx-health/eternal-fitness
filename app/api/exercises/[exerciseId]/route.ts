@@ -110,3 +110,76 @@ export async function PATCH(
     )
   }
 }
+
+export async function DELETE(
+  request: NextRequest,
+  { params }: { params: Promise<{ exerciseId: string }> }
+) {
+  try {
+    const { exerciseId } = await params
+
+    // Get authenticated user
+    const supabase = await createClient()
+    const {
+      data: { user },
+      error: authError,
+    } = await supabase.auth.getUser()
+
+    if (authError || !user) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+    }
+
+    // Verify exercise exists and user owns it (through the program)
+    const exercise = await prisma.exercise.findUnique({
+      where: { id: exerciseId },
+      include: {
+        workout: {
+          include: {
+            week: {
+              include: {
+                program: true
+              }
+            }
+          }
+        }
+      }
+    })
+
+    if (!exercise) {
+      return NextResponse.json({ error: 'Exercise not found' }, { status: 404 })
+    }
+
+    if (exercise.workout.week.program.userId !== user.id) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 403 })
+    }
+
+    // Delete exercise and all related data in transaction
+    await prisma.$transaction(async (tx) => {
+      // Delete prescribed sets first (due to foreign key constraints)
+      await tx.prescribedSet.deleteMany({
+        where: { exerciseId }
+      })
+
+      // Delete logged sets if any exist
+      await tx.loggedSet.deleteMany({
+        where: { exerciseId }
+      })
+
+      // Delete the exercise
+      await tx.exercise.delete({
+        where: { id: exerciseId }
+      })
+    })
+
+    return NextResponse.json({
+      success: true,
+      message: 'Exercise deleted successfully'
+    })
+  } catch (error) {
+    console.error('Error deleting exercise:', error)
+    return NextResponse.json(
+      { error: 'Internal server error' },
+      { status: 500 }
+    )
+  }
+}
