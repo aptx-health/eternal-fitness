@@ -13,9 +13,12 @@ export default async function ProgramsPage() {
     redirect('/login')
   }
 
-  // Fetch user's programs
+  // Fetch user's programs (exclude archived)
   const programs = await prisma.program.findMany({
-    where: { userId: user.id },
+    where: {
+      userId: user.id,
+      isArchived: false,
+    },
     orderBy: { createdAt: 'desc' },
   })
 
