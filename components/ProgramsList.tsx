@@ -73,21 +73,21 @@ export default function ProgramsList({ programs }: Props) {
     <div className="space-y-4">
       {/* Active Program */}
       {activeProgram && (
-        <div className="bg-blue-50 border-2 border-blue-200 rounded-lg p-6">
+        <div className="bg-blue-50 dark:bg-blue-950 border-2 border-blue-200 dark:border-blue-800 rounded-lg p-6">
           <div className="flex justify-between items-start mb-2">
             <div className="flex-1">
               <span className="inline-block px-2 py-1 bg-blue-600 text-white text-xs font-semibold rounded mb-2">
                 ACTIVE
               </span>
-              <h2 className="text-2xl font-bold">{activeProgram.name}</h2>
+              <h2 className="text-2xl font-bold dark:text-gray-100">{activeProgram.name}</h2>
               {activeProgram.description && (
-                <p className="text-gray-600 mt-1">{activeProgram.description}</p>
+                <p className="text-gray-600 dark:text-gray-300 mt-1">{activeProgram.description}</p>
               )}
             </div>
             <button
               onClick={() => handleArchive(activeProgram.id, activeProgram.name)}
               disabled={archivingId === activeProgram.id}
-              className="text-gray-600 hover:text-gray-700 font-medium disabled:opacity-50"
+              className="text-gray-600 dark:text-gray-300 hover:text-gray-700 dark:hover:text-gray-200 font-medium disabled:opacity-50"
               title="Archive program"
             >
               {archivingId === activeProgram.id ? 'Archiving...' : 'Archive'}
@@ -102,7 +102,7 @@ export default function ProgramsList({ programs }: Props) {
             </Link>
             <Link
               href={`/programs/${activeProgram.id}/edit`}
-              className="px-4 py-2 border border-blue-600 text-blue-600 rounded-lg hover:bg-blue-50"
+              className="px-4 py-2 border border-blue-600 dark:border-blue-500 text-blue-600 dark:text-blue-400 rounded-lg hover:bg-blue-50 dark:hover:bg-blue-950"
             >
               Edit Program
             </Link>
@@ -116,19 +116,19 @@ export default function ProgramsList({ programs }: Props) {
         .map((program) => (
           <div
             key={program.id}
-            className="bg-white rounded-lg p-6 hover:shadow-md transition"
+            className="bg-white dark:bg-gray-900 rounded-lg p-6 hover:shadow-md transition"
           >
             <div className="flex justify-between items-start mb-2">
               <div className="flex-1">
-                <h2 className="text-xl font-semibold">{program.name}</h2>
+                <h2 className="text-xl font-semibold dark:text-gray-100">{program.name}</h2>
                 {program.description && (
-                  <p className="text-gray-600 mt-1">{program.description}</p>
+                  <p className="text-gray-600 dark:text-gray-300 mt-1">{program.description}</p>
                 )}
               </div>
               <button
                 onClick={() => handleArchive(program.id, program.name)}
                 disabled={archivingId === program.id}
-                className="text-gray-600 hover:text-gray-700 font-medium disabled:opacity-50"
+                className="text-gray-600 dark:text-gray-300 hover:text-gray-700 dark:hover:text-gray-200 font-medium disabled:opacity-50"
                 title="Archive program"
               >
                 {archivingId === program.id ? 'Archiving...' : 'Archive'}
@@ -137,20 +137,20 @@ export default function ProgramsList({ programs }: Props) {
             <div className="mt-4 space-x-2">
               <Link
                 href={`/programs/${program.id}`}
-                className="inline-block px-4 py-2 text-blue-600 hover:text-blue-700 font-medium"
+                className="inline-block px-4 py-2 text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 font-medium"
               >
                 View
               </Link>
               <Link
                 href={`/programs/${program.id}/edit`}
-                className="inline-block px-4 py-2 text-gray-600 hover:text-gray-700 font-medium"
+                className="inline-block px-4 py-2 text-gray-600 dark:text-gray-300 hover:text-gray-700 dark:hover:text-gray-200 font-medium"
               >
                 Edit
               </Link>
               <button
                 onClick={() => handleSetActive(program.id)}
                 disabled={activatingId === program.id}
-                className="px-4 py-2 text-gray-600 hover:text-gray-700 font-medium disabled:opacity-50"
+                className="px-4 py-2 text-gray-600 dark:text-gray-300 hover:text-gray-700 dark:hover:text-gray-200 font-medium disabled:opacity-50"
               >
                 {activatingId === program.id ? 'Activating...' : 'Set Active'}
               </button>

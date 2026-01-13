@@ -33,11 +33,11 @@ export default async function ProgramsPage() {
   })
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-gray-50 dark:bg-gray-950">
       <div className="max-w-4xl mx-auto px-4 py-8">
         <div className="mb-8">
           <div className="flex items-center justify-between mb-6">
-            <h1 className="text-3xl font-bold">My Programs</h1>
+            <h1 className="text-3xl font-bold dark:text-gray-100">My Programs</h1>
             <Link
               href="/programs/new"
               className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
@@ -46,18 +46,18 @@ export default async function ProgramsPage() {
             </Link>
           </div>
           {programs.length > 0 && (
-            <div className="bg-white rounded-lg p-6 mb-6">
-              <h2 className="text-lg font-medium mb-3">Import from CSV</h2>
+            <div className="bg-white dark:bg-gray-900 rounded-lg p-6 mb-6">
+              <h2 className="text-lg font-medium dark:text-gray-100 mb-3">Import from CSV</h2>
               <CsvUploader />
             </div>
           )}
         </div>
 
         {programs.length === 0 ? (
-          <div className="bg-white rounded-lg p-8">
+          <div className="bg-white dark:bg-gray-900 rounded-lg p-8">
             <div className="text-center mb-8">
-              <h2 className="text-xl font-semibold mb-2">No programs yet</h2>
-              <p className="text-gray-600 mb-6">
+              <h2 className="text-xl font-semibold dark:text-gray-100 mb-2">No programs yet</h2>
+              <p className="text-gray-600 dark:text-gray-300 mb-6">
                 Create a new program from scratch or import from a CSV file
               </p>
               <div className="flex flex-col sm:flex-row gap-4 justify-center">
@@ -67,11 +67,11 @@ export default async function ProgramsPage() {
                 >
                   Create New Program
                 </Link>
-                <span className="text-gray-400 self-center">or</span>
+                <span className="text-gray-400 dark:text-gray-500 self-center">or</span>
               </div>
             </div>
             <div>
-              <h3 className="text-lg font-medium mb-3">Import from CSV</h3>
+              <h3 className="text-lg font-medium dark:text-gray-100 mb-3">Import from CSV</h3>
               <CsvUploader />
             </div>
           </div>
