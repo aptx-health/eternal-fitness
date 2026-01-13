@@ -529,14 +529,14 @@ export default function ProgramBuilder({ editMode = false, existingProgram }: Pr
       {/* Main Content */}
       <div className="lg:col-span-3">
         {/* Program Form */}
-        <div className="bg-white rounded-lg p-6 mb-6">
-          <h2 className="text-xl font-semibold mb-4">
+        <div className="bg-white dark:bg-gray-900 rounded-lg p-6 mb-6">
+          <h2 className="text-xl font-semibold dark:text-gray-100 mb-4">
             {editMode ? 'Edit Program Details' : 'Program Details'}
           </h2>
-          
+
           <div className="space-y-4">
             <div>
-              <label htmlFor="programName" className="block text-sm font-medium text-gray-700 mb-1">
+              <label htmlFor="programName" className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">
                 Program Name *
               </label>
               <input
@@ -545,13 +545,13 @@ export default function ProgramBuilder({ editMode = false, existingProgram }: Pr
                 value={programName}
                 onChange={(e) => setProgramName(e.target.value)}
                 placeholder="Enter program name"
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-800 dark:text-gray-100"
                 disabled={isLoading}
               />
             </div>
 
             <div>
-              <label htmlFor="programDescription" className="block text-sm font-medium text-gray-700 mb-1">
+              <label htmlFor="programDescription" className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">
                 Description (Optional)
               </label>
               <textarea
@@ -560,12 +560,12 @@ export default function ProgramBuilder({ editMode = false, existingProgram }: Pr
                 onChange={(e) => setProgramDescription(e.target.value)}
                 placeholder="Describe your program goals and approach"
                 rows={3}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-800 dark:text-gray-100"
                 disabled={isLoading}
               />
             </div>
 
-            <div className="text-sm text-gray-600">
+            <div className="text-sm text-gray-600 dark:text-gray-300">
               <strong>Type:</strong> Strength Training
             </div>
 
@@ -579,7 +579,7 @@ export default function ProgramBuilder({ editMode = false, existingProgram }: Pr
               </button>
             )}
             {editMode && (
-              <div className="text-sm text-gray-500">
+              <div className="text-sm text-gray-500 dark:text-gray-400">
                 Program changes are saved automatically
               </div>
             )}
@@ -588,19 +588,19 @@ export default function ProgramBuilder({ editMode = false, existingProgram }: Pr
 
         {/* Error Display */}
         {error && (
-          <div className="bg-red-50 border border-red-200 rounded-lg p-4 mb-6">
-            <div className="text-red-800">{error}</div>
+          <div className="bg-red-50 dark:bg-red-950 border border-red-200 dark:border-red-800 rounded-lg p-4 mb-6">
+            <div className="text-red-800 dark:text-red-400">{error}</div>
           </div>
         )}
 
         {/* Weeks Management */}
         {(programId || editMode) && (
-          <div className="bg-white rounded-lg p-6">
-            <h2 className="text-xl font-semibold mb-4">Training Weeks</h2>
-            
+          <div className="bg-white dark:bg-gray-900 rounded-lg p-6">
+            <h2 className="text-xl font-semibold dark:text-gray-100 mb-4">Training Weeks</h2>
+
             {weeks.length === 0 ? (
               <div className="text-center py-8">
-                <p className="text-gray-600 mb-4">No weeks created yet</p>
+                <p className="text-gray-600 dark:text-gray-300 mb-4">No weeks created yet</p>
                 <button
                   onClick={() => addWeek()}
                   disabled={isLoading}
@@ -612,9 +612,9 @@ export default function ProgramBuilder({ editMode = false, existingProgram }: Pr
             ) : (
               <div className="space-y-6">
                 {weeks.map((week) => (
-                  <div key={week.id} className="border border-gray-200 rounded-lg p-4">
+                  <div key={week.id} className="border border-gray-200 dark:border-gray-700 rounded-lg p-4">
                     <div className="flex items-center justify-between mb-3">
-                      <h3 className="font-medium">Week {week.weekNumber}</h3>
+                      <h3 className="font-medium dark:text-gray-100">Week {week.weekNumber}</h3>
                       <button
                         onClick={() => addWorkout(week.id)}
                         disabled={isLoading}
@@ -625,13 +625,13 @@ export default function ProgramBuilder({ editMode = false, existingProgram }: Pr
                     </div>
 
                     {week.workouts.length === 0 ? (
-                      <div className="text-gray-500 text-sm py-2">No workouts yet</div>
+                      <div className="text-gray-500 dark:text-gray-400 text-sm py-2">No workouts yet</div>
                     ) : (
                       <div className="space-y-2">
                         {week.workouts.map((workout) => {
                           const isCollapsed = collapsedWorkouts.has(workout.id)
                           return (
-                            <div key={workout.id} className="bg-gray-50 rounded p-3">
+                            <div key={workout.id} className="bg-gray-50 dark:bg-gray-800 rounded p-3">
                               <div className="flex items-center justify-between mb-2">
                                 {editingWorkoutId === workout.id ? (
                                 <div className="flex items-center gap-2 flex-1">
@@ -639,7 +639,7 @@ export default function ProgramBuilder({ editMode = false, existingProgram }: Pr
                                     type="text"
                                     value={editingWorkoutName}
                                     onChange={(e) => setEditingWorkoutName(e.target.value)}
-                                    className="px-2 py-1 border border-gray-300 rounded text-sm flex-1"
+                                    className="px-2 py-1 border border-gray-300 dark:border-gray-600 rounded text-sm flex-1 dark:bg-gray-700 dark:text-gray-100"
                                     autoFocus
                                     onKeyDown={(e) => {
                                       if (e.key === 'Enter') {
@@ -667,12 +667,12 @@ export default function ProgramBuilder({ editMode = false, existingProgram }: Pr
                                 <div className="flex items-center gap-2 flex-1">
                                   <button
                                     onClick={() => toggleWorkoutCollapse(workout.id)}
-                                    className="flex items-center gap-1 text-gray-600 hover:text-gray-800 transition-colors"
+                                    className="flex items-center gap-1 text-gray-600 dark:text-gray-300 hover:text-gray-800 dark:hover:text-gray-100 transition-colors"
                                   >
                                     {isCollapsed ? <ChevronRight size={16} /> : <ChevronDown size={16} />}
                                   </button>
-                                  <span className="font-medium">{workout.name}</span>
-                                  <span className="text-xs text-gray-500">
+                                  <span className="font-medium dark:text-gray-100">{workout.name}</span>
+                                  <span className="text-xs text-gray-500 dark:text-gray-400">
                                     ({workout.exercises.length} exercise{workout.exercises.length !== 1 ? 's' : ''})
                                   </span>
                                   <button
@@ -704,18 +704,18 @@ export default function ProgramBuilder({ editMode = false, existingProgram }: Pr
                             {!isCollapsed && (
                               <>
                                 {workout.exercises.length === 0 ? (
-                                  <div className="text-gray-500 text-xs">No exercises yet</div>
+                                  <div className="text-gray-500 dark:text-gray-400 text-xs">No exercises yet</div>
                                 ) : (
                                   <div className="space-y-2">
                                     {workout.exercises.map((exercise) => (
-                                      <div key={exercise.id} className="flex items-center justify-between bg-gray-50 rounded p-2">
+                                      <div key={exercise.id} className="flex items-center justify-between bg-gray-50 dark:bg-gray-700 rounded p-2">
                                         <div className="flex-1">
-                                          <span className="font-medium text-sm">{exercise.name}</span>
-                                          <span className="text-gray-600 text-sm ml-2">
+                                          <span className="font-medium text-sm dark:text-gray-100">{exercise.name}</span>
+                                          <span className="text-gray-600 dark:text-gray-300 text-sm ml-2">
                                             ({exercise.prescribedSets.length} set{exercise.prescribedSets.length !== 1 ? 's' : ''})
                                           </span>
                                           {exercise.notes && (
-                                            <div className="text-xs text-gray-500 mt-1">{exercise.notes}</div>
+                                            <div className="text-xs text-gray-500 dark:text-gray-400 mt-1">{exercise.notes}</div>
                                           )}
                                         </div>
                                         <div className="flex gap-1">

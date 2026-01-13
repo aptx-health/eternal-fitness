@@ -58,26 +58,26 @@ export default async function EditProgramPage({
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-gray-50 dark:bg-gray-950">
       <div className="max-w-7xl mx-auto px-4 py-8">
         <div className="mb-6">
           <div className="flex items-center gap-4 mb-4">
-            <Link 
+            <Link
               href="/programs"
-              className="text-blue-600 hover:text-blue-700 text-sm flex items-center gap-1"
+              className="text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 text-sm flex items-center gap-1"
             >
               ← Back to Programs
             </Link>
-            <span className="text-gray-400">|</span>
-            <h1 className="text-2xl font-semibold">Edit Program</h1>
+            <span className="text-gray-400 dark:text-gray-500">|</span>
+            <h1 className="text-2xl font-semibold dark:text-gray-100">Edit Program</h1>
           </div>
           {program.isActive && (
-            <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-4">
+            <div className="bg-blue-50 dark:bg-blue-950 border border-blue-200 dark:border-blue-800 rounded-lg p-4 mb-4">
               <div className="flex items-center gap-2">
                 <span className="inline-block px-2 py-1 bg-blue-600 text-white text-xs font-semibold rounded">
                   ACTIVE PROGRAM
                 </span>
-                <span className="text-sm text-blue-800">
+                <span className="text-sm text-blue-800 dark:text-blue-400">
                   Be careful when modifying an active program with workout data
                 </span>
               </div>
@@ -85,8 +85,8 @@ export default async function EditProgramPage({
           )}
         </div>
 
-        <ProgramBuilder 
-          editMode={true} 
+        <ProgramBuilder
+          editMode={true}
           existingProgram={program}
         />
       </div>

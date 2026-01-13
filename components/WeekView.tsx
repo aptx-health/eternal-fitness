@@ -98,14 +98,14 @@ export default function WeekView({
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-gray-50 dark:bg-gray-950">
       {/* Header - Fixed at top for mobile */}
-      <div className="bg-white border-b border-gray-200 sticky top-0 z-10">
+      <div className="bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-700 sticky top-0 z-10">
         <div className="max-w-2xl mx-auto px-4 py-4">
           <div className="flex items-center justify-between mb-2">
             <Link
               href="/programs"
-              className="text-blue-600 hover:text-blue-700 font-medium"
+              className="text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 font-medium"
             >
               ← Programs
             </Link>
@@ -113,10 +113,10 @@ export default function WeekView({
             <div className="relative">
               <button
                 onClick={() => setShowMenu(!showMenu)}
-                className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
+                className="p-2 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg transition-colors"
               >
                 <svg
-                  className="w-6 h-6 text-gray-700"
+                  className="w-6 h-6 text-gray-700 dark:text-gray-200"
                   fill="none"
                   stroke="currentColor"
                   viewBox="0 0 24 24"
@@ -135,16 +135,16 @@ export default function WeekView({
                     className="fixed inset-0 z-10"
                     onClick={() => setShowMenu(false)}
                   />
-                  <div className="absolute right-0 mt-2 w-56 bg-white rounded-lg shadow-lg border border-gray-200 py-2 z-20">
+                  <div className="absolute right-0 mt-2 w-56 bg-white dark:bg-gray-900 rounded-lg shadow-lg border border-gray-200 dark:border-gray-700 py-2 z-20">
                     <button
                       onClick={handleCompleteWeek}
                       disabled={isCompleting}
-                      className="w-full px-4 py-3 text-left hover:bg-gray-100 transition-colors disabled:opacity-50"
+                      className="w-full px-4 py-3 text-left hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors disabled:opacity-50"
                     >
-                      <div className="font-semibold text-gray-900">
+                      <div className="font-semibold text-gray-900 dark:text-gray-100">
                         {isCompleting ? 'Completing...' : 'Complete Week'}
                       </div>
-                      <div className="text-sm text-gray-600 mt-0.5">
+                      <div className="text-sm text-gray-600 dark:text-gray-300 mt-0.5">
                         Mark unlogged workouts as skipped
                       </div>
                     </button>
@@ -153,22 +153,22 @@ export default function WeekView({
               )}
             </div>
           </div>
-          <h1 className="text-2xl font-bold text-gray-900">{programName}</h1>
+          <h1 className="text-2xl font-bold text-gray-900 dark:text-gray-100">{programName}</h1>
         </div>
       </div>
 
       {/* Week Navigation - Mobile optimized with large touch targets */}
-      <div className="bg-white border-b border-gray-200">
+      <div className="bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-700">
         <div className="max-w-2xl mx-auto px-4 py-4">
           <div className="flex items-center justify-between">
             {/* Previous Week Button */}
             {hasPrevWeek ? (
               <Link
                 href={`/programs/${programId}/weeks/${weekNumber - 1}`}
-                className="flex items-center justify-center w-12 h-12 rounded-lg bg-blue-50 hover:bg-blue-100 active:bg-blue-200 transition-colors"
+                className="flex items-center justify-center w-12 h-12 rounded-lg bg-blue-50 dark:bg-blue-950 hover:bg-blue-100 dark:hover:bg-blue-900 active:bg-blue-200 dark:active:bg-blue-800 transition-colors"
               >
                 <svg
-                  className="w-6 h-6 text-blue-600"
+                  className="w-6 h-6 text-blue-600 dark:text-blue-400"
                   fill="none"
                   stroke="currentColor"
                   viewBox="0 0 24 24"
@@ -187,19 +187,19 @@ export default function WeekView({
 
             {/* Week Indicator */}
             <div className="flex flex-col items-center">
-              <span className="text-sm text-gray-500 font-medium">Week</span>
-              <span className="text-3xl font-bold text-gray-900">{weekNumber}</span>
-              <span className="text-xs text-gray-400">of {totalWeeks}</span>
+              <span className="text-sm text-gray-500 dark:text-gray-400 font-medium">Week</span>
+              <span className="text-3xl font-bold text-gray-900 dark:text-gray-100">{weekNumber}</span>
+              <span className="text-xs text-gray-400 dark:text-gray-500">of {totalWeeks}</span>
             </div>
 
             {/* Next Week Button */}
             {hasNextWeek ? (
               <Link
                 href={`/programs/${programId}/weeks/${weekNumber + 1}`}
-                className="flex items-center justify-center w-12 h-12 rounded-lg bg-blue-50 hover:bg-blue-100 active:bg-blue-200 transition-colors"
+                className="flex items-center justify-center w-12 h-12 rounded-lg bg-blue-50 dark:bg-blue-950 hover:bg-blue-100 dark:hover:bg-blue-900 active:bg-blue-200 dark:active:bg-blue-800 transition-colors"
               >
                 <svg
-                  className="w-6 h-6 text-blue-600"
+                  className="w-6 h-6 text-blue-600 dark:text-blue-400"
                   fill="none"
                   stroke="currentColor"
                   viewBox="0 0 24 24"
@@ -223,7 +223,7 @@ export default function WeekView({
       <div className="max-w-2xl mx-auto px-4 py-6">
         {workouts.length === 0 ? (
           <div className="text-center py-12">
-            <p className="text-gray-500">No workouts scheduled for this week</p>
+            <p className="text-gray-500 dark:text-gray-400">No workouts scheduled for this week</p>
           </div>
         ) : (
           <div className="space-y-3">
@@ -242,23 +242,23 @@ export default function WeekView({
                   >
                     <div
                       className={`
-                      relative bg-white rounded-lg border-2 p-5
+                      relative bg-white dark:bg-gray-900 rounded-lg border-2 p-5
                       active:scale-[0.98] transition-all
                       ${
                         isCompleted
-                          ? 'border-green-500 bg-green-50'
+                          ? 'border-green-500 bg-green-50 dark:bg-green-950'
                           : isDraft
-                          ? 'border-amber-500 bg-amber-50'
+                          ? 'border-amber-500 bg-amber-50 dark:bg-amber-950'
                           : isSkipped
-                          ? 'border-gray-400 bg-gray-50'
-                          : 'border-gray-200 hover:border-blue-300'
+                          ? 'border-gray-400 dark:border-gray-600 bg-gray-50 dark:bg-gray-800'
+                          : 'border-gray-200 dark:border-gray-700 hover:border-blue-300 dark:hover:border-blue-600'
                       }
                     `}
                     >
                       <div className="flex items-center justify-between">
                         <div className="flex-1">
                           <div className="flex items-center gap-2 mb-1">
-                            <span className="text-sm font-medium text-gray-500">
+                            <span className="text-sm font-medium text-gray-500 dark:text-gray-400">
                               Day {workout.dayNumber}
                             </span>
                             {isCompleted && (
@@ -292,17 +292,17 @@ export default function WeekView({
                               </span>
                             )}
                           </div>
-                          <h3 className="text-lg font-semibold text-gray-900">
+                          <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100">
                             {workout.name}
                           </h3>
                           {completion && (
                             <p
                               className={`text-sm mt-1 ${
                                 isCompleted
-                                  ? 'text-green-700'
+                                  ? 'text-green-700 dark:text-green-400'
                                   : isDraft
-                                  ? 'text-amber-700'
-                                  : 'text-gray-600'
+                                  ? 'text-amber-700 dark:text-amber-400'
+                                  : 'text-gray-600 dark:text-gray-300'
                               }`}
                             >
                               {isCompleted
@@ -322,7 +322,7 @@ export default function WeekView({
 
                         {/* Arrow indicator */}
                         <svg
-                          className="w-6 h-6 text-gray-400 flex-shrink-0 ml-4"
+                          className="w-6 h-6 text-gray-400 dark:text-gray-500 flex-shrink-0 ml-4"
                           fill="none"
                           stroke="currentColor"
                           viewBox="0 0 24 24"
@@ -344,7 +344,7 @@ export default function WeekView({
                         e.preventDefault()
                         handleSkipWorkout(workout.id)
                       }}
-                      className="absolute top-2 right-2 px-3 py-1 bg-gray-200 hover:bg-gray-300 text-gray-700 text-xs font-semibold rounded transition-colors"
+                      className="absolute top-2 right-2 px-3 py-1 bg-gray-200 dark:bg-gray-700 hover:bg-gray-300 dark:hover:bg-gray-600 text-gray-700 dark:text-gray-200 text-xs font-semibold rounded transition-colors"
                     >
                       Skip
                     </button>
