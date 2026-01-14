@@ -78,7 +78,7 @@ export default async function CardioPage() {
   }
 
   return (
-    <div className="min-h-screen bg-background p-6">
+    <div className="min-h-screen bg-background px-6 py-4">
       <div className="max-w-6xl mx-auto space-y-6">
         {/* Header */}
         <div className="flex justify-between items-start">
@@ -90,10 +90,10 @@ export default async function CardioPage() {
               Track your cardio sessions and monitor progress
             </p>
           </div>
-          <div className="flex gap-3">
+          <div className="flex gap-2">
             <Link
               href="/cardio/programs"
-              className="px-6 py-3 border border-primary text-primary hover:bg-primary-muted doom-button-3d doom-focus-ring font-semibold uppercase tracking-wider"
+              className="px-4 py-2 border border-primary text-primary hover:bg-primary-muted doom-button-3d doom-focus-ring font-semibold uppercase tracking-wider text-sm"
             >
               PROGRAMS
             </Link>

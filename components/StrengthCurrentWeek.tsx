@@ -83,7 +83,6 @@ export default function StrengthCurrentWeek({ program, week }: Props) {
                         <svg className="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">
                           <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
                         </svg>
-                        COMPLETED
                       </span>
                     )}
                     {isDraft && (
@@ -114,7 +113,7 @@ export default function StrengthCurrentWeek({ program, week }: Props) {
                   href={`/programs/${program.id}/workouts/${workout.id}`}
                   className="px-4 py-2 bg-primary text-primary-foreground hover:bg-primary-hover doom-button-3d doom-focus-ring font-semibold uppercase tracking-wider text-sm"
                 >
-                  {isCompleted ? 'LOG AGAIN' : isDraft ? 'CONTINUE' : 'LOG WORKOUT'}
+                  {isCompleted ? 'REVIEW' : isDraft ? 'CONTINUE' : 'LOG WORKOUT'}
                 </Link>
               </div>
             </div>

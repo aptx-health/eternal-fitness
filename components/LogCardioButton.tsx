@@ -10,7 +10,7 @@ export default function LogCardioButton() {
     <>
       <button
         onClick={() => setIsModalOpen(true)}
-        className="px-6 py-3 bg-primary text-primary-foreground hover:bg-primary-hover doom-button-3d doom-focus-ring font-semibold uppercase tracking-wider"
+        className="px-4 py-2 bg-primary text-primary-foreground hover:bg-primary-hover doom-button-3d doom-focus-ring font-semibold uppercase tracking-wider text-sm"
       >
         LOG CARDIO
       </button>
