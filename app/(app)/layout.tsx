@@ -18,7 +18,7 @@ export default async function AppLayout({
 
   return (
     <div className="min-h-screen">
-      <nav className="bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-700">
+      <nav className="bg-card border-b border-border">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between h-16">
             <div className="flex items-center">
@@ -30,16 +30,16 @@ export default async function AppLayout({
                   height={32}
                   className="rounded"
                 />
-                <span className="text-xl font-bold dark:text-gray-100">Ripit</span>
+                <span className="text-xl font-bold text-foreground">Ripit</span>
               </Link>
             </div>
             <div className="flex items-center space-x-4">
               <DarkModeToggle />
-              <span className="text-sm text-gray-600 dark:text-gray-300">{user.email}</span>
+              <span className="text-sm text-muted-foreground">{user.email}</span>
               <form action="/api/auth/signout" method="POST">
                 <button
                   type="submit"
-                  className="text-sm text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-gray-100"
+                  className="text-sm text-muted-foreground hover:text-foreground"
                 >
                   Sign Out
                 </button>

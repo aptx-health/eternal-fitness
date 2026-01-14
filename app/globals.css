@@ -124,78 +124,396 @@
   /* Fonts */
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
+  --font-rajdhani: var(--font-rajdhani);
 }
 
 @custom-variant dark (&:where(.dark, .dark *));
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    /* DOOM Theme - Pure Darkness (Dark Mode) */
+.dark {
+  /* DOOM Theme - Pure Darkness (Dark Mode) */
 
-    /* Base colors */
-    --background: #000000;  /* pure black */
-    --foreground: #FFF7ED;  /* orange-50 */
+  /* Base colors */
+  --background: #000000;  /* pure black */
+  --foreground: #FFF7ED;  /* orange-50 */
 
-    /* Surface colors */
-    --card: #09090B;        /* zinc-950 */
-    --card-foreground: #FFF7ED;
-    --muted: #18181B;       /* zinc-900 */
-    --muted-foreground: #A1A1AA;  /* zinc-400 */
+  /* Surface colors */
+  --card: #09090B;        /* zinc-950 */
+  --card-foreground: #FFF7ED;
+  --muted: #18181B;       /* zinc-900 */
+  --muted-foreground: #A1A1AA;  /* zinc-400 */
 
-    /* Border colors */
-    --border: #27272A;      /* zinc-800 */
-    --input: #3F3F46;       /* zinc-700 */
+  /* Border colors */
+  --border: #27272A;      /* zinc-800 */
+  --input: #3F3F46;       /* zinc-700 */
 
-    /* Primary (Orange) */
-    --primary: #EA580C;     /* orange-600 */
-    --primary-foreground: #FFF7ED;
-    --primary-hover: #C2410C;       /* orange-700 */
-    --primary-active: #9A3412;      /* orange-800 */
-    --primary-muted: #431407;       /* orange-950 */
-    --primary-muted-dark: #F97316;  /* orange-500 for borders */
+  /* Primary (Orange) */
+  --primary: #EA580C;     /* orange-600 */
+  --primary-foreground: #FFF7ED;
+  --primary-hover: #C2410C;       /* orange-700 */
+  --primary-active: #9A3412;      /* orange-800 */
+  --primary-muted: #431407;       /* orange-950 */
+  --primary-muted-dark: #F97316;  /* orange-500 for borders */
 
-    /* Secondary (Zinc) */
-    --secondary: #71717A;   /* zinc-500 */
-    --secondary-foreground: #FFF7ED;
-    --secondary-hover: #52525B;     /* zinc-600 */
-    --secondary-active: #3F3F46;    /* zinc-700 */
-    --secondary-muted: #27272A;     /* zinc-800 */
+  /* Secondary (Zinc) */
+  --secondary: #71717A;   /* zinc-500 */
+  --secondary-foreground: #FFF7ED;
+  --secondary-hover: #52525B;     /* zinc-600 */
+  --secondary-active: #3F3F46;    /* zinc-700 */
+  --secondary-muted: #27272A;     /* zinc-800 */
 
-    /* Success (Green) - Completed workouts */
-    --success: #16A34A;     /* green-600 */
-    --success-foreground: #FFF7ED;
-    --success-hover: #15803D;       /* green-700 */
-    --success-muted: #052E16;       /* green-950 */
-    --success-text: #4ADE80;        /* green-400 */
-    --success-border: #16A34A;      /* green-600 */
+  /* Success (Green) - Completed workouts */
+  --success: #16A34A;     /* green-600 */
+  --success-foreground: #FFF7ED;
+  --success-hover: #15803D;       /* green-700 */
+  --success-muted: #052E16;       /* green-950 */
+  --success-text: #4ADE80;        /* green-400 */
+  --success-border: #16A34A;      /* green-600 */
 
-    /* Warning (Orange) - In-progress workouts */
-    --warning: #F97316;     /* orange-500 */
-    --warning-foreground: #FFF7ED;
-    --warning-hover: #EA580C;       /* orange-600 */
-    --warning-muted: #431407;       /* orange-950 */
-    --warning-text: #FB923C;        /* orange-400 */
-    --warning-border: #F97316;      /* orange-500 */
+  /* Warning (Orange) - In-progress workouts */
+  --warning: #F97316;     /* orange-500 */
+  --warning-foreground: #FFF7ED;
+  --warning-hover: #EA580C;       /* orange-600 */
+  --warning-muted: #431407;       /* orange-950 */
+  --warning-text: #FB923C;        /* orange-400 */
+  --warning-border: #F97316;      /* orange-500 */
 
-    /* Error/Danger (Red) */
-    --error: #EF4444;       /* red-500 */
-    --error-foreground: #FFF7ED;
-    --error-hover: #DC2626;         /* red-600 */
-    --error-muted: #450A0A;         /* red-950 */
-    --error-text: #F87171;          /* red-400 */
-    --error-border: #EF4444;        /* red-500 */
+  /* Error/Danger (Red) */
+  --error: #EF4444;       /* red-500 */
+  --error-foreground: #FFF7ED;
+  --error-hover: #DC2626;         /* red-600 */
+  --error-muted: #450A0A;         /* red-950 */
+  --error-text: #F87171;          /* red-400 */
+  --error-border: #EF4444;        /* red-500 */
 
-    /* Accent (Purple) - for supersets */
-    --accent: #A855F7;      /* purple-500 */
-    --accent-foreground: #FFF7ED;
-    --accent-hover: #9333EA;        /* purple-600 */
-    --accent-muted: #3B0764;        /* purple-950 */
-    --accent-text: #C084FC;         /* purple-400 */
-  }
+  /* Accent (Purple) - for supersets */
+  --accent: #A855F7;      /* purple-500 */
+  --accent-foreground: #FFF7ED;
+  --accent-hover: #9333EA;        /* purple-600 */
+  --accent-muted: #3B0764;        /* purple-950 */
+  --accent-text: #C084FC;         /* purple-400 */
 }
 
 body {
   background: var(--background);
   color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: var(--font-rajdhani), -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  letter-spacing: 0.02em;
+}
+
+/* ============================================
+   DOOM THEME UTILITIES
+   ============================================ */
+
+/* Typography */
+.doom-title {
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  text-shadow: 2px 2px 0 rgba(0, 0, 0, 0.5), 0 0 20px rgba(234, 88, 12, 0.3);
+}
+
+.doom-heading {
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.5);
+}
+
+.doom-label {
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  font-size: 0.75rem;
+}
+
+.doom-stat {
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: 0.02em;
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
+}
+
+/* Textures */
+.doom-noise {
+  position: relative;
+}
+
+.doom-noise::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' /%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.03'/%3E%3C/svg%3E");
+  pointer-events: none;
+  z-index: 1;
+  border-radius: inherit;
+}
+
+.doom-noise > * {
+  position: relative;
+  z-index: 2;
+}
+
+/* Angular Corners (replaces rounded-lg) */
+.doom-angular {
+  border-radius: 0;
+  clip-path: polygon(
+    0% 8px, 8px 0%, calc(100% - 8px) 0%, 100% 8px,
+    100% calc(100% - 8px), calc(100% - 8px) 100%,
+    8px 100%, 0% calc(100% - 8px)
+  );
+}
+
+/* Corner Accents */
+.doom-corners {
+  position: relative;
+}
+
+.doom-corners::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 16px;
+  height: 16px;
+  border-top: 3px solid var(--primary);
+  border-left: 3px solid var(--primary);
+  z-index: 3;
+}
+
+.doom-corners::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  right: 0;
+  width: 16px;
+  height: 16px;
+  border-bottom: 3px solid var(--primary);
+  border-right: 3px solid var(--primary);
+  z-index: 3;
+}
+
+/* 3D Button Effect */
+.doom-button-3d {
+  position: relative;
+  box-shadow:
+    0 4px 0 var(--primary-active),
+    0 6px 8px rgba(0, 0, 0, 0.4),
+    inset 0 1px 0 rgba(255, 255, 255, 0.2);
+  transform: translateY(0);
+  transition: all 0.1s ease;
+}
+
+.doom-button-3d:hover:not(:disabled) {
+  box-shadow:
+    0 4px 0 var(--primary-active),
+    0 0 30px rgba(234, 88, 12, 0.6),
+    inset 0 1px 0 rgba(255, 255, 255, 0.3);
+}
+
+.doom-button-3d:active:not(:disabled) {
+  transform: translateY(4px);
+  box-shadow:
+    0 0 0 var(--primary-active),
+    0 2px 4px rgba(0, 0, 0, 0.4),
+    inset 0 1px 0 rgba(255, 255, 255, 0.2);
+}
+
+/* Card Enhancements */
+.doom-card {
+  background: var(--card);
+  border: 1px solid var(--border);
+  position: relative;
+  overflow: hidden;
+  transition: all 0.3s ease;
+}
+
+.doom-card:hover {
+  border-color: rgba(234, 88, 12, 0.5);
+  box-shadow: 0 0 20px rgba(234, 88, 12, 0.2);
+}
+
+/* ============================================
+   PHASE 2: WORKOUT STATE ENHANCEMENTS
+   ============================================ */
+
+/* Workout States */
+.doom-workout-completed {
+  background: linear-gradient(135deg, rgba(21, 128, 61, 0.15) 0%, rgba(21, 128, 61, 0.05) 100%), var(--card);
+  border-color: var(--success-border);
+  box-shadow: 0 0 20px rgba(34, 197, 94, 0.3), inset 0 1px 0 rgba(34, 197, 94, 0.1);
+  transition: all 0.3s ease;
+}
+
+.doom-workout-completed:hover {
+  border-color: var(--success);
+  box-shadow: 0 0 30px rgba(34, 197, 94, 0.5), inset 0 1px 0 rgba(34, 197, 94, 0.2);
+}
+
+.doom-workout-progress {
+  background: linear-gradient(135deg, rgba(234, 88, 12, 0.15) 0%, rgba(234, 88, 12, 0.05) 100%), var(--card);
+  border-color: var(--warning-border);
+  animation: doom-pulse 2s ease-in-out infinite;
+  box-shadow: 0 0 20px rgba(234, 88, 12, 0.3), inset 0 1px 0 rgba(234, 88, 12, 0.1);
+}
+
+@keyframes doom-pulse {
+  0%, 100% {
+    box-shadow: 0 0 20px rgba(234, 88, 12, 0.3), inset 0 1px 0 rgba(234, 88, 12, 0.1);
+  }
+  50% {
+    box-shadow: 0 0 40px rgba(234, 88, 12, 0.6), inset 0 1px 0 rgba(234, 88, 12, 0.2);
+  }
+}
+
+.doom-workout-pending {
+  background: var(--muted);
+  border-color: var(--border);
+  box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.3);
+  opacity: 0.85;
+  transition: opacity 0.3s ease;
+}
+
+.doom-workout-pending:hover {
+  opacity: 1;
+}
+
+/* Status Badges */
+.doom-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.25rem 0.75rem;
+  font-size: 0.75rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  border-radius: 0;
+  clip-path: polygon(4px 0%, 100% 0%, calc(100% - 4px) 100%, 0% 100%);
+}
+
+.doom-badge-completed {
+  background: var(--success);
+  color: var(--success-foreground);
+  box-shadow: 0 0 10px rgba(34, 197, 94, 0.5);
+}
+
+.doom-badge-progress {
+  background: var(--warning);
+  color: var(--warning-foreground);
+  box-shadow: 0 0 10px rgba(234, 88, 12, 0.5);
+  animation: doom-badge-pulse 1.5s ease-in-out infinite;
+}
+
+@keyframes doom-badge-pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.8; }
+}
+
+.doom-badge-skipped {
+  background: var(--secondary);
+  color: var(--secondary-foreground);
+}
+
+/* ============================================
+   PHASE 3: INTERACTIVE POLISH & EASY WINS
+   ============================================ */
+
+/* Enhanced Focus States */
+.doom-focus-ring:focus-visible {
+  outline: none;
+  box-shadow:
+    0 0 0 3px var(--background),
+    0 0 0 6px var(--primary),
+    0 0 20px rgba(234, 88, 12, 0.6);
+}
+
+/* Link Styling */
+.doom-link {
+  color: var(--primary);
+  text-decoration: none;
+  font-weight: 600;
+  transition: all 0.3s ease;
+  position: relative;
+}
+
+.doom-link::after {
+  content: '';
+  position: absolute;
+  bottom: -2px;
+  left: 0;
+  width: 0;
+  height: 2px;
+  background: var(--primary);
+  transition: width 0.3s ease;
+}
+
+.doom-link:hover {
+  color: var(--primary-hover);
+  text-shadow: 0 0 10px rgba(234, 88, 12, 0.5);
+}
+
+.doom-link:hover::after {
+  width: 100%;
+}
+
+/* Page Fade-In */
+@keyframes doom-fade-in {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.doom-page-enter {
+  animation: doom-fade-in 0.4s ease-out;
+}
+
+/* Hover Glow */
+.doom-hover-glow {
+  transition: all 0.3s ease;
+}
+
+.doom-hover-glow:hover {
+  filter: drop-shadow(0 0 15px rgba(234, 88, 12, 0.5));
+}
+
+/* Table Row Hover */
+.doom-table-row {
+  transition: all 0.2s ease;
+}
+
+.doom-table-row:hover {
+  background: rgba(234, 88, 12, 0.05);
+  border-left: 3px solid var(--primary);
+  padding-left: calc(1rem - 3px);
+}
+
+/* Input Styling */
+.doom-input {
+  background: var(--input);
+  border: 2px solid var(--border);
+  color: var(--foreground);
+  padding: 0.75rem 1rem;
+  font-family: inherit;
+  font-weight: 500;
+  letter-spacing: 0.02em;
+  transition: all 0.3s ease;
+}
+
+.doom-input:focus {
+  outline: none;
+  border-color: var(--primary);
+  box-shadow: 0 0 20px rgba(234, 88, 12, 0.3);
+  background: var(--card);
+}
+
+.doom-input::placeholder {
+  color: var(--muted-foreground);
+  text-transform: uppercase;
+  font-size: 0.875rem;
+  letter-spacing: 0.05em;
 }

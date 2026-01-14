@@ -73,21 +73,21 @@ export default function ProgramsList({ programs }: Props) {
     <div className="space-y-4">
       {/* Active Program */}
       {activeProgram && (
-        <div className="bg-blue-50 dark:bg-blue-950 border-2 border-blue-200 dark:border-blue-800 rounded-lg p-6">
+        <div className="bg-primary-muted border-2 border-primary p-6 doom-noise doom-corners">
           <div className="flex justify-between items-start mb-2">
             <div className="flex-1">
-              <span className="inline-block px-2 py-1 bg-blue-600 text-white text-xs font-semibold rounded mb-2">
+              <span className="inline-block px-2 py-1 bg-primary text-primary-foreground text-xs font-semibold mb-2 doom-label">
                 ACTIVE
               </span>
-              <h2 className="text-2xl font-bold dark:text-gray-100">{activeProgram.name}</h2>
+              <h2 className="text-2xl font-bold text-foreground doom-heading">{activeProgram.name}</h2>
               {activeProgram.description && (
-                <p className="text-gray-600 dark:text-gray-300 mt-1">{activeProgram.description}</p>
+                <p className="text-muted-foreground mt-1">{activeProgram.description}</p>
               )}
             </div>
             <button
               onClick={() => handleArchive(activeProgram.id, activeProgram.name)}
               disabled={archivingId === activeProgram.id}
-              className="text-gray-600 dark:text-gray-300 hover:text-gray-700 dark:hover:text-gray-200 font-medium disabled:opacity-50"
+              className="text-muted-foreground hover:text-foreground font-medium disabled:opacity-50"
               title="Archive program"
             >
               {archivingId === activeProgram.id ? 'Archiving...' : 'Archive'}
@@ -96,15 +96,15 @@ export default function ProgramsList({ programs }: Props) {
           <div className="flex gap-3 mt-4">
             <Link
               href={`/programs/${activeProgram.id}`}
-              className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
+              className="px-4 py-2 bg-primary text-primary-foreground hover:bg-primary-hover doom-button-3d doom-focus-ring font-semibold uppercase tracking-wider"
             >
-              Open Program
+              OPEN PROGRAM
             </Link>
             <Link
               href={`/programs/${activeProgram.id}/edit`}
-              className="px-4 py-2 border border-blue-600 dark:border-blue-500 text-blue-600 dark:text-blue-400 rounded-lg hover:bg-blue-50 dark:hover:bg-blue-950"
+              className="px-4 py-2 border border-primary text-primary hover:bg-primary-muted doom-button-3d doom-focus-ring font-semibold uppercase tracking-wider"
             >
-              Edit Program
+              EDIT PROGRAM
             </Link>
           </div>
         </div>
@@ -116,19 +116,19 @@ export default function ProgramsList({ programs }: Props) {
         .map((program) => (
           <div
             key={program.id}
-            className="bg-white dark:bg-gray-900 rounded-lg p-6 hover:shadow-md transition"
+            className="bg-card border border-border p-6 hover:shadow-md transition doom-noise doom-card"
           >
             <div className="flex justify-between items-start mb-2">
               <div className="flex-1">
-                <h2 className="text-xl font-semibold dark:text-gray-100">{program.name}</h2>
+                <h2 className="text-xl font-semibold text-foreground doom-heading">{program.name}</h2>
                 {program.description && (
-                  <p className="text-gray-600 dark:text-gray-300 mt-1">{program.description}</p>
+                  <p className="text-muted-foreground mt-1">{program.description}</p>
                 )}
               </div>
               <button
                 onClick={() => handleArchive(program.id, program.name)}
                 disabled={archivingId === program.id}
-                className="text-gray-600 dark:text-gray-300 hover:text-gray-700 dark:hover:text-gray-200 font-medium disabled:opacity-50"
+                className="text-muted-foreground hover:text-foreground font-medium disabled:opacity-50"
                 title="Archive program"
               >
                 {archivingId === program.id ? 'Archiving...' : 'Archive'}
@@ -137,20 +137,20 @@ export default function ProgramsList({ programs }: Props) {
             <div className="mt-4 space-x-2">
               <Link
                 href={`/programs/${program.id}`}
-                className="inline-block px-4 py-2 text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 font-medium"
+                className="inline-block px-4 py-2 text-primary hover:text-primary-hover font-medium doom-link"
               >
                 View
               </Link>
               <Link
                 href={`/programs/${program.id}/edit`}
-                className="inline-block px-4 py-2 text-gray-600 dark:text-gray-300 hover:text-gray-700 dark:hover:text-gray-200 font-medium"
+                className="inline-block px-4 py-2 text-muted-foreground hover:text-foreground font-medium doom-link"
               >
                 Edit
               </Link>
               <button
                 onClick={() => handleSetActive(program.id)}
                 disabled={activatingId === program.id}
-                className="px-4 py-2 text-gray-600 dark:text-gray-300 hover:text-gray-700 dark:hover:text-gray-200 font-medium disabled:opacity-50"
+                className="px-4 py-2 text-muted-foreground hover:text-foreground font-medium disabled:opacity-50"
               >
                 {activatingId === program.id ? 'Activating...' : 'Set Active'}
               </button>

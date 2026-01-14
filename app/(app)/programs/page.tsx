@@ -32,32 +32,32 @@ export default async function ProgramsPage() {
   })
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-gray-950">
+    <div className="min-h-screen bg-background doom-page-enter">
       <div className="max-w-4xl mx-auto px-4 py-8">
         <div className="mb-8">
           <div className="flex items-center justify-between mb-6">
-            <h1 className="text-3xl font-bold dark:text-gray-100">My Programs</h1>
+            <h1 className="text-3xl font-bold text-foreground doom-title">MY PROGRAMS</h1>
             <Link
               href="/programs/new"
-              className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+              className="px-4 py-2 bg-primary text-primary-foreground hover:bg-primary-hover transition-colors doom-button-3d doom-focus-ring font-semibold uppercase tracking-wider"
             >
-              Create New Program
+              CREATE NEW PROGRAM
             </Link>
           </div>
         </div>
 
         {programs.length === 0 ? (
-          <div className="bg-white dark:bg-gray-900 rounded-lg p-8">
+          <div className="bg-card border border-border rounded-lg p-8">
             <div className="text-center">
-              <h2 className="text-xl font-semibold dark:text-gray-100 mb-2">No programs yet</h2>
-              <p className="text-gray-600 dark:text-gray-300 mb-6">
+              <h2 className="text-xl font-semibold text-foreground mb-2 doom-heading">NO PROGRAMS YET</h2>
+              <p className="text-muted-foreground mb-6">
                 Create a new training program to get started
               </p>
               <Link
                 href="/programs/new"
-                className="inline-block px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+                className="inline-block px-6 py-3 bg-primary text-primary-foreground hover:bg-primary-hover transition-colors doom-button-3d doom-focus-ring font-semibold uppercase tracking-wider"
               >
-                Create New Program
+                CREATE NEW PROGRAM
               </Link>
             </div>
           </div>

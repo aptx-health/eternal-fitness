@@ -1,0 +1,623 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>RIPIT - DOOM Theme Complete Preview</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Rajdhani:wght@500;600;700&display=swap');
+        
+        /* ============================================
+           RIPIT DOOM THEME - ALL STYLES
+           ============================================ */
+        
+        :root {
+          --doom-orange: #EA580C;
+          --doom-orange-light: #F97316;
+          --doom-orange-dark: #C2410C;
+          --doom-red: #DC2626;
+          --doom-green: #22C55E;
+          --doom-green-dark: #15803D;
+          --doom-zinc-950: #09090B;
+          --doom-zinc-900: #18181B;
+          --doom-zinc-800: #27272A;
+          --doom-zinc-700: #3F3F46;
+          --doom-zinc-600: #52525B;
+          
+          --doom-transition-fast: 0.1s;
+          --doom-transition-medium: 0.3s;
+          --doom-transition-slow: 0.6s;
+        }
+        
+        body {
+          font-family: 'Rajdhani', sans-serif;
+          letter-spacing: 0.02em;
+        }
+        
+        /* === TEXTURES === */
+        
+        .doom-noise {
+          position: relative;
+        }
+        
+        .doom-noise::before {
+          content: '';
+          position: absolute;
+          inset: 0;
+          background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' /%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.03'/%3E%3C/svg%3E");
+          pointer-events: none;
+          z-index: 1;
+        }
+        
+        .doom-noise > * {
+          position: relative;
+          z-index: 2;
+        }
+        
+        .doom-scanlines {
+          position: relative;
+        }
+        
+        .doom-scanlines::after {
+          content: '';
+          position: absolute;
+          inset: 0;
+          background: repeating-linear-gradient(
+            0deg,
+            transparent,
+            transparent 2px,
+            rgba(0, 0, 0, 0.1) 2px,
+            rgba(0, 0, 0, 0.1) 4px
+          );
+          pointer-events: none;
+          z-index: 10;
+          opacity: 0.3;
+        }
+        
+        .doom-metal {
+          background: 
+            linear-gradient(
+              90deg,
+              transparent 0%,
+              rgba(255, 255, 255, 0.05) 50%,
+              transparent 100%
+            ),
+            repeating-linear-gradient(
+              0deg,
+              transparent,
+              transparent 2px,
+              rgba(255, 255, 255, 0.02) 2px,
+              rgba(255, 255, 255, 0.02) 4px
+            );
+        }
+        
+        /* === TYPOGRAPHY === */
+        
+        .doom-title {
+          font-weight: 700;
+          text-transform: uppercase;
+          letter-spacing: 0.1em;
+          text-shadow: 
+            2px 2px 0 rgba(0, 0, 0, 0.5),
+            0 0 20px rgba(234, 88, 12, 0.3);
+        }
+        
+        .doom-heading {
+          font-weight: 600;
+          text-transform: uppercase;
+          letter-spacing: 0.08em;
+          text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.5);
+        }
+        
+        .doom-label {
+          font-weight: 600;
+          text-transform: uppercase;
+          letter-spacing: 0.05em;
+          font-size: 0.75rem;
+        }
+        
+        .doom-stat {
+          font-weight: 700;
+          font-variant-numeric: tabular-nums;
+          letter-spacing: 0.02em;
+          text-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
+        }
+        
+        /* === SHAPES === */
+        
+        .doom-angular {
+          border-radius: 0;
+          clip-path: polygon(
+            0% 8px,
+            8px 0%,
+            calc(100% - 8px) 0%,
+            100% 8px,
+            100% calc(100% - 8px),
+            calc(100% - 8px) 100%,
+            8px 100%,
+            0% calc(100% - 8px)
+          );
+        }
+        
+        .doom-corners {
+          position: relative;
+        }
+        
+        .doom-corners::before {
+          content: '';
+          position: absolute;
+          top: 0;
+          left: 0;
+          width: 16px;
+          height: 16px;
+          border-top: 3px solid var(--doom-orange);
+          border-left: 3px solid var(--doom-orange);
+          z-index: 5;
+        }
+        
+        .doom-corners::after {
+          content: '';
+          position: absolute;
+          bottom: 0;
+          right: 0;
+          width: 16px;
+          height: 16px;
+          border-bottom: 3px solid var(--doom-orange);
+          border-right: 3px solid var(--doom-orange);
+          z-index: 5;
+        }
+        
+        .doom-bevel-raised {
+          border: 2px solid;
+          border-color: rgba(255, 255, 255, 0.15) rgba(0, 0, 0, 0.3) rgba(0, 0, 0, 0.3) rgba(255, 255, 255, 0.15);
+          box-shadow: 
+            inset 1px 1px 0 rgba(255, 255, 255, 0.1),
+            inset -1px -1px 0 rgba(0, 0, 0, 0.3);
+        }
+        
+        /* === BUTTONS === */
+        
+        .doom-button {
+          position: relative;
+          font-weight: 700;
+          text-transform: uppercase;
+          letter-spacing: 0.1em;
+          padding: 0.75rem 1.5rem;
+          background: linear-gradient(180deg, #EA580C 0%, #C2410C 100%);
+          border: none;
+          color: white;
+          cursor: pointer;
+          transition: all var(--doom-transition-fast) ease;
+          box-shadow: 
+            0 4px 0 #92400E,
+            0 6px 8px rgba(0, 0, 0, 0.4),
+            inset 0 1px 0 rgba(255, 255, 255, 0.2);
+          transform: translateY(0);
+        }
+        
+        .doom-button:hover {
+          background: linear-gradient(180deg, #F97316 0%, #EA580C 100%);
+          box-shadow: 
+            0 4px 0 #92400E,
+            0 0 30px rgba(234, 88, 12, 0.6),
+            inset 0 1px 0 rgba(255, 255, 255, 0.3);
+        }
+        
+        .doom-button:active {
+          transform: translateY(4px);
+          box-shadow: 
+            0 0 0 #92400E,
+            0 2px 4px rgba(0, 0, 0, 0.4),
+            inset 0 1px 0 rgba(255, 255, 255, 0.2);
+        }
+        
+        .doom-button-secondary {
+          font-weight: 600;
+          text-transform: uppercase;
+          letter-spacing: 0.08em;
+          padding: 0.75rem 1.5rem;
+          background: linear-gradient(180deg, #52525B 0%, #3F3F46 100%);
+          border: 1px solid #71717A;
+          color: #D4D4D8;
+          cursor: pointer;
+          transition: all var(--doom-transition-fast) ease;
+          box-shadow: 
+            0 2px 0 #27272A,
+            inset 0 1px 0 rgba(255, 255, 255, 0.1);
+        }
+        
+        .doom-button-secondary:hover {
+          background: linear-gradient(180deg, #71717A 0%, #52525B 100%);
+          border-color: #A1A1AA;
+          color: #FFF7ED;
+        }
+        
+        /* === CARDS === */
+        
+        .doom-card {
+          background: var(--doom-zinc-800);
+          border: 1px solid var(--doom-zinc-700);
+          position: relative;
+          overflow: hidden;
+          transition: all var(--doom-transition-medium) ease;
+        }
+        
+        .doom-card:hover {
+          border-color: rgba(234, 88, 12, 0.5);
+          box-shadow: 0 0 20px rgba(234, 88, 12, 0.2);
+        }
+        
+        /* === WORKOUT STATES === */
+        
+        .doom-workout-completed {
+          background: 
+            linear-gradient(135deg, 
+              rgba(21, 128, 61, 0.15) 0%, 
+              rgba(21, 128, 61, 0.05) 100%
+            ),
+            var(--doom-zinc-800);
+          border: 2px solid var(--doom-green-dark);
+          box-shadow: 
+            0 0 20px rgba(34, 197, 94, 0.3),
+            inset 0 1px 0 rgba(34, 197, 94, 0.1);
+          transition: all var(--doom-transition-medium) ease;
+        }
+        
+        .doom-workout-completed:hover {
+          border-color: var(--doom-green);
+          box-shadow: 
+            0 0 30px rgba(34, 197, 94, 0.5),
+            inset 0 1px 0 rgba(34, 197, 94, 0.2);
+        }
+        
+        .doom-workout-progress {
+          background: 
+            linear-gradient(135deg, 
+              rgba(234, 88, 12, 0.15) 0%, 
+              rgba(234, 88, 12, 0.05) 100%
+            ),
+            var(--doom-zinc-800);
+          border: 2px solid var(--doom-orange);
+          animation: doom-pulse 2s ease-in-out infinite;
+          box-shadow: 
+            0 0 20px rgba(234, 88, 12, 0.3),
+            inset 0 1px 0 rgba(234, 88, 12, 0.1);
+        }
+        
+        @keyframes doom-pulse {
+          0%, 100% { 
+            box-shadow: 
+              0 0 20px rgba(234, 88, 12, 0.3),
+              inset 0 1px 0 rgba(234, 88, 12, 0.1);
+          }
+          50% { 
+            box-shadow: 
+              0 0 40px rgba(234, 88, 12, 0.6),
+              inset 0 1px 0 rgba(234, 88, 12, 0.2);
+          }
+        }
+        
+        .doom-workout-pending {
+          background: var(--doom-zinc-700);
+          border: 1px solid var(--doom-zinc-600);
+          box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.3);
+          opacity: 0.7;
+          transition: opacity var(--doom-transition-medium) ease;
+        }
+        
+        .doom-workout-pending:hover {
+          opacity: 1;
+        }
+        
+        /* === BADGES === */
+        
+        .doom-badge {
+          display: inline-block;
+          padding: 0.25rem 0.75rem;
+          font-size: 0.75rem;
+          font-weight: 700;
+          text-transform: uppercase;
+          letter-spacing: 0.1em;
+          border-radius: 0;
+          clip-path: polygon(4px 0%, 100% 0%, calc(100% - 4px) 100%, 0% 100%);
+        }
+        
+        .doom-badge-completed {
+          background: var(--doom-green);
+          color: white;
+          box-shadow: 0 0 10px rgba(34, 197, 94, 0.5);
+        }
+        
+        .doom-badge-progress {
+          background: var(--doom-orange);
+          color: white;
+          box-shadow: 0 0 10px rgba(234, 88, 12, 0.5);
+          animation: doom-badge-pulse 1.5s ease-in-out infinite;
+        }
+        
+        @keyframes doom-badge-pulse {
+          0%, 100% { opacity: 1; }
+          50% { opacity: 0.8; }
+        }
+        
+        .doom-badge-pending {
+          background: var(--doom-zinc-600);
+          color: var(--doom-zinc-300);
+        }
+        
+        /* === SECTION DIVIDER === */
+        
+        .doom-section-header {
+          background: linear-gradient(
+            90deg,
+            transparent,
+            var(--doom-orange) 20%,
+            var(--doom-orange) 80%,
+            transparent
+          );
+          height: 2px;
+          position: relative;
+          margin: 3rem 0;
+        }
+        
+        .doom-section-header::before {
+          content: '◆';
+          position: absolute;
+          left: 50%;
+          top: -10px;
+          transform: translateX(-50%);
+          color: var(--doom-orange);
+          font-size: 1.2rem;
+          background: var(--doom-zinc-900);
+          padding: 0 1rem;
+        }
+        
+        /* === ANIMATIONS === */
+        
+        @keyframes doom-spin {
+          to { transform: rotate(360deg); }
+        }
+        
+        .doom-spinner {
+          width: 48px;
+          height: 48px;
+          border: 4px solid var(--doom-zinc-700);
+          border-top-color: var(--doom-orange);
+          border-radius: 50%;
+          animation: doom-spin 0.8s linear infinite;
+        }
+    </style>
+</head>
+<body class="bg-zinc-900 text-orange-50 min-h-screen doom-noise doom-scanlines">
+    
+    <!-- Navigation Bar -->
+    <nav class="bg-zinc-950 border-b border-zinc-800 px-6 py-4 flex items-center justify-between doom-metal">
+        <div class="flex items-center gap-3">
+            <div class="w-10 h-10 bg-gradient-to-br from-red-600 to-orange-600 rounded-lg flex items-center justify-center doom-bevel-raised">
+                <span class="text-2xl">🐸</span>
+            </div>
+            <span class="doom-title text-2xl text-orange-500">RIPIT</span>
+        </div>
+        <div class="flex items-center gap-6">
+            <span class="text-zinc-400 text-sm">drm2010.dustin@gmail.com</span>
+            <button class="text-zinc-400 hover:text-orange-500 transition text-sm font-semibold">SIGN OUT</button>
+        </div>
+    </nav>
+
+    <div class="max-w-6xl mx-auto p-8">
+        
+        <!-- Hero Section -->
+        <div class="mb-12 text-center">
+            <h1 class="doom-title text-6xl mb-4 text-orange-50">RIPIT DOOM THEME</h1>
+            <p class="text-zinc-400 text-lg">Complete Style System Preview</p>
+        </div>
+
+        <!-- Buttons Section -->
+        <div class="doom-section-header"></div>
+        <h2 class="doom-heading text-3xl mb-6 text-orange-50">BUTTONS & INTERACTIONS</h2>
+        
+        <div class="flex gap-4 mb-12 flex-wrap">
+            <button class="doom-button">PRIMARY BUTTON</button>
+            <button class="doom-button-secondary">SECONDARY BUTTON</button>
+            <button class="doom-button" disabled>DISABLED BUTTON</button>
+        </div>
+
+        <!-- Card Styles Section -->
+        <div class="doom-section-header"></div>
+        <h2 class="doom-heading text-3xl mb-6 text-orange-50">CARD VARIATIONS</h2>
+        
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-12">
+            <!-- Basic Card -->
+            <div class="doom-card doom-noise p-6">
+                <h3 class="doom-heading text-xl mb-2 text-orange-50">BASIC CARD</h3>
+                <p class="text-zinc-400">Standard card with noise texture</p>
+            </div>
+            
+            <!-- Card with Corners -->
+            <div class="doom-card doom-noise doom-corners p-6">
+                <h3 class="doom-heading text-xl mb-2 text-orange-50">CORNER ACCENTS</h3>
+                <p class="text-zinc-400">Card with angular corner decorations</p>
+            </div>
+            
+            <!-- Angular Shape -->
+            <div class="doom-card doom-noise doom-angular p-6">
+                <h3 class="doom-heading text-xl mb-2 text-orange-50">ANGULAR SHAPE</h3>
+                <p class="text-zinc-400">Clipped corners for aggressive look</p>
+            </div>
+            
+            <!-- Metal Texture -->
+            <div class="doom-card doom-metal doom-corners p-6">
+                <h3 class="doom-heading text-xl mb-2 text-orange-50">METAL TEXTURE</h3>
+                <p class="text-zinc-400">Brushed metal industrial surface</p>
+            </div>
+        </div>
+
+        <!-- Workout States Section -->
+        <div class="doom-section-header"></div>
+        <h2 class="doom-heading text-3xl mb-6 text-orange-50">WORKOUT STATES</h2>
+        
+        <div class="space-y-4 mb-12">
+            <!-- Completed Workout -->
+            <div class="doom-workout-completed doom-noise doom-corners p-6">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <div class="flex items-center gap-3 mb-2">
+                            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" class="text-green-400">
+                                <path d="M20 6L9 17L4 12" stroke="currentColor" strokeWidth="3" strokeLinecap="square"/>
+                            </svg>
+                            <span class="doom-badge doom-badge-completed">COMPLETED</span>
+                        </div>
+                        <h3 class="doom-heading text-2xl mb-1 text-orange-50">FULL BODY 1</h3>
+                        <p class="text-green-400 text-sm font-semibold">COMPLETED ON 1/3/2026</p>
+                    </div>
+                    <span class="text-zinc-600 text-2xl">→</span>
+                </div>
+            </div>
+            
+            <!-- In Progress Workout -->
+            <div class="doom-workout-progress doom-noise doom-corners p-6">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <div class="flex items-center gap-3 mb-2">
+                            <span class="doom-badge doom-badge-progress">IN PROGRESS</span>
+                        </div>
+                        <h3 class="doom-heading text-2xl mb-1 text-orange-50">FULL BODY 2</h3>
+                        <p class="text-orange-400 text-sm font-semibold">STARTED ON 1/13/2026</p>
+                    </div>
+                    <span class="text-zinc-600 text-2xl">→</span>
+                </div>
+            </div>
+            
+            <!-- Pending Workout -->
+            <div class="doom-workout-pending doom-noise p-6">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <div class="flex items-center gap-3 mb-2">
+                            <span class="doom-badge doom-badge-pending">PENDING</span>
+                        </div>
+                        <h3 class="doom-heading text-2xl mb-1 text-zinc-300">FULL BODY 3</h3>
+                        <p class="text-zinc-500 text-sm">Day 3</p>
+                    </div>
+                    <span class="text-zinc-600 text-2xl">→</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Exercise Card Section -->
+        <div class="doom-section-header"></div>
+        <h2 class="doom-heading text-3xl mb-6 text-orange-50">EXERCISE CARD</h2>
+        
+        <div class="doom-card doom-metal overflow-hidden mb-12">
+            <!-- Header -->
+            <div class="p-5 border-b border-zinc-700 doom-bevel-raised">
+                <div class="flex items-center gap-4">
+                    <div class="w-12 h-12 bg-orange-600 flex items-center justify-center doom-bevel-raised">
+                        <span class="text-white font-bold text-xl">1</span>
+                    </div>
+                    <div>
+                        <h3 class="doom-heading text-2xl text-orange-50">LEG CURL</h3>
+                        <p class="text-zinc-400 text-sm mt-1">Last Set: Long-length Partials</p>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Table -->
+            <div class="overflow-x-auto">
+                <table class="w-full">
+                    <thead>
+                        <tr class="bg-zinc-950 border-b border-zinc-700">
+                            <th class="text-left p-4 doom-label text-zinc-300">Set</th>
+                            <th class="text-left p-4 doom-label text-zinc-300">Reps</th>
+                            <th class="text-left p-4 doom-label text-zinc-300">Weight</th>
+                            <th class="text-left p-4 doom-label text-zinc-300">RPE</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr class="border-b border-zinc-700 hover:bg-zinc-700 transition">
+                            <td class="p-4 doom-stat text-orange-50">1</td>
+                            <td class="p-4 doom-stat text-orange-50">10-12</td>
+                            <td class="p-4 text-zinc-400">-</td>
+                            <td class="p-4 doom-stat text-orange-50">7</td>
+                        </tr>
+                        <tr class="border-b border-zinc-700 hover:bg-zinc-700 transition">
+                            <td class="p-4 doom-stat text-orange-50">2</td>
+                            <td class="p-4 doom-stat text-orange-50">10-12</td>
+                            <td class="p-4 text-zinc-400">-</td>
+                            <td class="p-4 doom-stat text-orange-50">7</td>
+                        </tr>
+                        <tr class="hover:bg-zinc-700 transition">
+                            <td class="p-4 doom-stat text-orange-50">3</td>
+                            <td class="p-4 doom-stat text-orange-50">8-10</td>
+                            <td class="p-4 doom-stat text-orange-400">135</td>
+                            <td class="p-4 doom-stat text-orange-50">8</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Typography Section -->
+        <div class="doom-section-header"></div>
+        <h2 class="doom-heading text-3xl mb-6 text-orange-50">TYPOGRAPHY STYLES</h2>
+        
+        <div class="doom-card doom-noise p-8 mb-12 space-y-6">
+            <h1 class="doom-title text-5xl text-orange-50">DOOM TITLE STYLE</h1>
+            <h2 class="doom-heading text-3xl text-orange-50">DOOM HEADING STYLE</h2>
+            <p class="doom-label text-zinc-400">DOOM LABEL STYLE</p>
+            <div class="flex items-baseline gap-4">
+                <span class="doom-stat text-6xl text-orange-500">225</span>
+                <span class="text-zinc-400">lbs</span>
+            </div>
+            <p class="text-zinc-300 text-lg">Standard paragraph text with regular styling for body content and descriptions.</p>
+        </div>
+
+        <!-- Loading & Badges Section -->
+        <div class="doom-section-header"></div>
+        <h2 class="doom-heading text-3xl mb-6 text-orange-50">LOADING & BADGES</h2>
+        
+        <div class="doom-card doom-noise p-8 mb-12">
+            <div class="flex items-center gap-8 flex-wrap">
+                <div class="doom-spinner"></div>
+                
+                <div class="flex gap-3 flex-wrap">
+                    <span class="doom-badge doom-badge-completed">COMPLETED</span>
+                    <span class="doom-badge doom-badge-progress">IN PROGRESS</span>
+                    <span class="doom-badge doom-badge-pending">PENDING</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Stats Dashboard -->
+        <div class="doom-section-header"></div>
+        <h2 class="doom-heading text-3xl mb-6 text-orange-50">STATS DASHBOARD</h2>
+        
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-12">
+            <div class="doom-card doom-metal doom-corners p-6 text-center">
+                <p class="doom-label text-zinc-400 mb-2">TOTAL WORKOUTS</p>
+                <p class="doom-stat text-5xl text-orange-500">47</p>
+            </div>
+            
+            <div class="doom-card doom-metal doom-corners p-6 text-center">
+                <p class="doom-label text-zinc-400 mb-2">CURRENT STREAK</p>
+                <p class="doom-stat text-5xl text-green-400">12</p>
+            </div>
+            
+            <div class="doom-card doom-metal doom-corners p-6 text-center">
+                <p class="doom-label text-zinc-400 mb-2">TOTAL VOLUME</p>
+                <p class="doom-stat text-5xl text-orange-500">89K</p>
+                <p class="text-zinc-500 text-sm">lbs</p>
+            </div>
+        </div>
+
+        <!-- Footer -->
+        <div class="text-center py-12">
+            <p class="text-zinc-500 text-sm">
+                RIPIT 🐸💪 | RIP AND TEAR THROUGH YOUR WORKOUTS
+            </p>
+        </div>
+
+    </div>
+
+</body>
+</html>

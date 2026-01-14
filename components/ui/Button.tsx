@@ -6,6 +6,7 @@ export interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
   variant?: 'primary' | 'secondary' | 'success' | 'danger' | 'ghost' | 'outline'
   size?: 'sm' | 'md' | 'lg'
   loading?: boolean
+  doom?: boolean
 }
 
 const Button = forwardRef<HTMLButtonElement, ButtonProps>(
@@ -14,11 +15,12 @@ const Button = forwardRef<HTMLButtonElement, ButtonProps>(
     variant = 'primary',
     size = 'md',
     loading = false,
+    doom = false,
     disabled,
     children,
     ...props
   }, ref) => {
-    const baseStyles = 'inline-flex items-center justify-center rounded-lg font-semibold transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed'
+    const baseStyles = 'inline-flex items-center justify-center font-semibold transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed'
 
     const variantStyles = {
       primary: 'bg-primary text-primary-foreground hover:bg-primary-hover active:bg-primary-active focus:ring-primary',
@@ -38,7 +40,7 @@ const Button = forwardRef<HTMLButtonElement, ButtonProps>(
     return (
       <button
         ref={ref}
-        className={`${baseStyles} ${variantStyles[variant]} ${sizeStyles[size]} ${className}`}
+        className={`${baseStyles} ${variantStyles[variant]} ${sizeStyles[size]} ${doom ? 'doom-button-3d' : 'rounded-lg'} ${className}`}
         disabled={disabled || loading}
         {...props}
       >

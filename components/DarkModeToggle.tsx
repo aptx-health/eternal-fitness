@@ -10,10 +10,17 @@ export default function DarkModeToggle() {
     setMounted(true)
     // Check localStorage or fall back to system preference
     const stored = localStorage.getItem('darkMode')
-    if (stored !== null) {
-      setIsDark(stored === 'true')
+    const prefersDark = stored !== null
+      ? stored === 'true'
+      : window.matchMedia('(prefers-color-scheme: dark)').matches
+
+    setIsDark(prefersDark)
+
+    // Apply dark mode class on mount
+    if (prefersDark) {
+      document.documentElement.classList.add('dark')
     } else {
-      setIsDark(window.matchMedia('(prefers-color-scheme: dark)').matches)
+      document.documentElement.classList.remove('dark')
     }
   }, [])
 
@@ -33,7 +40,7 @@ export default function DarkModeToggle() {
   if (!mounted) {
     return (
       <button
-        className="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
+        className="p-2 rounded-lg hover:bg-muted transition-colors"
         aria-label="Toggle dark mode"
       >
         <div className="w-5 h-5" />
@@ -44,14 +51,14 @@ export default function DarkModeToggle() {
   return (
     <button
       onClick={toggleDarkMode}
-      className="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
+      className="p-2 rounded-lg hover:bg-muted transition-colors"
       aria-label="Toggle dark mode"
       title={isDark ? 'Switch to light mode' : 'Switch to dark mode'}
     >
       {isDark ? (
         // Sun icon for light mode
         <svg
-          className="w-5 h-5 text-gray-600 dark:text-gray-300"
+          className="w-5 h-5 text-muted-foreground"
           fill="none"
           stroke="currentColor"
           viewBox="0 0 24 24"
@@ -66,7 +73,7 @@ export default function DarkModeToggle() {
       ) : (
         // Moon icon for dark mode
         <svg
-          className="w-5 h-5 text-gray-600 dark:text-gray-300"
+          className="w-5 h-5 text-muted-foreground"
           fill="none"
           stroke="currentColor"
           viewBox="0 0 24 24"

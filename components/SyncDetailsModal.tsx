@@ -30,12 +30,12 @@ export default function SyncDetailsModal({
 
   return (
     <div className="fixed inset-0 z-50 backdrop-blur-md bg-black/40 dark:bg-black/60 flex items-center justify-center p-4">
-      <div className="bg-white dark:bg-gray-900 rounded-lg max-w-md w-full p-4 shadow-lg">
+      <div className="bg-card rounded-lg max-w-md w-full p-4 shadow-lg">
         <div className="flex justify-between items-center mb-4">
-          <h3 className="font-semibold text-gray-900 dark:text-gray-100">Sync Status</h3>
+          <h3 className="font-semibold text-foreground">Sync Status</h3>
           <button
             onClick={onClose}
-            className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 p-1"
+            className="text-muted-foreground hover:text-foreground p-1"
           >
             <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
@@ -45,30 +45,30 @@ export default function SyncDetailsModal({
         
         {/* Synced State */}
         {syncState.status === 'synced' && (
-          <div className="text-green-700 dark:text-green-400 space-y-3">
+          <div className="text-success-text space-y-3">
             <div className="flex items-center gap-2">
-              <span className="text-green-600 dark:text-green-400">✓</span>
+              <span className="text-success">✓</span>
               <span className="font-medium">
                 {hasUnsavedChanges ? 'Server synced, local changes pending' : 'All data synced'}
               </span>
             </div>
-            <p className="text-sm text-gray-600 dark:text-gray-300">
+            <p className="text-sm text-muted-foreground">
               {syncState.totalSets} set{syncState.totalSets !== 1 ? 's' : ''} saved to server
             </p>
             {timeSinceSync && (
-              <p className="text-sm text-gray-500 dark:text-gray-400">
+              <p className="text-sm text-muted-foreground">
                 Last sync: {timeSinceSync}
               </p>
             )}
 
             {/* Unsaved Changes Warning */}
             {hasUnsavedChanges && (
-              <div className="bg-amber-50 dark:bg-amber-950 border border-amber-200 dark:border-amber-800 rounded p-3">
+              <div className="bg-warning-muted border border-warning-border rounded p-3">
                 <div className="flex items-center gap-2 mb-1">
-                  <span className="text-amber-600 dark:text-amber-400">⚠</span>
-                  <span className="text-sm font-medium text-amber-800 dark:text-amber-400">Unsaved Changes</span>
+                  <span className="text-warning">⚠</span>
+                  <span className="text-sm font-medium text-warning-text">Unsaved Changes</span>
                 </div>
-                <p className="text-xs text-amber-700 dark:text-amber-300">
+                <p className="text-xs text-warning-text">
                   You have local changes (new sets or deletions) that haven&apos;t been synced yet.
                   They will sync automatically after 3 sets or when you complete the workout.
                 </p>
@@ -76,8 +76,8 @@ export default function SyncDetailsModal({
             )}
 
             {/* Manual Sync Button for Testing */}
-            <div className="bg-blue-50 dark:bg-blue-950 border border-blue-200 dark:border-blue-800 rounded p-3">
-              <p className="text-xs text-blue-600 dark:text-blue-400 mb-2">Testing Controls</p>
+            <div className="bg-primary-muted border border-primary-muted-dark rounded p-3">
+              <p className="text-xs text-primary mb-2">Testing Controls</p>
               <button
                 onClick={() => {
                   console.log('Force Sync Now button clicked!')
@@ -85,13 +85,13 @@ export default function SyncDetailsModal({
                 }}
                 className={`w-full py-2 px-4 rounded text-sm transition-colors ${
                   hasUnsavedChanges
-                    ? 'bg-blue-600 text-white hover:bg-blue-700'
-                    : 'bg-gray-400 dark:bg-gray-700 text-gray-200'
+                    ? 'bg-primary text-primary-foreground hover:bg-primary-hover'
+                    : 'bg-muted text-muted-foreground'
                 }`}
               >
                 {hasUnsavedChanges ? 'Force Sync Now' : 'Force Sync (No Changes)'}
               </button>
-              <p className="text-xs text-blue-600 dark:text-blue-400 mt-1">
+              <p className="text-xs text-primary mt-1">
                 {hasUnsavedChanges
                   ? 'Immediately sync unsaved changes to server'
                   : 'Immediately sync current workout state'
@@ -103,16 +103,16 @@ export default function SyncDetailsModal({
         
         {/* Syncing State */}
         {syncState.status === 'syncing' && (
-          <div className="text-blue-700 dark:text-blue-400 space-y-2">
+          <div className="text-primary space-y-2">
             <div className="flex items-center gap-2">
-              <span className="text-blue-600 dark:text-blue-400 animate-spin">↻</span>
+              <span className="text-primary animate-spin">↻</span>
               <span className="font-medium">Syncing workout data...</span>
             </div>
-            <p className="text-sm text-gray-600 dark:text-gray-300">
+            <p className="text-sm text-muted-foreground">
               {syncState.pendingSets} set{syncState.pendingSets !== 1 ? 's' : ''} being saved
             </p>
             {syncState.isRetrying && (
-              <p className="text-sm text-blue-600 dark:text-blue-400">
+              <p className="text-sm text-primary">
                 Retry attempt {syncState.retryCount + 1}
               </p>
             )}
@@ -121,19 +121,19 @@ export default function SyncDetailsModal({
 
         {/* Error State */}
         {syncState.status === 'error' && (
-          <div className="text-amber-700 dark:text-amber-400 space-y-3">
+          <div className="text-warning space-y-3">
             <div className="flex items-center gap-2">
-              <span className="text-amber-600 dark:text-amber-400">⚠</span>
+              <span className="text-warning">⚠</span>
               <span className="font-medium">Sync failed</span>
             </div>
-            <p className="text-sm text-gray-600 dark:text-gray-300">
+            <p className="text-sm text-muted-foreground">
               {syncState.pendingSets} set{syncState.pendingSets !== 1 ? 's' : ''} not saved to server
             </p>
 
             {displayError && (
-              <div className="bg-amber-50 dark:bg-amber-950 border border-amber-200 dark:border-amber-800 rounded p-3">
-                <p className="text-xs font-medium text-amber-800 dark:text-amber-400 mb-1">Error Details:</p>
-                <p className="text-sm text-amber-700 dark:text-amber-300 font-mono break-words">
+              <div className="bg-warning-muted border border-warning-border rounded p-3">
+                <p className="text-xs font-medium text-warning-text mb-1">Error Details:</p>
+                <p className="text-sm text-warning-text font-mono break-words">
                   {displayError}
                 </p>
               </div>
@@ -143,13 +143,13 @@ export default function SyncDetailsModal({
               <button
                 onClick={onRetrySync}
                 disabled={syncState.isRetrying}
-                className="w-full bg-blue-600 text-white py-2 px-4 rounded hover:bg-blue-700
-                  disabled:bg-gray-400 disabled:cursor-not-allowed transition-colors"
+                className="w-full bg-primary text-primary-foreground py-2 px-4 rounded hover:bg-primary-hover
+                  disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
               >
                 {syncState.isRetrying ? 'Retrying...' : 'Retry Sync'}
               </button>
 
-              <p className="text-xs text-gray-500 dark:text-gray-400 text-center">
+              <p className="text-xs text-muted-foreground text-center">
                 Data is safely stored locally until sync succeeds
               </p>
             </div>
@@ -158,22 +158,22 @@ export default function SyncDetailsModal({
 
         {/* Offline State */}
         {syncState.status === 'offline' && (
-          <div className="text-gray-700 dark:text-gray-300 space-y-2">
+          <div className="text-foreground space-y-2">
             <div className="flex items-center gap-2">
-              <span className="text-gray-600 dark:text-gray-400">📱</span>
+              <span className="text-muted-foreground">📱</span>
               <span className="font-medium">Working offline</span>
             </div>
-            <p className="text-sm text-gray-600 dark:text-gray-300">
+            <p className="text-sm text-muted-foreground">
               {syncState.pendingSets} set{syncState.pendingSets !== 1 ? 's' : ''} stored locally
             </p>
-            <div className="bg-blue-50 dark:bg-blue-950 border border-blue-200 dark:border-blue-800 rounded p-3">
-              <p className="text-sm text-blue-700 dark:text-blue-400">
+            <div className="bg-primary-muted border border-primary-muted-dark rounded p-3">
+              <p className="text-sm text-primary">
                 Your workout data is safely stored on this device.
                 It will automatically sync when connection returns.
               </p>
             </div>
             {syncState.totalSets > 0 && (
-              <p className="text-sm text-gray-500 dark:text-gray-400">
+              <p className="text-sm text-muted-foreground">
                 {syncState.totalSets} set{syncState.totalSets !== 1 ? 's' : ''} previously synced
               </p>
             )}
@@ -182,9 +182,9 @@ export default function SyncDetailsModal({
 
         {/* Debug Info (only in development) */}
         {process.env.NODE_ENV === 'development' && (
-          <details className="mt-4 text-xs text-gray-500 dark:text-gray-400">
-            <summary className="cursor-pointer hover:text-gray-700 dark:hover:text-gray-300">Debug Info</summary>
-            <div className="mt-2 font-mono bg-gray-50 dark:bg-gray-800 p-2 rounded text-xs">
+          <details className="mt-4 text-xs text-muted-foreground">
+            <summary className="cursor-pointer hover:text-foreground">Debug Info</summary>
+            <div className="mt-2 font-mono bg-muted p-2 rounded text-xs">
               <div>Status: {syncState.status}</div>
               <div>Pending: {syncState.pendingSets}</div>
               <div>Total: {syncState.totalSets}</div>

@@ -143,25 +143,25 @@ export default function WorkoutDetail({ workout, programId, exerciseHistory }: P
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-gray-950 pb-24">
+    <div className="min-h-screen bg-background pb-24">
       {/* Header - Fixed at top */}
-      <div className="bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-700 sticky top-0 z-10">
+      <div className="bg-card border-b border-border sticky top-0 z-10">
         <div className="max-w-2xl mx-auto px-4 py-4">
           <Link
             href={`/programs/${programId}/weeks/${workout.week.weekNumber}`}
-            className="text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 font-medium inline-block mb-2"
+            className="text-primary hover:text-primary-hover font-medium inline-block mb-2"
           >
             ← Week {workout.week.weekNumber}
           </Link>
           <div className="flex items-center justify-between">
             <div>
-              <div className="text-sm text-gray-500 dark:text-gray-400 font-medium">
+              <div className="text-sm text-muted-foreground font-medium">
                 Day {workout.dayNumber}
               </div>
-              <h1 className="text-2xl font-bold text-gray-900 dark:text-gray-100">{workout.name}</h1>
+              <h1 className="text-2xl font-bold text-foreground">{workout.name}</h1>
             </div>
             {isWorkoutCompleted && (
-              <div className="flex items-center justify-center w-10 h-10 rounded-full bg-green-500">
+              <div className="flex items-center justify-center w-10 h-10 rounded-full bg-success">
                 <svg
                   className="w-6 h-6 text-white"
                   fill="currentColor"
@@ -176,18 +176,18 @@ export default function WorkoutDetail({ workout, programId, exerciseHistory }: P
               </div>
             )}
             {isDraft && (
-              <div className="flex items-center justify-center w-10 h-10 rounded-full bg-amber-500">
+              <div className="flex items-center justify-center w-10 h-10 rounded-full bg-warning">
                 <Clock className="w-6 h-6 text-white" />
               </div>
             )}
           </div>
           {isWorkoutCompleted && completion && (
-            <p className="text-sm text-green-700 dark:text-green-400 mt-1">
+            <p className="text-sm text-success-text mt-1">
               Completed on {new Date(completion.completedAt).toLocaleDateString()}
             </p>
           )}
           {isDraft && completion && (
-            <p className="text-sm text-amber-700 dark:text-amber-400 mt-1">
+            <p className="text-sm text-warning-text mt-1">
               In progress - {completion.loggedSets.length} set{completion.loggedSets.length !== 1 ? 's' : ''} logged
             </p>
           )}
@@ -206,25 +206,25 @@ export default function WorkoutDetail({ workout, programId, exerciseHistory }: P
             return (
               <div
                 key={exercise.id}
-                className="bg-white dark:bg-gray-900 rounded-lg border border-gray-200 dark:border-gray-700 overflow-hidden"
+                className="bg-card rounded-lg border border-border overflow-hidden"
               >
                 {/* Exercise Header */}
-                <div className="bg-gray-50 dark:bg-gray-800 px-4 py-3 border-b border-gray-200 dark:border-gray-700">
+                <div className="bg-muted px-4 py-3 border-b border-border">
                   <div className="flex items-center gap-2">
-                    <span className="flex items-center justify-center w-6 h-6 rounded-full bg-blue-600 text-white text-xs font-bold">
+                    <span className="flex items-center justify-center w-6 h-6 rounded-full bg-primary text-white text-xs font-bold">
                       {index + 1}
                     </span>
                     {exercise.exerciseGroup && (
-                      <span className="px-2 py-0.5 bg-purple-100 dark:bg-purple-900 text-purple-800 dark:text-purple-200 text-xs font-bold rounded">
+                      <span className="px-2 py-0.5 bg-accent-muted text-accent-text text-xs font-bold rounded">
                         {exercise.exerciseGroup}
                       </span>
                     )}
-                    <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100">
+                    <h3 className="text-lg font-semibold text-foreground">
                       {exercise.name}
                     </h3>
                   </div>
                   {exercise.notes && (
-                    <p className="text-sm text-gray-600 dark:text-gray-300 mt-1 ml-8">
+                    <p className="text-sm text-muted-foreground mt-1 ml-8">
                       {exercise.notes}
                     </p>
                   )}
@@ -233,26 +233,26 @@ export default function WorkoutDetail({ workout, programId, exerciseHistory }: P
                 {/* Sets Table */}
                 <div className="overflow-x-auto">
                   <table className="w-full text-sm">
-                    <thead className="bg-gray-50 dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700">
+                    <thead className="bg-muted border-b border-border">
                       <tr>
-                        <th className="px-4 py-2 text-left font-semibold text-gray-700 dark:text-gray-200">
+                        <th className="px-4 py-2 text-left font-semibold text-foreground">
                           Set
                         </th>
-                        <th className="px-4 py-2 text-left font-semibold text-gray-700 dark:text-gray-200">
+                        <th className="px-4 py-2 text-left font-semibold text-foreground">
                           Reps
                         </th>
-                        <th className="px-4 py-2 text-left font-semibold text-gray-700 dark:text-gray-200">
+                        <th className="px-4 py-2 text-left font-semibold text-foreground">
                           Weight
                         </th>
                         {(exercise.prescribedSets.some((s) => s.rir !== null) ||
                           exerciseLoggedSets.some((s) => s.rir !== null)) && (
-                          <th className="px-4 py-2 text-left font-semibold text-gray-700 dark:text-gray-200">
+                          <th className="px-4 py-2 text-left font-semibold text-foreground">
                             RIR
                           </th>
                         )}
                         {(exercise.prescribedSets.some((s) => s.rpe !== null) ||
                           exerciseLoggedSets.some((s) => s.rpe !== null)) && (
-                          <th className="px-4 py-2 text-left font-semibold text-gray-700 dark:text-gray-200">
+                          <th className="px-4 py-2 text-left font-semibold text-foreground">
                             RPE
                           </th>
                         )}
@@ -262,24 +262,24 @@ export default function WorkoutDetail({ workout, programId, exerciseHistory }: P
                       {(isWorkoutCompleted || isDraft) ? (
                         // Show logged sets
                         exerciseLoggedSets.map((loggedSet) => (
-                          <tr key={loggedSet.id} className="hover:bg-gray-50 dark:hover:bg-gray-800">
-                            <td className="px-4 py-3 font-medium text-gray-900 dark:text-gray-100">
+                          <tr key={loggedSet.id} className="hover:bg-muted">
+                            <td className="px-4 py-3 font-medium text-foreground">
                               {loggedSet.setNumber}
                             </td>
-                            <td className="px-4 py-3 text-gray-900 dark:text-gray-100">
+                            <td className="px-4 py-3 text-foreground">
                               {loggedSet.reps}
                             </td>
-                            <td className="px-4 py-3 text-gray-900 dark:text-gray-100">
+                            <td className="px-4 py-3 text-foreground">
                               {loggedSet.weight}
                               {loggedSet.weightUnit}
                             </td>
                             {exerciseLoggedSets.some((s) => s.rir !== null) && (
-                              <td className="px-4 py-3 text-gray-900 dark:text-gray-100">
+                              <td className="px-4 py-3 text-foreground">
                                 {loggedSet.rir ?? '-'}
                               </td>
                             )}
                             {exerciseLoggedSets.some((s) => s.rpe !== null) && (
-                              <td className="px-4 py-3 text-gray-900 dark:text-gray-100">
+                              <td className="px-4 py-3 text-foreground">
                                 {loggedSet.rpe ?? '-'}
                               </td>
                             )}
@@ -288,21 +288,21 @@ export default function WorkoutDetail({ workout, programId, exerciseHistory }: P
                       ) : (
                         // Show prescribed sets
                         exercise.prescribedSets.map((set) => (
-                          <tr key={set.id} className="hover:bg-gray-50 dark:hover:bg-gray-800">
-                            <td className="px-4 py-3 font-medium text-gray-700 dark:text-gray-200">
+                          <tr key={set.id} className="hover:bg-muted">
+                            <td className="px-4 py-3 font-medium text-foreground">
                               {set.setNumber}
                             </td>
-                            <td className="px-4 py-3 text-gray-700 dark:text-gray-200">{set.reps}</td>
-                            <td className="px-4 py-3 text-gray-700 dark:text-gray-200">
+                            <td className="px-4 py-3 text-foreground">{set.reps}</td>
+                            <td className="px-4 py-3 text-foreground">
                               {set.weight || '-'}
                             </td>
                             {exercise.prescribedSets.some((s) => s.rir !== null) && (
-                              <td className="px-4 py-3 text-gray-700 dark:text-gray-200">
+                              <td className="px-4 py-3 text-foreground">
                                 {set.rir ?? '-'}
                               </td>
                             )}
                             {exercise.prescribedSets.some((s) => s.rpe !== null) && (
-                              <td className="px-4 py-3 text-gray-700 dark:text-gray-200">
+                              <td className="px-4 py-3 text-foreground">
                                 {set.rpe ?? '-'}
                               </td>
                             )}
@@ -319,17 +319,17 @@ export default function WorkoutDetail({ workout, programId, exerciseHistory }: P
       </div>
 
       {/* Bottom Action Bar - Fixed at bottom for mobile */}
-      <div className="fixed bottom-0 left-0 right-0 bg-white dark:bg-gray-900 border-t border-gray-200 dark:border-gray-700 shadow-lg z-20">
+      <div className="fixed bottom-0 left-0 right-0 bg-card border-t border-border shadow-lg z-20">
         <div className="max-w-2xl mx-auto px-4 py-4">
           {isWorkoutCompleted ? (
             <div className="space-y-2">
               <button
                 onClick={handleClearWorkout}
-                className="w-full py-4 bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-200 rounded-lg font-semibold hover:bg-gray-200 dark:hover:bg-gray-600 active:bg-gray-300 dark:active:bg-gray-500 transition-colors"
+                className="w-full py-4 bg-muted text-foreground rounded-lg font-semibold hover:bg-secondary-hover active:bg-secondary-active transition-colors"
               >
                 Reset
               </button>
-              <p className="text-xs text-center text-gray-500 dark:text-gray-400">
+              <p className="text-xs text-center text-muted-foreground">
                 This will delete your logged data for this workout
               </p>
             </div>
@@ -338,25 +338,25 @@ export default function WorkoutDetail({ workout, programId, exerciseHistory }: P
               <div className="grid grid-cols-2 gap-3">
                 <button
                   onClick={() => setIsLoggingModalOpen(true)}
-                  className="py-4 bg-blue-600 text-white rounded-lg font-semibold hover:bg-blue-700 active:bg-blue-800 transition-colors shadow-sm"
+                  className="py-4 bg-primary text-white rounded-lg font-semibold hover:bg-primary-hover active:bg-primary-active transition-colors shadow-sm"
                 >
                   Continue Logging
                 </button>
                 <button
                   onClick={handleClearWorkout}
-                  className="py-4 bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-200 rounded-lg font-semibold hover:bg-gray-200 dark:hover:bg-gray-600 active:bg-gray-300 dark:active:bg-gray-500 transition-colors"
+                  className="py-4 bg-muted text-foreground rounded-lg font-semibold hover:bg-secondary-hover active:bg-secondary-active transition-colors"
                 >
                   Reset
                 </button>
               </div>
-              <p className="text-xs text-center text-gray-500 dark:text-gray-400">
+              <p className="text-xs text-center text-muted-foreground">
                 Reset will delete all logged data for this workout
               </p>
             </div>
           ) : (
             <button
               onClick={() => setIsLoggingModalOpen(true)}
-              className="w-full py-4 bg-blue-600 text-white rounded-lg font-semibold text-lg hover:bg-blue-700 active:bg-blue-800 transition-colors shadow-sm"
+              className="w-full py-4 bg-primary text-white rounded-lg font-semibold text-lg hover:bg-primary-hover active:bg-primary-active transition-colors shadow-sm"
             >
               Start Logging
             </button>
