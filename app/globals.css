@@ -1,65 +1,67 @@
 @import "tailwindcss";
 
 :root {
+  /* DOOM Theme - Brutal Gray (Light Mode) */
+
   /* Base colors */
-  --background: #ffffff;
-  --foreground: #171717;
+  --background: #18181B;  /* zinc-900 */
+  --foreground: #FFF7ED;  /* orange-50 */
 
   /* Surface colors */
-  --card: #ffffff;
-  --card-foreground: #171717;
-  --muted: #f9fafb;
-  --muted-foreground: #6b7280;
+  --card: #27272A;        /* zinc-800 */
+  --card-foreground: #FFF7ED;
+  --muted: #3F3F46;       /* zinc-700 */
+  --muted-foreground: #A1A1AA;  /* zinc-400 */
 
   /* Border colors */
-  --border: #e5e7eb;
-  --input: #e5e7eb;
+  --border: #3F3F46;      /* zinc-700 */
+  --input: #52525B;       /* zinc-600 */
 
-  /* Primary (Blue) */
-  --primary: #2563eb;
-  --primary-foreground: #ffffff;
-  --primary-hover: #1d4ed8;
-  --primary-active: #1e40af;
-  --primary-muted: #eff6ff;
-  --primary-muted-dark: #1e3a8a;
+  /* Primary (Orange) */
+  --primary: #EA580C;     /* orange-600 */
+  --primary-foreground: #FFF7ED;  /* orange-50 */
+  --primary-hover: #C2410C;       /* orange-700 */
+  --primary-active: #9A3412;      /* orange-800 */
+  --primary-muted: #431407;       /* orange-950 */
+  --primary-muted-dark: #EA580C;  /* orange-600 for borders */
 
-  /* Secondary (Gray) */
-  --secondary: #6b7280;
-  --secondary-foreground: #ffffff;
-  --secondary-hover: #4b5563;
-  --secondary-active: #374151;
-  --secondary-muted: #f9fafb;
+  /* Secondary (Zinc) */
+  --secondary: #71717A;   /* zinc-500 */
+  --secondary-foreground: #FFF7ED;
+  --secondary-hover: #52525B;     /* zinc-600 */
+  --secondary-active: #3F3F46;    /* zinc-700 */
+  --secondary-muted: #3F3F46;     /* zinc-700 */
 
-  /* Success (Green) */
-  --success: #16a34a;
-  --success-foreground: #ffffff;
-  --success-hover: #15803d;
-  --success-muted: #f0fdf4;
-  --success-text: #15803d;
-  --success-border: #86efac;
+  /* Success (Green) - Completed workouts */
+  --success: #15803D;     /* green-700 */
+  --success-foreground: #FFF7ED;
+  --success-hover: #166534;       /* green-800 */
+  --success-muted: #052E16;       /* green-950 */
+  --success-text: #4ADE80;        /* green-400 */
+  --success-border: #15803D;      /* green-700 */
 
-  /* Warning (Amber) */
-  --warning: #f59e0b;
-  --warning-foreground: #ffffff;
-  --warning-hover: #d97706;
-  --warning-muted: #fffbeb;
-  --warning-text: #b45309;
-  --warning-border: #fcd34d;
+  /* Warning (Orange) - In-progress workouts */
+  --warning: #EA580C;     /* orange-600 */
+  --warning-foreground: #FFF7ED;
+  --warning-hover: #C2410C;       /* orange-700 */
+  --warning-muted: #431407;       /* orange-950 */
+  --warning-text: #FB923C;        /* orange-400 */
+  --warning-border: #EA580C;      /* orange-600 */
 
   /* Error/Danger (Red) */
-  --error: #dc2626;
-  --error-foreground: #ffffff;
-  --error-hover: #b91c1c;
-  --error-muted: #fef2f2;
-  --error-text: #b91c1c;
-  --error-border: #fca5a5;
+  --error: #DC2626;       /* red-600 */
+  --error-foreground: #FFF7ED;
+  --error-hover: #B91C1C;         /* red-700 */
+  --error-muted: #450A0A;         /* red-950 */
+  --error-text: #F87171;          /* red-400 */
+  --error-border: #DC2626;        /* red-600 */
 
   /* Accent (Purple) - for supersets */
-  --accent: #9333ea;
-  --accent-foreground: #ffffff;
-  --accent-hover: #7e22ce;
-  --accent-muted: #faf5ff;
-  --accent-text: #7e22ce;
+  --accent: #9333EA;      /* purple-600 */
+  --accent-foreground: #FFF7ED;
+  --accent-hover: #7E22CE;        /* purple-700 */
+  --accent-muted: #3B0764;        /* purple-950 */
+  --accent-text: #C084FC;         /* purple-400 */
 }
 
 @theme inline {
@@ -128,65 +130,67 @@
 
 @media (prefers-color-scheme: dark) {
   :root {
+    /* DOOM Theme - Pure Darkness (Dark Mode) */
+
     /* Base colors */
-    --background: #0a0a0a;
-    --foreground: #ededed;
+    --background: #000000;  /* pure black */
+    --foreground: #FFF7ED;  /* orange-50 */
 
     /* Surface colors */
-    --card: #18181b;
-    --card-foreground: #fafafa;
-    --muted: #27272a;
-    --muted-foreground: #a1a1aa;
+    --card: #09090B;        /* zinc-950 */
+    --card-foreground: #FFF7ED;
+    --muted: #18181B;       /* zinc-900 */
+    --muted-foreground: #A1A1AA;  /* zinc-400 */
 
     /* Border colors */
-    --border: #3f3f46;
-    --input: #3f3f46;
+    --border: #27272A;      /* zinc-800 */
+    --input: #3F3F46;       /* zinc-700 */
 
-    /* Primary (Blue) */
-    --primary: #3b82f6;
-    --primary-foreground: #ffffff;
-    --primary-hover: #60a5fa;
-    --primary-active: #93c5fd;
-    --primary-muted: #1e3a8a;
-    --primary-muted-dark: #1e40af;
+    /* Primary (Orange) */
+    --primary: #EA580C;     /* orange-600 */
+    --primary-foreground: #FFF7ED;
+    --primary-hover: #C2410C;       /* orange-700 */
+    --primary-active: #9A3412;      /* orange-800 */
+    --primary-muted: #431407;       /* orange-950 */
+    --primary-muted-dark: #F97316;  /* orange-500 for borders */
 
-    /* Secondary (Gray) */
-    --secondary: #71717a;
-    --secondary-foreground: #ffffff;
-    --secondary-hover: #a1a1aa;
-    --secondary-active: #d4d4d8;
-    --secondary-muted: #27272a;
+    /* Secondary (Zinc) */
+    --secondary: #71717A;   /* zinc-500 */
+    --secondary-foreground: #FFF7ED;
+    --secondary-hover: #52525B;     /* zinc-600 */
+    --secondary-active: #3F3F46;    /* zinc-700 */
+    --secondary-muted: #27272A;     /* zinc-800 */
 
-    /* Success (Green) */
-    --success: #22c55e;
-    --success-foreground: #ffffff;
-    --success-hover: #4ade80;
-    --success-muted: #052e16;
-    --success-text: #4ade80;
-    --success-border: #166534;
+    /* Success (Green) - Completed workouts */
+    --success: #16A34A;     /* green-600 */
+    --success-foreground: #FFF7ED;
+    --success-hover: #15803D;       /* green-700 */
+    --success-muted: #052E16;       /* green-950 */
+    --success-text: #4ADE80;        /* green-400 */
+    --success-border: #16A34A;      /* green-600 */
 
-    /* Warning (Amber) */
-    --warning: #f59e0b;
-    --warning-foreground: #ffffff;
-    --warning-hover: #fbbf24;
-    --warning-muted: #451a03;
-    --warning-text: #fbbf24;
-    --warning-border: #92400e;
+    /* Warning (Orange) - In-progress workouts */
+    --warning: #F97316;     /* orange-500 */
+    --warning-foreground: #FFF7ED;
+    --warning-hover: #EA580C;       /* orange-600 */
+    --warning-muted: #431407;       /* orange-950 */
+    --warning-text: #FB923C;        /* orange-400 */
+    --warning-border: #F97316;      /* orange-500 */
 
     /* Error/Danger (Red) */
-    --error: #ef4444;
-    --error-foreground: #ffffff;
-    --error-hover: #f87171;
-    --error-muted: #450a0a;
-    --error-text: #f87171;
-    --error-border: #991b1b;
+    --error: #EF4444;       /* red-500 */
+    --error-foreground: #FFF7ED;
+    --error-hover: #DC2626;         /* red-600 */
+    --error-muted: #450A0A;         /* red-950 */
+    --error-text: #F87171;          /* red-400 */
+    --error-border: #EF4444;        /* red-500 */
 
-    /* Accent (Purple) */
-    --accent: #a855f7;
-    --accent-foreground: #ffffff;
-    --accent-hover: #c084fc;
-    --accent-muted: #3b0764;
-    --accent-text: #c084fc;
+    /* Accent (Purple) - for supersets */
+    --accent: #A855F7;      /* purple-500 */
+    --accent-foreground: #FFF7ED;
+    --accent-hover: #9333EA;        /* purple-600 */
+    --accent-muted: #3B0764;        /* purple-950 */
+    --accent-text: #C084FC;         /* purple-400 */
   }
 }
 

@@ -22,7 +22,7 @@ const Button = forwardRef<HTMLButtonElement, ButtonProps>(
 
     const variantStyles = {
       primary: 'bg-primary text-primary-foreground hover:bg-primary-hover active:bg-primary-active focus:ring-primary',
-      secondary: 'bg-secondary-muted dark:bg-muted text-foreground hover:bg-secondary-hover hover:text-secondary-foreground dark:hover:bg-secondary-active',
+      secondary: 'bg-muted text-foreground hover:bg-secondary-hover hover:text-foreground focus:ring-border',
       success: 'bg-success text-success-foreground hover:bg-success-hover focus:ring-success',
       danger: 'bg-error text-error-foreground hover:bg-error-hover focus:ring-error',
       ghost: 'bg-transparent hover:bg-muted text-foreground',
