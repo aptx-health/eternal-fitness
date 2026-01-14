@@ -33,9 +33,9 @@ export default function FAUVolumeVisualization({ weeks }: FAUVolumeVisualization
   // If no weeks, show empty state
   if (weeks.length === 0) {
     return (
-      <div className="bg-white dark:bg-gray-900 rounded-lg p-6">
-        <h3 className="font-semibold dark:text-gray-100 mb-4">Muscle Group Balance</h3>
-        <div className="text-gray-500 dark:text-gray-400 text-sm">
+      <div className="bg-card rounded-lg p-6">
+        <h3 className="font-semibold text-foreground mb-4">Muscle Group Balance</h3>
+        <div className="text-muted-foreground text-sm">
           Add exercises to see volume distribution across muscle groups
         </div>
       </div>
@@ -51,33 +51,33 @@ export default function FAUVolumeVisualization({ weeks }: FAUVolumeVisualization
   const canGoNext = selectedWeekIndex < weeks.length - 1
 
   return (
-    <div className="bg-white dark:bg-gray-900 rounded-lg p-6">
-      <h3 className="font-semibold dark:text-gray-100 mb-4">Muscle Group Balance</h3>
+    <div className="bg-card rounded-lg p-6">
+      <h3 className="font-semibold text-foreground mb-4">Muscle Group Balance</h3>
 
       {/* Week Navigation */}
-      <div className="flex items-center justify-between mb-4 pb-4 border-b dark:border-gray-700">
+      <div className="flex items-center justify-between mb-4 pb-4 border-b border-border">
         <button
           onClick={() => setSelectedWeekIndex(selectedWeekIndex - 1)}
           disabled={!canGoPrev}
           className={`p-1 rounded ${
             canGoPrev
-              ? 'hover:bg-gray-100 dark:hover:bg-gray-800 text-gray-700 dark:text-gray-200'
-              : 'text-gray-300 dark:text-gray-600 cursor-not-allowed'
+              ? 'hover:bg-muted text-foreground'
+              : 'text-muted-foreground opacity-50 cursor-not-allowed'
           }`}
           aria-label="Previous week"
         >
           <ChevronLeft size={20} />
         </button>
 
-        <span className="font-medium dark:text-gray-100">Week {currentWeek.weekNumber}</span>
+        <span className="font-medium text-foreground">Week {currentWeek.weekNumber}</span>
 
         <button
           onClick={() => setSelectedWeekIndex(selectedWeekIndex + 1)}
           disabled={!canGoNext}
           className={`p-1 rounded ${
             canGoNext
-              ? 'hover:bg-gray-100 dark:hover:bg-gray-800 text-gray-700 dark:text-gray-200'
-              : 'text-gray-300 dark:text-gray-600 cursor-not-allowed'
+              ? 'hover:bg-muted text-foreground'
+              : 'text-muted-foreground opacity-50 cursor-not-allowed'
           }`}
           aria-label="Next week"
         >
@@ -86,20 +86,20 @@ export default function FAUVolumeVisualization({ weeks }: FAUVolumeVisualization
       </div>
 
       {/* Secondary Volume Controls */}
-      <div className="mb-4 pb-4 border-b dark:border-gray-700 space-y-3">
+      <div className="mb-4 pb-4 border-b border-border space-y-3">
         <label className="flex items-center gap-2 cursor-pointer">
           <input
             type="checkbox"
             checked={includeSecondary}
             onChange={(e) => setIncludeSecondary(e.target.checked)}
-            className="rounded border-gray-300 dark:border-gray-600"
+            className="rounded border-input"
           />
-          <span className="text-sm dark:text-gray-200">Include Secondary Volume</span>
+          <span className="text-sm text-foreground">Include Secondary Volume</span>
         </label>
 
         {includeSecondary && (
           <div className="pl-6 space-y-2">
-            <label className="text-xs text-gray-600 dark:text-gray-300">
+            <label className="text-xs text-muted-foreground">
               Secondary Weight: {secondaryWeight.toFixed(1)}
             </label>
             <input
@@ -109,9 +109,9 @@ export default function FAUVolumeVisualization({ weeks }: FAUVolumeVisualization
               step="0.1"
               value={secondaryWeight}
               onChange={(e) => setSecondaryWeight(parseFloat(e.target.value))}
-              className="w-full h-2 bg-gray-200 dark:bg-gray-700 rounded-lg appearance-none cursor-pointer accent-blue-600"
+              className="w-full h-2 bg-muted rounded-lg appearance-none cursor-pointer accent-primary"
             />
-            <div className="flex justify-between text-xs text-gray-400 dark:text-gray-500">
+            <div className="flex justify-between text-xs text-muted-foreground">
               <span>0.1</span>
               <span>1.0</span>
             </div>
@@ -121,7 +121,7 @@ export default function FAUVolumeVisualization({ weeks }: FAUVolumeVisualization
 
       {/* Volume Bars */}
       {sortedVolumes.length === 0 ? (
-        <div className="text-gray-500 dark:text-gray-400 text-sm">
+        <div className="text-muted-foreground text-sm">
           No exercises in this week yet
         </div>
       ) : (
@@ -133,16 +133,16 @@ export default function FAUVolumeVisualization({ weeks }: FAUVolumeVisualization
             return (
               <div key={fau}>
                 <div className="flex justify-between items-center mb-1">
-                  <span className="text-sm font-medium text-gray-700 dark:text-gray-200">
+                  <span className="text-sm font-medium text-foreground">
                     {displayName}
                   </span>
-                  <span className="text-sm text-gray-500 dark:text-gray-400">
+                  <span className="text-sm text-muted-foreground">
                     {vol % 1 === 0 ? vol : vol.toFixed(1)} sets
                   </span>
                 </div>
-                <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2">
+                <div className="w-full bg-muted rounded-full h-2">
                   <div
-                    className="bg-blue-600 h-2 rounded-full transition-all duration-300"
+                    className="bg-primary h-2 rounded-full transition-all duration-300"
                     style={{ width: `${percentage}%` }}
                   />
                 </div>

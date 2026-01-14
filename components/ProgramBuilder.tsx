@@ -529,15 +529,15 @@ export default function ProgramBuilder({ editMode = false, existingProgram }: Pr
       {/* Main Content */}
       <div className="lg:col-span-3">
         {/* Program Form */}
-        <div className="bg-white dark:bg-gray-900 rounded-lg p-6 mb-6">
-          <h2 className="text-xl font-semibold dark:text-gray-100 mb-4">
-            {editMode ? 'Edit Program Details' : 'Program Details'}
+        <div className="bg-card p-6 mb-6 doom-noise doom-card">
+          <h2 className="text-xl font-semibold text-foreground mb-4 doom-heading">
+            {editMode ? 'EDIT PROGRAM DETAILS' : 'PROGRAM DETAILS'}
           </h2>
 
           <div className="space-y-4">
             <div>
-              <label htmlFor="programName" className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">
-                Program Name *
+              <label htmlFor="programName" className="block text-sm font-medium text-foreground mb-1 doom-label">
+                PROGRAM NAME *
               </label>
               <input
                 id="programName"
@@ -545,14 +545,14 @@ export default function ProgramBuilder({ editMode = false, existingProgram }: Pr
                 value={programName}
                 onChange={(e) => setProgramName(e.target.value)}
                 placeholder="Enter program name"
-                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-800 dark:text-gray-100"
+                className="w-full doom-input"
                 disabled={isLoading}
               />
             </div>
 
             <div>
-              <label htmlFor="programDescription" className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">
-                Description (Optional)
+              <label htmlFor="programDescription" className="block text-sm font-medium text-foreground mb-1 doom-label">
+                DESCRIPTION (OPTIONAL)
               </label>
               <textarea
                 id="programDescription"
@@ -560,12 +560,12 @@ export default function ProgramBuilder({ editMode = false, existingProgram }: Pr
                 onChange={(e) => setProgramDescription(e.target.value)}
                 placeholder="Describe your program goals and approach"
                 rows={3}
-                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-800 dark:text-gray-100"
+                className="w-full doom-input"
                 disabled={isLoading}
               />
             </div>
 
-            <div className="text-sm text-gray-600 dark:text-gray-300">
+            <div className="text-sm text-muted-foreground">
               <strong>Type:</strong> Strength Training
             </div>
 
@@ -573,13 +573,13 @@ export default function ProgramBuilder({ editMode = false, existingProgram }: Pr
               <button
                 onClick={createProgram}
                 disabled={isLoading || !programName.trim()}
-                className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed"
+                className="px-4 py-2 bg-primary text-primary-foreground hover:bg-primary-hover disabled:opacity-50 disabled:cursor-not-allowed doom-button-3d doom-focus-ring font-semibold uppercase tracking-wider"
               >
-                {isLoading ? 'Creating...' : 'Create Program'}
+                {isLoading ? 'CREATING...' : 'CREATE PROGRAM'}
               </button>
             )}
             {editMode && (
-              <div className="text-sm text-gray-500 dark:text-gray-400">
+              <div className="text-sm text-muted-foreground">
                 Program changes are saved automatically
               </div>
             )}
@@ -588,50 +588,50 @@ export default function ProgramBuilder({ editMode = false, existingProgram }: Pr
 
         {/* Error Display */}
         {error && (
-          <div className="bg-red-50 dark:bg-red-950 border border-red-200 dark:border-red-800 rounded-lg p-4 mb-6">
-            <div className="text-red-800 dark:text-red-400">{error}</div>
+          <div className="bg-error-muted border border-error-border rounded-lg p-4 mb-6">
+            <div className="text-error">{error}</div>
           </div>
         )}
 
         {/* Weeks Management */}
         {(programId || editMode) && (
-          <div className="bg-white dark:bg-gray-900 rounded-lg p-6">
-            <h2 className="text-xl font-semibold dark:text-gray-100 mb-4">Training Weeks</h2>
+          <div className="bg-card p-6 doom-noise doom-card">
+            <h2 className="text-xl font-semibold text-foreground mb-4 doom-heading">TRAINING WEEKS</h2>
 
             {weeks.length === 0 ? (
               <div className="text-center py-8">
-                <p className="text-gray-600 dark:text-gray-300 mb-4">No weeks created yet</p>
+                <p className="text-muted-foreground mb-4">No weeks created yet</p>
                 <button
                   onClick={() => addWeek()}
                   disabled={isLoading}
-                  className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 disabled:opacity-50"
+                  className="px-4 py-2 bg-success text-success-foreground hover:bg-success-hover disabled:opacity-50 doom-button-3d font-semibold uppercase tracking-wider"
                 >
-                  Add Week 1
+                  ADD WEEK 1
                 </button>
               </div>
             ) : (
               <div className="space-y-6">
                 {weeks.map((week) => (
-                  <div key={week.id} className="border border-gray-200 dark:border-gray-700 rounded-lg p-4">
+                  <div key={week.id} className="border border-border p-4 doom-noise doom-corners">
                     <div className="flex items-center justify-between mb-3">
-                      <h3 className="font-medium dark:text-gray-100">Week {week.weekNumber}</h3>
+                      <h3 className="font-medium text-foreground doom-heading">WEEK {week.weekNumber}</h3>
                       <button
                         onClick={() => addWorkout(week.id)}
                         disabled={isLoading}
-                        className="px-3 py-1 bg-blue-600 text-white text-sm rounded hover:bg-blue-700 disabled:opacity-50"
+                        className="px-3 py-1 bg-primary text-primary-foreground text-sm hover:bg-primary-hover disabled:opacity-50 doom-button-3d font-semibold uppercase"
                       >
-                        Add Workout
+                        ADD WORKOUT
                       </button>
                     </div>
 
                     {week.workouts.length === 0 ? (
-                      <div className="text-gray-500 dark:text-gray-400 text-sm py-2">No workouts yet</div>
+                      <div className="text-muted-foreground text-sm py-2">No workouts yet</div>
                     ) : (
                       <div className="space-y-2">
                         {week.workouts.map((workout) => {
                           const isCollapsed = collapsedWorkouts.has(workout.id)
                           return (
-                            <div key={workout.id} className="bg-gray-50 dark:bg-gray-800 rounded p-3">
+                            <div key={workout.id} className="bg-muted p-3 doom-card">
                               <div className="flex items-center justify-between mb-2">
                                 {editingWorkoutId === workout.id ? (
                                 <div className="flex items-center gap-2 flex-1">
@@ -639,7 +639,7 @@ export default function ProgramBuilder({ editMode = false, existingProgram }: Pr
                                     type="text"
                                     value={editingWorkoutName}
                                     onChange={(e) => setEditingWorkoutName(e.target.value)}
-                                    className="px-2 py-1 border border-gray-300 dark:border-gray-600 rounded text-sm flex-1 dark:bg-gray-700 dark:text-gray-100"
+                                    className="px-2 py-1 border border-input rounded text-sm flex-1 bg-muted text-foreground"
                                     autoFocus
                                     onKeyDown={(e) => {
                                       if (e.key === 'Enter') {
@@ -652,13 +652,13 @@ export default function ProgramBuilder({ editMode = false, existingProgram }: Pr
                                   <button
                                     onClick={() => handleSaveWorkoutName(workout.id)}
                                     disabled={isLoading}
-                                    className="px-2 py-1 bg-blue-600 text-white text-xs rounded hover:bg-blue-700 disabled:opacity-50"
+                                    className="px-2 py-1 bg-primary text-primary-foreground text-xs rounded hover:bg-primary-hover disabled:opacity-50"
                                   >
                                     Save
                                   </button>
                                   <button
                                     onClick={handleCancelWorkoutEdit}
-                                    className="px-2 py-1 bg-gray-600 text-white text-xs rounded hover:bg-gray-700"
+                                    className="px-2 py-1 bg-secondary text-secondary-foreground text-xs rounded hover:bg-secondary-hover"
                                   >
                                     Cancel
                                   </button>
@@ -667,17 +667,17 @@ export default function ProgramBuilder({ editMode = false, existingProgram }: Pr
                                 <div className="flex items-center gap-2 flex-1">
                                   <button
                                     onClick={() => toggleWorkoutCollapse(workout.id)}
-                                    className="flex items-center gap-1 text-gray-600 dark:text-gray-300 hover:text-gray-800 dark:hover:text-gray-100 transition-colors"
+                                    className="flex items-center gap-1 text-muted-foreground hover:text-foreground transition-colors"
                                   >
                                     {isCollapsed ? <ChevronRight size={16} /> : <ChevronDown size={16} />}
                                   </button>
-                                  <span className="font-medium dark:text-gray-100">{workout.name}</span>
-                                  <span className="text-xs text-gray-500 dark:text-gray-400">
+                                  <span className="font-medium text-foreground doom-heading">{workout.name}</span>
+                                  <span className="text-xs text-muted-foreground">
                                     ({workout.exercises.length} exercise{workout.exercises.length !== 1 ? 's' : ''})
                                   </span>
                                   <button
                                     onClick={() => handleStartWorkoutEdit(workout.id, workout.name)}
-                                    className="px-2 py-1 bg-gray-600 text-white text-xs rounded hover:bg-gray-700"
+                                    className="px-2 py-1 bg-secondary text-secondary-foreground text-xs rounded hover:bg-secondary-hover"
                                   >
                                     Rename
                                   </button>
@@ -687,14 +687,14 @@ export default function ProgramBuilder({ editMode = false, existingProgram }: Pr
                                 <button
                                   onClick={() => handleAddExercise(workout.id)}
                                   disabled={isLoading || deletingWorkoutId === workout.id}
-                                  className="px-2 py-1 bg-green-600 text-white text-xs rounded hover:bg-green-700 disabled:opacity-50"
+                                  className="px-2 py-1 bg-success text-success-foreground text-xs rounded hover:bg-success-hover disabled:opacity-50"
                                 >
                                   Add Exercise
                                 </button>
                                 <button
                                   onClick={() => handleDeleteWorkout(workout.id, workout.name)}
                                   disabled={deletingWorkoutId === workout.id || editingWorkoutId === workout.id}
-                                  className="px-2 py-1 bg-red-600 text-white text-xs rounded hover:bg-red-700 disabled:opacity-50"
+                                  className="px-2 py-1 bg-error text-error-foreground text-xs rounded hover:bg-error-hover disabled:opacity-50"
                                 >
                                   {deletingWorkoutId === workout.id ? 'Deleting...' : 'Delete'}
                                 </button>
@@ -704,32 +704,32 @@ export default function ProgramBuilder({ editMode = false, existingProgram }: Pr
                             {!isCollapsed && (
                               <>
                                 {workout.exercises.length === 0 ? (
-                                  <div className="text-gray-500 dark:text-gray-400 text-xs">No exercises yet</div>
+                                  <div className="text-muted-foreground text-xs">No exercises yet</div>
                                 ) : (
                                   <div className="space-y-2">
                                     {workout.exercises.map((exercise) => (
-                                      <div key={exercise.id} className="flex items-center justify-between bg-gray-50 dark:bg-gray-700 rounded p-2">
+                                      <div key={exercise.id} className="flex items-center justify-between bg-muted rounded p-2">
                                         <div className="flex-1">
-                                          <span className="font-medium text-sm dark:text-gray-100">{exercise.name}</span>
-                                          <span className="text-gray-600 dark:text-gray-300 text-sm ml-2">
+                                          <span className="font-medium text-sm text-foreground">{exercise.name}</span>
+                                          <span className="text-muted-foreground text-sm ml-2">
                                             ({exercise.prescribedSets.length} set{exercise.prescribedSets.length !== 1 ? 's' : ''})
                                           </span>
                                           {exercise.notes && (
-                                            <div className="text-xs text-gray-500 dark:text-gray-400 mt-1">{exercise.notes}</div>
+                                            <div className="text-xs text-muted-foreground mt-1">{exercise.notes}</div>
                                           )}
                                         </div>
                                         <div className="flex gap-1">
                                           <button
                                             onClick={() => handleEditExercise(exercise, workout.id)}
                                             disabled={isLoading || deletingExerciseId === exercise.id}
-                                            className="px-2 py-1 bg-gray-600 text-white text-xs rounded hover:bg-gray-700 disabled:opacity-50"
+                                            className="px-2 py-1 bg-secondary text-secondary-foreground text-xs rounded hover:bg-secondary-hover disabled:opacity-50"
                                           >
                                             Edit
                                           </button>
                                           <button
                                             onClick={() => handleDeleteExercise(exercise.id, exercise.name)}
                                             disabled={deletingExerciseId === exercise.id}
-                                            className="px-2 py-1 bg-red-600 text-white text-xs rounded hover:bg-red-700 disabled:opacity-50"
+                                            className="px-2 py-1 bg-error text-error-foreground text-xs rounded hover:bg-error-hover disabled:opacity-50"
                                           >
                                             {deletingExerciseId === exercise.id ? 'Deleting...' : 'Delete'}
                                           </button>
@@ -752,18 +752,18 @@ export default function ProgramBuilder({ editMode = false, existingProgram }: Pr
                   <button
                     onClick={() => addWeek()}
                     disabled={isLoading}
-                    className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 disabled:opacity-50"
+                    className="px-4 py-2 bg-success text-success-foreground hover:bg-success-hover disabled:opacity-50 doom-button-3d font-semibold uppercase tracking-wider"
                   >
-                    Add Week {weeks.length + 1}
+                    ADD WEEK {weeks.length + 1}
                   </button>
                   
                   {weeks.length > 0 && (
                     <button
                       onClick={() => addWeek(weeks[weeks.length - 1].id)}
                       disabled={isLoading}
-                      className="px-4 py-2 bg-yellow-600 text-white rounded-lg hover:bg-yellow-700 disabled:opacity-50"
+                      className="px-4 py-2 bg-warning text-warning-foreground hover:bg-warning-hover disabled:opacity-50 doom-button-3d font-semibold uppercase tracking-wider"
                     >
-                      Duplicate Week {weeks.length}
+                      DUPLICATE WEEK {weeks.length}
                     </button>
                   )}
                 </div>
@@ -774,9 +774,9 @@ export default function ProgramBuilder({ editMode = false, existingProgram }: Pr
               <div className="mt-6 pt-6 border-t">
                 <button
                   onClick={handleComplete}
-                  className="px-6 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700"
+                  className="px-6 py-2 bg-success text-success-foreground hover:bg-success-hover doom-button-3d doom-focus-ring font-semibold uppercase tracking-wider"
                 >
-                  {editMode ? 'Done Editing' : 'Complete & View Program'}
+                  {editMode ? 'DONE EDITING' : 'COMPLETE & VIEW PROGRAM'}
                 </button>
               </div>
             )}

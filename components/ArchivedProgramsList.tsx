@@ -48,22 +48,22 @@ export default function ArchivedProgramsList({ programs }: Props) {
   }
 
   return (
-    <div className="bg-white dark:bg-gray-900 rounded-lg border border-gray-200 dark:border-gray-700">
+    <div className="bg-card rounded-lg border border-border">
       {/* Collapsible Header */}
       <button
         onClick={() => setIsExpanded(!isExpanded)}
-        className="w-full px-6 py-4 flex items-center justify-between hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors"
+        className="w-full px-6 py-4 flex items-center justify-between hover:bg-muted transition-colors"
       >
         <div className="flex items-center gap-2">
           {isExpanded ? (
-            <ChevronDown className="w-5 h-5 text-gray-500 dark:text-gray-400" />
+            <ChevronDown className="w-5 h-5 text-muted-foreground" />
           ) : (
-            <ChevronRight className="w-5 h-5 text-gray-500 dark:text-gray-400" />
+            <ChevronRight className="w-5 h-5 text-muted-foreground" />
           )}
-          <h2 className="text-lg font-semibold text-gray-700 dark:text-gray-200">
+          <h2 className="text-lg font-semibold text-foreground">
             Archived Programs
           </h2>
-          <span className="px-2 py-0.5 bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-300 text-xs font-semibold rounded">
+          <span className="px-2 py-0.5 bg-muted text-muted-foreground text-xs font-semibold rounded">
             {programs.length}
           </span>
         </div>
@@ -71,30 +71,30 @@ export default function ArchivedProgramsList({ programs }: Props) {
 
       {/* Archived Programs List */}
       {isExpanded && (
-        <div className="border-t border-gray-200 dark:border-gray-700">
-          <div className="divide-y divide-gray-200 dark:divide-gray-700">
+        <div className="border-t border-border">
+          <div className="divide-y divide-border">
             {programs.map((program) => (
               <div
                 key={program.id}
-                className="px-6 py-4 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors"
+                className="px-6 py-4 hover:bg-muted transition-colors"
               >
                 <div className="flex justify-between items-start">
                   <div className="flex-1">
                     <div className="flex items-center gap-2 mb-1">
-                      <h3 className="text-base font-medium text-gray-700 dark:text-gray-200">
+                      <h3 className="text-base font-medium text-foreground">
                         {program.name}
                       </h3>
-                      <span className="px-2 py-0.5 bg-gray-100 dark:bg-gray-800 text-gray-500 dark:text-gray-400 text-xs font-medium rounded">
+                      <span className="px-2 py-0.5 bg-muted text-muted-foreground text-xs font-medium rounded">
                         ARCHIVED
                       </span>
                     </div>
                     {program.description && (
-                      <p className="text-sm text-gray-600 dark:text-gray-300 mt-1">
+                      <p className="text-sm text-muted-foreground mt-1">
                         {program.description}
                       </p>
                     )}
                     {program.archivedAt && (
-                      <p className="text-xs text-gray-500 dark:text-gray-400 mt-2">
+                      <p className="text-xs text-muted-foreground mt-2">
                         Archived on{' '}
                         {new Date(program.archivedAt).toLocaleDateString()}
                       </p>
@@ -103,14 +103,14 @@ export default function ArchivedProgramsList({ programs }: Props) {
                   <div className="ml-4 flex gap-2">
                     <Link
                       href={`/programs/${program.id}`}
-                      className="px-3 py-1.5 text-sm text-gray-600 dark:text-gray-300 hover:text-gray-700 dark:hover:text-gray-200 font-medium"
+                      className="px-3 py-1.5 text-sm text-muted-foreground hover:text-foreground font-medium"
                     >
                       View
                     </Link>
                     <button
                       onClick={() => handleUnarchive(program.id, program.name)}
                       disabled={unarchivingId === program.id}
-                      className="px-3 py-1.5 text-sm bg-blue-50 dark:bg-blue-950 text-blue-600 dark:text-blue-400 hover:bg-blue-100 dark:hover:bg-blue-900 rounded font-medium disabled:opacity-50 transition-colors"
+                      className="px-3 py-1.5 text-sm bg-primary-muted text-primary hover:bg-primary rounded font-medium hover:text-primary-foreground disabled:opacity-50 transition-colors"
                     >
                       {unarchivingId === program.id ? 'Unarchiving...' : 'Unarchive'}
                     </button>

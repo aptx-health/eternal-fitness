@@ -58,26 +58,26 @@ export default async function EditProgramPage({
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-gray-950">
+    <div className="min-h-screen bg-background doom-page-enter">
       <div className="max-w-7xl mx-auto px-4 py-8">
         <div className="mb-6">
           <div className="flex items-center gap-4 mb-4">
             <Link
               href="/programs"
-              className="text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 text-sm flex items-center gap-1"
+              className="text-primary hover:text-primary-hover text-sm flex items-center gap-1 doom-link"
             >
               ← Back to Programs
             </Link>
-            <span className="text-gray-400 dark:text-gray-500">|</span>
-            <h1 className="text-2xl font-semibold dark:text-gray-100">Edit Program</h1>
+            <span className="text-muted-foreground">|</span>
+            <h1 className="text-2xl font-semibold text-foreground doom-heading">EDIT PROGRAM</h1>
           </div>
           {program.isActive && (
-            <div className="bg-blue-50 dark:bg-blue-950 border border-blue-200 dark:border-blue-800 rounded-lg p-4 mb-4">
+            <div className="bg-primary-muted border border-primary p-4 mb-4 doom-noise doom-corners">
               <div className="flex items-center gap-2">
-                <span className="inline-block px-2 py-1 bg-blue-600 text-white text-xs font-semibold rounded">
+                <span className="inline-block px-2 py-1 bg-primary text-primary-foreground text-xs font-semibold doom-label">
                   ACTIVE PROGRAM
                 </span>
-                <span className="text-sm text-blue-800 dark:text-blue-400">
+                <span className="text-sm text-foreground">
                   Be careful when modifying an active program with workout data
                 </span>
               </div>

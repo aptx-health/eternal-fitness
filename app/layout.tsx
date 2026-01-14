@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
+import { Geist, Geist_Mono, Rajdhani } from "next/font/google";
 import "./globals.css";
 
 const geistSans = Geist({
@@ -10,6 +10,13 @@ const geistSans = Geist({
 const geistMono = Geist_Mono({
   variable: "--font-geist-mono",
   subsets: ["latin"],
+});
+
+const rajdhani = Rajdhani({
+  weight: ['500', '600', '700'],
+  subsets: ['latin'],
+  variable: '--font-rajdhani',
+  display: 'swap',
 });
 
 export const metadata: Metadata = {
@@ -44,27 +51,41 @@ export default function RootLayout({
           dangerouslySetInnerHTML={{
             __html: `
               (function() {
-                const darkModeMediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
-                const updateDarkMode = (e) => {
-                  if (e.matches) {
-                    document.documentElement.classList.add('dark');
-                  } else {
-                    document.documentElement.classList.remove('dark');
-                  }
-                };
+                // Check localStorage first, fall back to system preference
+                const stored = localStorage.getItem('darkMode');
+                let isDark;
 
-                // Set initial state
-                updateDarkMode(darkModeMediaQuery);
+                if (stored !== null) {
+                  isDark = stored === 'true';
+                } else {
+                  isDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+                }
 
-                // Listen for changes
-                darkModeMediaQuery.addEventListener('change', updateDarkMode);
+                if (isDark) {
+                  document.documentElement.classList.add('dark');
+                } else {
+                  document.documentElement.classList.remove('dark');
+                }
+
+                // Listen for system preference changes only if no user preference is stored
+                if (stored === null) {
+                  const darkModeMediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
+                  const updateDarkMode = (e) => {
+                    if (e.matches) {
+                      document.documentElement.classList.add('dark');
+                    } else {
+                      document.documentElement.classList.remove('dark');
+                    }
+                  };
+                  darkModeMediaQuery.addEventListener('change', updateDarkMode);
+                }
               })();
             `,
           }}
         />
       </head>
       <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased`}
+        className={`${geistSans.variable} ${geistMono.variable} ${rajdhani.variable} antialiased`}
       >
         {children}
       </body>

@@ -69,10 +69,10 @@ export function CsvUploader() {
 
   return (
     <div className="space-y-4">
-      <div className="border-2 border-dashed border-gray-300 rounded-lg p-8 text-center">
+      <div className="border-2 border-dashed border-input rounded-lg p-8 text-center">
         <div className="space-y-2">
           <h3 className="text-lg font-medium">Import Program from CSV</h3>
-          <p className="text-sm text-gray-600">
+          <p className="text-sm text-muted-foreground">
             Upload a CSV file containing your training program
           </p>
         </div>
@@ -82,9 +82,9 @@ export function CsvUploader() {
             htmlFor="csv-upload"
             className={`inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md ${
               uploading
-                ? 'bg-gray-400 cursor-not-allowed'
-                : 'bg-blue-600 hover:bg-blue-700 cursor-pointer'
-            } text-white focus-within:outline-none focus-within:ring-2 focus-within:ring-offset-2 focus-within:ring-blue-500`}
+                ? 'bg-muted opacity-50 cursor-not-allowed'
+                : 'bg-primary hover:bg-primary-hover cursor-pointer'
+            } text-white focus-within:outline-none focus-within:ring-2 focus-within:ring-offset-2 focus-within:ring-primary`}
           >
             <input
               id="csv-upload"
@@ -98,20 +98,20 @@ export function CsvUploader() {
           </label>
         </div>
 
-        <p className="mt-2 text-xs text-gray-500">
+        <p className="mt-2 text-xs text-muted-foreground">
           Maximum file size: 10MB. See{' '}
-          <a href="/docs/csv-spec" className="text-blue-600 hover:underline">
+          <a href="/docs/csv-spec" className="text-primary hover:underline">
             CSV format guide
           </a>
         </p>
       </div>
 
       {error && (
-        <div className="bg-red-50 border border-red-200 rounded-lg p-4">
-          <h4 className="text-sm font-medium text-red-800">{error}</h4>
+        <div className="bg-error-muted border border-error-border rounded-lg p-4">
+          <h4 className="text-sm font-medium text-error">{error}</h4>
 
           {validationErrors.length > 0 && (
-            <ul className="mt-2 space-y-1 text-sm text-red-700">
+            <ul className="mt-2 space-y-1 text-sm text-error-text">
               {validationErrors.slice(0, 10).map((err, index) => (
                 <li key={index} className="font-mono">
                   {err.row > 0 && `Row ${err.row}: `}
@@ -121,7 +121,7 @@ export function CsvUploader() {
                 </li>
               ))}
               {validationErrors.length > 10 && (
-                <li className="text-red-600">
+                <li className="text-error">
                   ... and {validationErrors.length - 10} more errors
                 </li>
               )}

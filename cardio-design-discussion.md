@@ -205,6 +205,10 @@ model LoggedCardioSession {
 
 ---
 
+## Final Decisions Summary
+
+All design questions have been resolved. See `docs/CARDIO_DESIGN.md` for complete documentation.
+
 ## Decisions Made (Answered)
 
 ### Question 1: Prescribed Detail Level ✓
@@ -236,6 +240,28 @@ model LoggedCardioSession {
 **Decision**: Link LoggedCardioSession to PrescribedCardioSession (optional)
 - Want to see if workout is checked off (like strength)
 - LoggedCardioSession serves as both completion record AND logged data
+
+### Additional Decision: Metric Customization System ✓
+**Decision**: Hybrid approach - System defaults + user customization
+- Provide equipment-specific default metrics (primary + secondary)
+- Allow users to customize which metrics they want to track per equipment
+- UI shows "Modify Fields" button for customization
+- No prompts, no learning, no bundles
+- Preferences saved per equipment type
+- "Reset to Defaults" button available
+
+**Additional Metrics Added**:
+- elevationGain, elevationLoss (hiking, trail running)
+- avgPace (running, walking)
+- cadence (cycling, running)
+- strokeRate, strokeCount (rowing, swimming)
+
+**Removed**:
+- METs (not needed)
+- Sprint as equipment (keep as intensity zone only)
+
+**Equipment Added**:
+- walking, hiking
 
 ---
 
@@ -311,10 +337,307 @@ To support future LLM-assisted program development and analysis, schema should:
 
 ---
 
-## Next Steps
+## Completion Tracking
 
-1. Answer open questions (1-5)
-2. Finalize schema
-3. Consider CardioProgram table structure
-4. Plan migration strategy
-5. Write complete design document with examples
+### How Checkmarks Work
+
+For a prescribed cardio session to show as "completed":
+1. User has active CardioProgram
+2. Program has CardioWeek with PrescribedCardioSession
+3. User creates LoggedCardioSession with `prescribedSessionId` linking to the prescribed session
+4. LoggedCardioSession has `status = "completed"`
+
+### Querying Completion Status
+
+```typescript
+// Get Week 1 with completion status
+const week1 = await prisma.cardioWeek.findFirst({
+  where: {
+    cardioProgramId: program.id,
+    weekNumber: 1
+  },
+  include: {
+    sessions: {
+      include: {
+        loggedSessions: {
+          where: { userId: user.id },
+          orderBy: { completedAt: 'desc' },
+          take: 1  // Most recent log
+        }
+      }
+    }
+  }
+});
+
+// For each prescribed session:
+// - If loggedSessions.length > 0 && status === "completed" → Show checkmark
+// - Else → Show as incomplete
+```
+
+### Ad-Hoc Logging (No Program)
+
+Users can log cardio without any program:
+```typescript
+await prisma.loggedCardioSession.create({
+  data: {
+    prescribedSessionId: null,  // No link to program
+    userId: user.id,
+    name: "Morning run",
+    equipment: "outdoor_run",
+    duration: 30,
+    avgHR: 155,
+    distance: 3.5,
+    status: "completed"
+  }
+});
+```
+
+---
+
+## Row Level Security (RLS) Policies
+
+### CardioProgram
+```sql
+-- Users can only see their own cardio programs
+CREATE POLICY "users_own_cardio_programs" ON cardio_programs
+  FOR ALL USING (auth.uid() = user_id);
+```
+
+### CardioWeek
+```sql
+-- Users can access weeks from their programs
+CREATE POLICY "users_own_cardio_weeks" ON cardio_weeks
+  FOR ALL USING (
+    cardio_program_id IN (
+      SELECT id FROM cardio_programs WHERE user_id = auth.uid()
+    )
+  );
+```
+
+### PrescribedCardioSession
+```sql
+-- Users can access prescribed sessions from their programs
+CREATE POLICY "users_own_prescribed_cardio" ON prescribed_cardio_sessions
+  FOR ALL USING (
+    week_id IN (
+      SELECT cw.id FROM cardio_weeks cw
+      JOIN cardio_programs cp ON cw.cardio_program_id = cp.id
+      WHERE cp.user_id = auth.uid()
+    )
+  );
+```
+
+### LoggedCardioSession
+```sql
+-- Users can only see their own logged sessions
+CREATE POLICY "users_own_logged_cardio" ON logged_cardio_sessions
+  FOR ALL USING (auth.uid() = user_id);
+```
+
+---
+
+## Data Examples
+
+### Example 1: Zone 2 Endurance Program (Week 1)
+
+**Prescribed:**
+```json
+{
+  "weekNumber": 1,
+  "dayNumber": 1,
+  "name": "Zone 2 Endurance",
+  "targetDuration": 45,
+  "intensityZone": "zone2",
+  "equipment": "stationary_bike",
+  "targetHRRange": "140-150",
+  "notes": "Keep it conversational pace"
+}
+```
+
+**Logged (followed plan):**
+```json
+{
+  "prescribedSessionId": "abc123",
+  "name": "Zone 2 Endurance",
+  "equipment": "stationary_bike",
+  "duration": 47,
+  "avgHR": 144,
+  "peakHR": 152,
+  "calories": 520,
+  "intensityZone": "zone2",
+  "status": "completed"
+}
+```
+
+**Logged (weather pivot):**
+```json
+{
+  "prescribedSessionId": "abc123",
+  "name": "Zone 2 Endurance",
+  "equipment": "elliptical",  // Changed from bike
+  "duration": 45,
+  "avgHR": 148,
+  "peakHR": 155,
+  "calories": 480,
+  "intensityZone": "zone2",
+  "notes": "Raining, used elliptical instead",
+  "status": "completed"
+}
+```
+
+### Example 2: HIIT Intervals
+
+**Prescribed:**
+```json
+{
+  "weekNumber": 1,
+  "dayNumber": 3,
+  "name": "HIIT Intervals",
+  "targetDuration": 20,
+  "intensityZone": "hiit",
+  "equipment": "air_bike",
+  "intervalStructure": "8x30s/90s",
+  "notes": "All-out effort on work intervals"
+}
+```
+
+**Logged:**
+```json
+{
+  "prescribedSessionId": "def456",
+  "name": "HIIT Intervals",
+  "equipment": "air_bike",
+  "duration": 20,
+  "intervalStructure": "8x30s/90s",
+  "peakHR": 185,
+  "avgHR": 162,
+  "peakPower": 450,
+  "avgPower": 280,
+  "calories": 320,
+  "intensityZone": "hiit",
+  "status": "completed"
+}
+```
+
+### Example 3: Ad-Hoc MTB Ride (No Program)
+
+**Logged:**
+```json
+{
+  "prescribedSessionId": null,  // Not tied to any program
+  "name": "Weekend MTB",
+  "equipment": "mountain_bike",
+  "duration": 90,
+  "distance": 12.5,
+  "avgHR": 155,
+  "peakHR": 178,
+  "calories": 1200,
+  "intensityZone": "zone3",
+  "notes": "Great trail conditions",
+  "status": "completed"
+}
+```
+
+---
+
+## Future Considerations
+
+### CSV Import for Cardio Programs
+
+Similar to strength programs, users should be able to import cardio programs via CSV:
+
+```csv
+week,day,name,duration,intensity_zone,equipment,hr_range,notes
+1,1,Zone 2 Endurance,45,zone2,stationary_bike,140-150,Conversational pace
+1,3,Zone 2 Endurance,45,zone2,stationary_bike,140-150,
+1,5,HIIT Intervals,20,hiit,air_bike,,"8x30s/90s intervals"
+2,1,Zone 2 Endurance,50,zone2,stationary_bike,140-150,
+2,3,Zone 3 Tempo,40,zone3,outdoor_run,155-165,
+```
+
+### LLM Integration
+
+The structured schema enables future LLM features:
+
+**Program Generation:**
+- "Create a 12-week cardio program focusing on endurance with 3 sessions per week"
+- LLM generates CardioProgram → CardioWeeks → PrescribedCardioSessions
+
+**Analysis & Insights:**
+- "Analyze my Zone 2 consistency over the last month"
+- Query LoggedCardioSession where intensityZone = "zone2", aggregate avgHR, duration
+- "Am I improving in HIIT workouts?"
+- Compare peakPower/peakHR across HIIT sessions over time
+
+**Prescription Adjustments:**
+- "My avg HR in Zone 2 sessions is trending higher, should I adjust target?"
+- LLM analyzes logged data and suggests updating targetHRRange in prescribed sessions
+
+### Calendar Integration (Future)
+
+When calendar feature is added:
+```prisma
+model CalendarEntry {
+  id        String   @id @default(cuid())
+  userId    String
+  date      DateTime
+  label     String   // "Push Day", "Zone 2 Cardio"
+  type      String   // "strength", "cardio"
+
+  // Optional links (not required)
+  workoutId              String?
+  prescribedCardioId     String?
+
+  completed Boolean  @default(false)
+  createdAt DateTime @default(now())
+
+  @@index([userId, date])
+}
+```
+
+Calendar entries are display/scheduling layer, separate from programs.
+
+---
+
+## Implementation Phases
+
+### Phase 1: Core Schema & Logging
+- [ ] Add CardioProgram, CardioWeek, PrescribedCardioSession, LoggedCardioSession tables
+- [ ] Implement RLS policies
+- [ ] Create API routes for CRUD operations
+- [ ] Basic UI: Log ad-hoc cardio session
+
+### Phase 2: Program Management
+- [ ] Create/edit cardio programs
+- [ ] Program → Week → Session creation UI
+- [ ] Set active cardio program
+- [ ] View program with completion checkmarks
+
+### Phase 3: CSV Import
+- [ ] CSV parser for cardio programs
+- [ ] Import flow (similar to strength)
+- [ ] Validation and error handling
+
+### Phase 4: Enhanced Logging
+- [ ] Equipment-specific logging forms
+- [ ] Auto-populate from prescribed session
+- [ ] History view and session comparison
+
+### Phase 5: Calendar (Future)
+- [ ] Unified calendar view
+- [ ] Drag-drop scheduling
+- [ ] Completion tracking integration
+
+---
+
+## Summary
+
+This design provides:
+1. **Parallel structure** to strength training (familiar patterns)
+2. **Flexibility** in execution (can deviate from plan)
+3. **Optional programs** (can log without any program)
+4. **Simple completion tracking** (LoggedCardioSession serves dual purpose)
+5. **LLM-ready** (structured data for analysis and generation)
+6. **Future-proof** (calendar integration planned)
+
+Key principle: **Structure when you want it, flexibility when you need it.**
