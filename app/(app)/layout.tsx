@@ -2,6 +2,7 @@ import { createClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
 import Link from 'next/link'
 import Image from 'next/image'
+import DarkModeToggle from '@/components/DarkModeToggle'
 
 export default async function AppLayout({
   children,
@@ -33,6 +34,7 @@ export default async function AppLayout({
               </Link>
             </div>
             <div className="flex items-center space-x-4">
+              <DarkModeToggle />
               <span className="text-sm text-gray-600 dark:text-gray-300">{user.email}</span>
               <form action="/api/auth/signout" method="POST">
                 <button
