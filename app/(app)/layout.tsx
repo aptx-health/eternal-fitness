@@ -21,7 +21,7 @@ export default async function AppLayout({
       <nav className="bg-card border-b border-border">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between h-16">
-            <div className="flex items-center">
+            <div className="flex items-center gap-8">
               <Link href="/programs" className="flex items-center gap-2 hover:opacity-80 transition-opacity">
                 <Image
                   src="/icon-192.png"
@@ -32,6 +32,20 @@ export default async function AppLayout({
                 />
                 <span className="text-xl font-bold text-foreground">Ripit</span>
               </Link>
+              <div className="flex items-center gap-4">
+                <Link
+                  href="/programs"
+                  className="text-sm font-semibold text-foreground hover:text-primary doom-link uppercase tracking-wider"
+                >
+                  Programs
+                </Link>
+                <Link
+                  href="/cardio"
+                  className="text-sm font-semibold text-foreground hover:text-primary doom-link uppercase tracking-wider"
+                >
+                  Cardio
+                </Link>
+              </div>
             </div>
             <div className="flex items-center space-x-4">
               <DarkModeToggle />
