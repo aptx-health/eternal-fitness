@@ -12,19 +12,19 @@ export default async function NewProgramPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-gray-950">
+    <div className="min-h-screen bg-background">
       <div className="max-w-7xl mx-auto px-4 py-8">
         <div className="mb-6">
           <div className="flex items-center gap-4 mb-4">
             <Link
               href="/programs"
-              className="text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300 font-medium"
+              className="doom-link"
             >
               ← Back to Programs
             </Link>
           </div>
-          <h1 className="text-3xl font-bold dark:text-gray-100">Create New Program</h1>
-          <p className="text-gray-600 dark:text-gray-300 mt-2">
+          <h1 className="text-3xl font-bold text-foreground doom-heading">Create New Program</h1>
+          <p className="text-muted-foreground mt-2">
             Build your training program from scratch
           </p>
         </div>
