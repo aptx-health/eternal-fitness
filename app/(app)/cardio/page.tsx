@@ -67,21 +67,21 @@ export default async function CardioPage() {
     }) || activeProgram.weeks[activeProgram.weeks.length - 1]
   }
 
-  // Fetch stats and history in parallel
-  const [stats, sessions] = await Promise.all([
-    prisma.loggedCardioSession.aggregate({
-      where: {
-        userId: user.id,
-        status: 'completed'
-      },
-      _count: true,
-      _sum: {
-        duration: true,
-        distance: true,
-        calories: true
-      }
-    }),
-    prisma.loggedCardioSession.findMany({
+  // Fetch history only (stats commented out for performance)
+  // const [stats, sessions] = await Promise.all([
+  //   prisma.loggedCardioSession.aggregate({
+  //     where: {
+  //       userId: user.id,
+  //       status: 'completed'
+  //     },
+  //     _count: true,
+  //     _sum: {
+  //       duration: true,
+  //       distance: true,
+  //       calories: true
+  //     }
+  //   }),
+  const sessions = await prisma.loggedCardioSession.findMany({
       where: {
         userId: user.id
       },
@@ -90,7 +90,6 @@ export default async function CardioPage() {
       },
       take: 10 // Reduced from 50 to 10
     })
-  ])
 
   return (
     <div className="min-h-screen bg-background px-6 py-4">
@@ -124,8 +123,8 @@ export default async function CardioPage() {
           />
         )}
 
-        {/* Stats Summary */}
-        {stats._count > 0 && (
+        {/* Stats Summary - Commented out for performance */}
+        {/* {stats._count > 0 && (
           <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
             <StatCard
               label="Total Sessions"
@@ -148,7 +147,7 @@ export default async function CardioPage() {
               icon="🔥"
             />
           </div>
-        )}
+        )} */}
 
         {/* Session History */}
         <div>

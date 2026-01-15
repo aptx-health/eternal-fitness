@@ -61,34 +61,27 @@ export default async function TrainingPage() {
     }) || activeProgram.weeks[activeProgram.weeks.length - 1]
   }
 
-  // Fetch stats and history in parallel
-  const startOfWeek = new Date()
-  startOfWeek.setDate(startOfWeek.getDate() - startOfWeek.getDay())
-  startOfWeek.setHours(0, 0, 0, 0)
+  // Fetch history only (stats commented out for performance)
+  // const startOfWeek = new Date()
+  // startOfWeek.setDate(startOfWeek.getDate() - startOfWeek.getDay())
+  // startOfWeek.setHours(0, 0, 0, 0)
 
-  const [totalWorkouts, totalSets, thisWeekWorkouts, recentCompletions] = await Promise.all([
-    prisma.workoutCompletion.count({
-      where: {
-        userId: user.id,
-        status: 'completed'
-      }
-    }),
-    prisma.loggedSet.count({
-      where: {
-        completion: {
-          userId: user.id,
-          status: 'completed'
-        }
-      }
-    }),
-    prisma.workoutCompletion.count({
-      where: {
-        userId: user.id,
-        status: 'completed',
-        completedAt: { gte: startOfWeek }
-      }
-    }),
-    // Fetch recent completions (reduced to 20, optimized query)
+  const recentCompletions = await
+    // const [totalWorkouts, thisWeekWorkouts, recentCompletions] = await Promise.all([
+    // prisma.workoutCompletion.count({
+    //   where: {
+    //     userId: user.id,
+    //     status: 'completed'
+    //   }
+    // }),
+    // prisma.workoutCompletion.count({
+    //   where: {
+    //     userId: user.id,
+    //     status: 'completed',
+    //     completedAt: { gte: startOfWeek }
+    //   }
+    // }),
+    // Fetch recent completions
     prisma.workoutCompletion.findMany({
       where: {
         userId: user.id,
@@ -142,7 +135,6 @@ export default async function TrainingPage() {
         }
       }
     })
-  ])
 
   return (
     <div className="min-h-screen bg-background p-6">
@@ -179,18 +171,13 @@ export default async function TrainingPage() {
           />
         )}
 
-        {/* Stats Summary */}
-        {totalWorkouts > 0 && (
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        {/* Stats Summary - Commented out for performance */}
+        {/* {totalWorkouts > 0 && (
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <StatCard
               label="Total Workouts"
               value={totalWorkouts.toString()}
               icon="💪"
-            />
-            <StatCard
-              label="Total Sets"
-              value={totalSets.toString()}
-              icon="📊"
             />
             <StatCard
               label="This Week"
@@ -198,7 +185,7 @@ export default async function TrainingPage() {
               icon="📅"
             />
           </div>
-        )}
+        )} */}
 
         {/* Workout History */}
         <div>
