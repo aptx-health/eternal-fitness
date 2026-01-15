@@ -136,6 +136,7 @@ model WorkoutCompletion {
 
   @@index([workoutId, userId])
   @@index([userId, completedAt])
+  @@index([userId, status, completedAt])
 }
 
 model LoggedSet {
@@ -265,6 +266,7 @@ model LoggedCardioSession {
 
   @@index([prescribedSessionId])
   @@index([userId, completedAt])
+  @@index([userId, status, completedAt])
 }
 
 model UserCardioMetricPreferences {

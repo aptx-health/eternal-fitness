@@ -14,116 +14,135 @@ export default async function TrainingPage() {
     redirect('/login')
   }
 
-  // Fetch active program with weeks and workouts
+  // Fetch active program with ALL weeks (but lightweight) - single query
   const activeProgram = await prisma.program.findFirst({
     where: {
       userId: user.id,
       isActive: true,
       isArchived: false
     },
-    include: {
+    select: {
+      id: true,
+      name: true,
       weeks: {
-        orderBy: { weekNumber: 'asc' },
-        include: {
+        select: {
+          id: true,
+          weekNumber: true,
           workouts: {
-            orderBy: { dayNumber: 'asc' },
-            include: {
+            select: {
+              id: true,
+              name: true,
+              dayNumber: true,
               completions: {
-                where: { userId: user.id },
+                where: { userId: user.id, status: 'completed' },
+                select: { id: true, status: true, completedAt: true },
                 orderBy: { completedAt: 'desc' },
                 take: 1
               },
               _count: {
                 select: { exercises: true }
               }
-            }
+            },
+            orderBy: { dayNumber: 'asc' }
           }
-        }
+        },
+        orderBy: { weekNumber: 'asc' }
       }
     }
   })
 
-  // Determine current week (first incomplete week)
+  // Find current week (first incomplete week) - in JS, very fast
   let currentWeek = null
   if (activeProgram && activeProgram.weeks.length > 0) {
     currentWeek = activeProgram.weeks.find(week => {
-      const completedCount = week.workouts.filter(w =>
-        w.completions[0]?.status === 'completed'
-      ).length
-      return completedCount < week.workouts.length
+      const totalWorkouts = week.workouts.length
+      const completedWorkouts = week.workouts.filter(w => w.completions.length > 0).length
+      return completedWorkouts < totalWorkouts
     }) || activeProgram.weeks[activeProgram.weeks.length - 1]
   }
 
-  // Fetch training stats
-  const totalWorkouts = await prisma.workoutCompletion.count({
-    where: {
-      userId: user.id,
-      status: 'completed'
-    }
-  })
-
-  const totalSets = await prisma.loggedSet.count({
-    where: {
-      completion: {
-        userId: user.id,
-        status: 'completed'
-      }
-    }
-  })
-
-  // This week's workouts (start of week = Sunday)
+  // Fetch stats and history in parallel
   const startOfWeek = new Date()
   startOfWeek.setDate(startOfWeek.getDate() - startOfWeek.getDay())
   startOfWeek.setHours(0, 0, 0, 0)
 
-  const thisWeekWorkouts = await prisma.workoutCompletion.count({
-    where: {
-      userId: user.id,
-      status: 'completed',
-      completedAt: { gte: startOfWeek }
-    }
-  })
-
-  // Fetch recent completions
-  const recentCompletions = await prisma.workoutCompletion.findMany({
-    where: {
-      userId: user.id,
-      status: { in: ['completed', 'draft'] }
-    },
-    orderBy: { completedAt: 'desc' },
-    take: 50,
-    include: {
-      workout: {
-        include: {
-          week: {
-            include: {
-              program: {
-                select: { name: true }
+  const [totalWorkouts, totalSets, thisWeekWorkouts, recentCompletions] = await Promise.all([
+    prisma.workoutCompletion.count({
+      where: {
+        userId: user.id,
+        status: 'completed'
+      }
+    }),
+    prisma.loggedSet.count({
+      where: {
+        completion: {
+          userId: user.id,
+          status: 'completed'
+        }
+      }
+    }),
+    prisma.workoutCompletion.count({
+      where: {
+        userId: user.id,
+        status: 'completed',
+        completedAt: { gte: startOfWeek }
+      }
+    }),
+    // Fetch recent completions (reduced to 20, optimized query)
+    prisma.workoutCompletion.findMany({
+      where: {
+        userId: user.id,
+        status: { in: ['completed', 'draft'] }
+      },
+      orderBy: { completedAt: 'desc' },
+      take: 10, // Reduced from 50 to 10 for faster initial load
+      select: {
+        id: true,
+        status: true,
+        completedAt: true,
+        notes: true,
+        workout: {
+          select: {
+            id: true,
+            name: true,
+            week: {
+              select: {
+                weekNumber: true,
+                program: {
+                  select: { name: true }
+                }
               }
             }
           }
-        }
-      },
-      loggedSets: {
-        include: {
-          exercise: {
-            select: {
-              name: true,
-              exerciseGroup: true,
-              order: true
-            }
-          }
         },
-        orderBy: [
-          { exercise: { order: 'asc' } },
-          { setNumber: 'asc' }
-        ]
-      },
-      _count: {
-        select: { loggedSets: true }
+        loggedSets: {
+          select: {
+            id: true,
+            setNumber: true,
+            reps: true,
+            weight: true,
+            weightUnit: true,
+            rpe: true,
+            rir: true,
+            exercise: {
+              select: {
+                name: true,
+                exerciseGroup: true,
+                order: true
+              }
+            }
+          },
+          orderBy: [
+            { exercise: { order: 'asc' } },
+            { setNumber: 'asc' }
+          ]
+        },
+        _count: {
+          select: { loggedSets: true }
+        }
       }
-    }
-  })
+    })
+  ])
 
   return (
     <div className="min-h-screen bg-background p-6">

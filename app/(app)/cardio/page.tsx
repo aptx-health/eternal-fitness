@@ -15,67 +15,82 @@ export default async function CardioPage() {
     redirect('/login')
   }
 
-  // Fetch recent cardio sessions
-  const sessions = await prisma.loggedCardioSession.findMany({
-    where: {
-      userId: user.id
-    },
-    orderBy: {
-      completedAt: 'desc'
-    },
-    take: 50
-  })
-
-  // Fetch cardio stats
-  const stats = await prisma.loggedCardioSession.aggregate({
-    where: {
-      userId: user.id,
-      status: 'completed'
-    },
-    _count: true,
-    _sum: {
-      duration: true,
-      distance: true,
-      calories: true
-    }
-  })
-
-  // Fetch active cardio program with weeks and sessions
+  // Fetch active cardio program (lightweight query)
   const activeProgram = await prisma.cardioProgram.findFirst({
     where: {
       userId: user.id,
       isActive: true,
       isArchived: false
     },
-    include: {
+    select: {
+      id: true,
+      name: true,
       weeks: {
-        orderBy: { weekNumber: 'asc' },
-        include: {
+        select: {
+          id: true,
+          weekNumber: true,
           sessions: {
-            orderBy: { dayNumber: 'asc' },
-            include: {
+            select: {
+              id: true,
+              name: true,
+              dayNumber: true,
+              description: true,
+              targetDuration: true,
+              intensityZone: true,
+              equipment: true,
+              targetHRRange: true,
+              targetPowerRange: true,
+              intervalStructure: true,
+              notes: true,
               loggedSessions: {
                 where: { userId: user.id, status: 'completed' },
+                select: { id: true, status: true, completedAt: true },
                 orderBy: { completedAt: 'desc' },
                 take: 1
               }
-            }
+            },
+            orderBy: { dayNumber: 'asc' }
           }
-        }
+        },
+        orderBy: { weekNumber: 'asc' }
       }
     }
   })
 
-  // Determine current week (first incomplete week)
+  // Determine current week (first incomplete week) - fast in JS
   let currentWeek = null
   if (activeProgram && activeProgram.weeks.length > 0) {
     currentWeek = activeProgram.weeks.find(week => {
-      const completedCount = week.sessions.filter(s =>
-        s.loggedSessions.length > 0 && s.loggedSessions[0].status === 'completed'
-      ).length
-      return completedCount < week.sessions.length
-    }) || activeProgram.weeks[activeProgram.weeks.length - 1] // Default to last week if all complete
+      const totalSessions = week.sessions.length
+      const completedSessions = week.sessions.filter(s => s.loggedSessions.length > 0).length
+      return completedSessions < totalSessions
+    }) || activeProgram.weeks[activeProgram.weeks.length - 1]
   }
+
+  // Fetch stats and history in parallel
+  const [stats, sessions] = await Promise.all([
+    prisma.loggedCardioSession.aggregate({
+      where: {
+        userId: user.id,
+        status: 'completed'
+      },
+      _count: true,
+      _sum: {
+        duration: true,
+        distance: true,
+        calories: true
+      }
+    }),
+    prisma.loggedCardioSession.findMany({
+      where: {
+        userId: user.id
+      },
+      orderBy: {
+        completedAt: 'desc'
+      },
+      take: 10 // Reduced from 50 to 10
+    })
+  ])
 
   return (
     <div className="min-h-screen bg-background px-6 py-4">
