@@ -2,7 +2,7 @@
 
 import { useState, useCallback, useEffect, useRef } from 'react'
 import { useRouter } from 'next/navigation'
-import { ChevronDown, ChevronRight, MoreVertical } from 'lucide-react'
+import { ChevronDown, ChevronRight } from 'lucide-react'
 import ExerciseSearchModal from './ExerciseSearchModal'
 import FAUVolumeVisualization from './FAUVolumeVisualization'
 
@@ -527,6 +527,40 @@ export default function ProgramBuilder({ editMode = false, existingProgram }: Pr
     }
   }, [selectedWorkoutForAction, targetWeekForSwap])
 
+  const handleDuplicateProgram = useCallback(async () => {
+    if (!programId) return
+
+    if (!confirm('Duplicate this program? A copy will be created with all weeks, workouts, and exercises.')) {
+      return
+    }
+
+    setIsLoading(true)
+    setError(null)
+
+    try {
+      const response = await fetch(`/api/programs/${programId}/duplicate`, {
+        method: 'POST',
+      })
+
+      if (!response.ok) {
+        const error = await response.json()
+        throw new Error(error.error || 'Failed to duplicate program')
+      }
+
+      const { program: duplicatedProgram } = await response.json()
+
+      console.log('Program duplicated successfully:', duplicatedProgram)
+
+      // Redirect to the new program
+      router.push(`/programs/${duplicatedProgram.id}/edit`)
+    } catch (error) {
+      console.error('Error duplicating program:', error)
+      setError(error instanceof Error ? error.message : 'Failed to duplicate program')
+    } finally {
+      setIsLoading(false)
+    }
+  }, [programId, router])
+
   const toggleWorkoutCollapse = useCallback((workoutId: string) => {
     setCollapsedWorkouts(prev => {
       const newSet = new Set(prev)
@@ -763,8 +797,17 @@ export default function ProgramBuilder({ editMode = false, existingProgram }: Pr
               </button>
             )}
             {editMode && (
-              <div className="text-sm text-muted-foreground">
-                Program changes are saved automatically
+              <div className="flex items-center justify-between">
+                <div className="text-sm text-muted-foreground">
+                  Program changes are saved automatically
+                </div>
+                <button
+                  onClick={handleDuplicateProgram}
+                  disabled={isLoading}
+                  className="px-4 py-2 bg-secondary text-secondary-foreground hover:bg-secondary-hover disabled:opacity-50 doom-button-3d font-semibold uppercase tracking-wider"
+                >
+                  {isLoading ? 'DUPLICATING...' : 'DUPLICATE PROGRAM'}
+                </button>
               </div>
             )}
           </div>
@@ -794,9 +837,9 @@ export default function ProgramBuilder({ editMode = false, existingProgram }: Pr
                 </button>
               </div>
             ) : (
-              <div className="space-y-6">
+              <div className="space-y-6 overflow-visible">
                 {weeks.map((week) => (
-                  <div key={week.id} className="border border-border p-4 doom-noise doom-corners">
+                  <div key={week.id} className="border border-border p-4 doom-noise doom-corners !overflow-visible">
                     <div className="flex items-center justify-between mb-3">
                       <div className="flex items-center gap-2">
                         <h3 className="font-medium text-foreground doom-heading">WEEK {week.weekNumber}</h3>
@@ -806,25 +849,24 @@ export default function ProgramBuilder({ editMode = false, existingProgram }: Pr
                           <button
                             onClick={() => setOpenWeekMenuId(openWeekMenuId === week.id ? null : week.id)}
                             disabled={isLoading || deletingWeekId === week.id}
-                            className="p-1 text-muted-foreground hover:text-foreground hover:bg-muted rounded disabled:opacity-50 transition-colors"
-                            title="Week options"
+                            className="px-3 py-1 text-xs font-medium text-muted-foreground hover:text-foreground hover:bg-muted rounded border border-border transition-colors disabled:opacity-50 uppercase tracking-wide"
                           >
-                            <MoreVertical size={18} />
+                            Options
                           </button>
 
                           {openWeekMenuId === week.id && (
-                            <div className="absolute left-0 top-full mt-1 w-48 bg-card border border-border rounded-lg shadow-lg z-10 doom-corners">
+                            <div className="absolute left-full top-0 ml-2 bg-card border border-border shadow-lg z-50 doom-corners overflow-hidden flex">
                               <button
                                 onClick={() => handleDuplicateWeek(week.id)}
                                 disabled={isLoading}
-                                className="w-full px-4 py-2 text-left text-sm text-foreground hover:bg-muted transition-colors disabled:opacity-50 flex items-center gap-2"
+                                className="px-4 py-2.5 text-sm text-foreground hover:bg-primary hover:text-primary-foreground transition-colors disabled:opacity-50 whitespace-nowrap"
                               >
                                 Duplicate Week
                               </button>
                               <button
                                 onClick={() => handleDeleteWeek(week.id, week.weekNumber)}
                                 disabled={deletingWeekId === week.id}
-                                className="w-full px-4 py-2 text-left text-sm text-error hover:bg-error-muted transition-colors disabled:opacity-50 flex items-center gap-2"
+                                className="px-4 py-2.5 text-sm text-error hover:bg-error hover:text-error-foreground transition-colors disabled:opacity-50 border-l border-border whitespace-nowrap"
                               >
                                 {deletingWeekId === week.id ? 'Deleting...' : 'Delete Week'}
                               </button>
@@ -845,11 +887,11 @@ export default function ProgramBuilder({ editMode = false, existingProgram }: Pr
                     {week.workouts.length === 0 ? (
                       <div className="text-muted-foreground text-sm py-2">No workouts yet</div>
                     ) : (
-                      <div className="space-y-2">
+                      <div className="space-y-2 overflow-visible">
                         {week.workouts.map((workout) => {
                           const isCollapsed = collapsedWorkouts.has(workout.id)
                           return (
-                            <div key={workout.id} className="bg-muted p-3 doom-card">
+                            <div key={workout.id} className="bg-muted p-3 doom-card relative !overflow-visible">
                               <div className="flex items-center justify-between mb-2">
                                 {editingWorkoutId === workout.id ? (
                                 <div className="flex items-center gap-2 flex-1">
@@ -899,20 +941,19 @@ export default function ProgramBuilder({ editMode = false, existingProgram }: Pr
                                     <button
                                       onClick={() => setOpenWorkoutMenuId(openWorkoutMenuId === workout.id ? null : workout.id)}
                                       disabled={isLoading || deletingWorkoutId === workout.id}
-                                      className="p-1 text-muted-foreground hover:text-foreground hover:bg-muted rounded disabled:opacity-50 transition-colors"
-                                      title="Workout options"
+                                      className="px-2 py-0.5 text-xs font-medium text-muted-foreground hover:text-foreground hover:bg-muted rounded border border-border transition-colors disabled:opacity-50 uppercase tracking-wide"
                                     >
-                                      <MoreVertical size={16} />
+                                      Options
                                     </button>
 
                                     {openWorkoutMenuId === workout.id && (
-                                      <div className="absolute left-0 top-full mt-1 w-48 bg-card border border-border rounded-lg shadow-lg z-10 doom-corners">
+                                      <div className="absolute left-0 top-full mt-1 bg-card border border-border shadow-lg z-50 doom-corners overflow-hidden flex">
                                         <button
                                           onClick={() => {
                                             handleStartWorkoutEdit(workout.id, workout.name)
                                             setOpenWorkoutMenuId(null)
                                           }}
-                                          className="w-full px-4 py-2 text-left text-sm text-foreground hover:bg-muted transition-colors flex items-center gap-2"
+                                          className="px-4 py-2.5 text-sm text-foreground hover:bg-primary hover:text-primary-foreground transition-colors whitespace-nowrap"
                                         >
                                           Rename
                                         </button>
@@ -923,7 +964,7 @@ export default function ProgramBuilder({ editMode = false, existingProgram }: Pr
                                             setOpenWorkoutMenuId(null)
                                           }}
                                           disabled={isLoading}
-                                          className="w-full px-4 py-2 text-left text-sm text-foreground hover:bg-muted transition-colors disabled:opacity-50 flex items-center gap-2"
+                                          className="px-4 py-2.5 text-sm text-foreground hover:bg-primary hover:text-primary-foreground transition-colors disabled:opacity-50 border-l border-border whitespace-nowrap"
                                         >
                                           Duplicate
                                         </button>
@@ -934,7 +975,7 @@ export default function ProgramBuilder({ editMode = false, existingProgram }: Pr
                                             setOpenWorkoutMenuId(null)
                                           }}
                                           disabled={isLoading}
-                                          className="w-full px-4 py-2 text-left text-sm text-foreground hover:bg-muted transition-colors disabled:opacity-50 flex items-center gap-2"
+                                          className="px-4 py-2.5 text-sm text-foreground hover:bg-primary hover:text-primary-foreground transition-colors disabled:opacity-50 border-l border-border whitespace-nowrap"
                                         >
                                           Move to Week
                                         </button>
@@ -944,7 +985,7 @@ export default function ProgramBuilder({ editMode = false, existingProgram }: Pr
                                             setOpenWorkoutMenuId(null)
                                           }}
                                           disabled={deletingWorkoutId === workout.id}
-                                          className="w-full px-4 py-2 text-left text-sm text-error hover:bg-error-muted transition-colors disabled:opacity-50 flex items-center gap-2"
+                                          className="px-4 py-2.5 text-sm text-error hover:bg-error hover:text-error-foreground transition-colors disabled:opacity-50 border-l border-border whitespace-nowrap"
                                         >
                                           {deletingWorkoutId === workout.id ? 'Deleting...' : 'Delete'}
                                         </button>
