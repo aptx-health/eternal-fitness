@@ -65,11 +65,16 @@ export default function ProgramsPage() {
 
     const fetchData = async () => {
       try {
+        console.log('[PowerSync] Starting data fetch for userId:', userId)
+        console.log('[PowerSync] PowerSync instance:', powerSync)
+        console.log('[PowerSync] PowerSync connected:', powerSync.connected)
         // Query 1: Active strength programs
+        console.log('[PowerSync] Querying strength programs...')
         const strengthResults = await powerSync.getAll(
           'SELECT * FROM Program WHERE userId = ? AND isArchived = ? ORDER BY createdAt DESC',
           [userId, 0]
         )
+        console.log('[PowerSync] Strength programs result:', strengthResults)
         if (isSubscribed) {
           setStrengthPrograms(strengthResults.map(transformProgram))
         }
@@ -200,9 +205,14 @@ export default function ProgramsPage() {
           setArchivedCardioPrograms(archivedCardioResults.map(transformCardioProgram))
         }
 
+        console.log('[PowerSync] All queries completed successfully')
         setLoading(false)
       } catch (error) {
-        console.error('Error fetching programs from PowerSync:', error)
+        console.error('[PowerSync] Error fetching programs:', error)
+        console.error('[PowerSync] Error details:', {
+          message: error instanceof Error ? error.message : String(error),
+          stack: error instanceof Error ? error.stack : undefined,
+        })
         setLoading(false)
       }
     }

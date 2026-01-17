@@ -14,6 +14,7 @@ import { createClient } from '@/lib/supabase/client';
  */
 export class SupabaseConnector implements PowerSyncBackendConnector {
   async fetchCredentials() {
+    console.log('[SupabaseConnector] fetchCredentials called');
     const supabase = createClient();
 
     // Get current Supabase session
@@ -23,8 +24,12 @@ export class SupabaseConnector implements PowerSyncBackendConnector {
     } = await supabase.auth.getSession();
 
     if (error || !session) {
+      console.error('[SupabaseConnector] Auth error:', error);
       throw new Error('Could not fetch Supabase session: ' + (error?.message || 'No session'));
     }
+
+    console.log('[SupabaseConnector] Session obtained, user:', session.user?.id);
+    console.log('[SupabaseConnector] PowerSync URL:', process.env.NEXT_PUBLIC_POWERSYNC_URL);
 
     // Return PowerSync endpoint and Supabase JWT
     return {

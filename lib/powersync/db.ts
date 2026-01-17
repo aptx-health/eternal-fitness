@@ -26,8 +26,11 @@ let powerSyncInstance: PowerSyncDatabase | null = null;
 
 export function getPowerSync(): PowerSyncDatabase {
   if (powerSyncInstance) {
+    console.log('[PowerSync DB] Returning existing instance');
     return powerSyncInstance;
   }
+
+  console.log('[PowerSync DB] Creating new PowerSync instance');
 
   // Initialize PowerSync database
   powerSyncInstance = new PowerSyncDatabase({
@@ -37,9 +40,13 @@ export function getPowerSync(): PowerSyncDatabase {
     },
   });
 
+  console.log('[PowerSync DB] PowerSync instance created, connecting to Supabase');
+
   // Connect to Supabase via PowerSync
   const connector = new SupabaseConnector();
   powerSyncInstance.connect(connector);
+
+  console.log('[PowerSync DB] Connection initiated');
 
   return powerSyncInstance;
 }
