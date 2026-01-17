@@ -68,6 +68,14 @@ export default function ProgramsPage() {
         console.log('[PowerSync] Starting data fetch for userId:', userId)
         console.log('[PowerSync] PowerSync instance:', powerSync)
         console.log('[PowerSync] PowerSync connected:', powerSync.connected)
+
+        // Wait for PowerSync to connect
+        if (!powerSync.connected) {
+          console.log('[PowerSync] Waiting for connection...')
+          await powerSync.waitForReady()
+          console.log('[PowerSync] Connection ready!')
+        }
+
         // Query 1: Active strength programs
         console.log('[PowerSync] Querying strength programs...')
         const strengthResults = await powerSync.getAll(
