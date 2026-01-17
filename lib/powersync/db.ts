@@ -67,7 +67,12 @@ export function getPowerSync(): PowerSyncDatabase {
   const mobile = isMobileDevice();
   console.log('[PowerSync DB] Initializing PowerSync', {
     mobile,
-    userAgent: navigator.userAgent
+    userAgent: navigator.userAgent,
+    memory: (performance as any).memory ? {
+      usedJSHeapSize: ((performance as any).memory.usedJSHeapSize / 1048576).toFixed(2) + 'MB',
+      totalJSHeapSize: ((performance as any).memory.totalJSHeapSize / 1048576).toFixed(2) + 'MB',
+      jsHeapSizeLimit: ((performance as any).memory.jsHeapSizeLimit / 1048576).toFixed(2) + 'MB',
+    } : 'unavailable'
   });
 
   // Initialize PowerSync database with modern constructor API
@@ -94,6 +99,26 @@ export function getPowerSync(): PowerSyncDatabase {
   powerSyncInstance.connect(connector);
 
   console.log('[PowerSync DB] Connection initiated');
+
+  // Monitor for page visibility changes (often precedes crashes/reloads)
+  if (typeof document !== 'undefined') {
+    document.addEventListener('visibilitychange', () => {
+      console.log('[PowerSync DB] Visibility changed:', document.hidden ? 'hidden' : 'visible');
+      if (document.hidden) {
+        console.log('[PowerSync DB] Page backgrounded - connection may pause');
+      }
+    });
+  }
+
+  // Monitor for beforeunload (helps catch crashes)
+  window.addEventListener('beforeunload', () => {
+    console.warn('[PowerSync DB] Page unloading - check if intentional or crash');
+  });
+
+  // Monitor for pagehide (iOS Safari specific)
+  window.addEventListener('pagehide', (event) => {
+    console.warn('[PowerSync DB] Page hiding', { persisted: event.persisted });
+  });
 
   return powerSyncInstance;
 }
@@ -154,8 +179,11 @@ export async function waitForInitialSync(
     onProgress?.('Syncing data...');
     console.log('[PowerSync] Waiting for initial sync...');
 
+    let pollCount = 0;
     // Poll for hasSynced status
     while (!powerSync.currentStatus?.hasSynced) {
+      pollCount++;
+
       // Check timeout
       if (Date.now() - startTime > timeoutMs) {
         throw new Error('Initial sync timeout - data may not be available');
@@ -166,12 +194,19 @@ export async function waitForInitialSync(
         throw new Error('PowerSync disconnected during initial sync');
       }
 
-      // Log progress
-      const status = powerSync.currentStatus;
-      if (status?.lastSyncedAt) {
+      // Log progress and memory every 5 polls (2.5 seconds)
+      if (pollCount % 5 === 0) {
+        const status = powerSync.currentStatus;
+        const memInfo = (performance as any).memory ? {
+          used: ((performance as any).memory.usedJSHeapSize / 1048576).toFixed(2) + 'MB',
+          limit: ((performance as any).memory.jsHeapSizeLimit / 1048576).toFixed(2) + 'MB',
+        } : null;
+
         console.log('[PowerSync] Sync in progress...', {
-          lastSyncedAt: status.lastSyncedAt,
-          hasSynced: status.hasSynced,
+          lastSyncedAt: status?.lastSyncedAt,
+          hasSynced: status?.hasSynced,
+          elapsedMs: Date.now() - startTime,
+          memory: memInfo,
         });
       }
 
