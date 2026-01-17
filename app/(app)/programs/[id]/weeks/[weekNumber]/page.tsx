@@ -3,7 +3,7 @@
 import { useEffect, useState, use } from 'react'
 import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
-import { powerSync } from '@/lib/powersync/db'
+import { powerSync, waitForInitialSync } from '@/lib/powersync/db'
 import {
   transformProgram,
   transformWeek,
@@ -33,6 +33,8 @@ export default function WeekPage({
 
   const [userId, setUserId] = useState<string | null>(null)
   const [loading, setLoading] = useState(true)
+  const [syncStatus, setSyncStatus] = useState<string>('Initializing...')
+  const [syncError, setSyncError] = useState<string | null>(null)
   const [program, setProgram] = useState<Program | null>(null)
   const [week, setWeek] = useState<Week | null>(null)
   const [workouts, setWorkouts] = useState<WorkoutWithCompletions[]>([])
@@ -71,6 +73,20 @@ export default function WeekPage({
 
     const fetchData = async () => {
       try {
+        setSyncError(null)
+
+        // Wait for initial sync to complete before querying
+        await waitForInitialSync(
+          (message) => {
+            if (isSubscribed) {
+              setSyncStatus(message)
+            }
+          },
+          30000 // 30 second timeout
+        )
+
+        setSyncStatus('Loading workout data...')
+
         // Query 1: Get program
         const programResults = await powerSync.getAll(
           'SELECT * FROM Program WHERE id = ? AND userId = ?',
@@ -173,6 +189,21 @@ export default function WeekPage({
         setLoading(false)
       } catch (error) {
         console.error('Error fetching week data from PowerSync:', error)
+
+        // Set user-friendly error message
+        let errorMessage = 'Failed to load workout data. Please try again.'
+        if (error instanceof Error) {
+          if (error.message.includes('timeout') || error.message.includes('Sync is taking longer')) {
+            errorMessage = 'Sync is taking longer than expected. Check your network connection.'
+          } else if (error.message.includes('disconnected') || error.message.includes('Lost connection')) {
+            errorMessage = 'Lost connection during sync. Please check your network.'
+          } else {
+            errorMessage = error.message
+          }
+        }
+
+        setSyncError(errorMessage)
+        setSyncStatus('Sync failed')
         setLoading(false)
       }
     }
@@ -185,7 +216,28 @@ export default function WeekPage({
   }, [userId, programId, weekNum, router])
 
   if (loading || !userId || !program || !week) {
-    return <div className="flex items-center justify-center h-screen">Loading week data...</div>
+    return (
+      <div className="flex flex-col items-center justify-center h-screen space-y-4">
+        {syncError ? (
+          <>
+            <div className="text-red-600 text-lg font-semibold">
+              {syncError}
+            </div>
+            <button
+              onClick={() => window.location.reload()}
+              className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
+            >
+              Retry
+            </button>
+          </>
+        ) : (
+          <>
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
+            <div className="text-gray-600">{syncStatus}</div>
+          </>
+        )}
+      </div>
+    )
   }
 
   return (

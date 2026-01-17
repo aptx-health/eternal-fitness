@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
-import { powerSync } from '@/lib/powersync/db'
+import { powerSync, waitForInitialSync } from '@/lib/powersync/db'
 import {
   transformProgram,
   transformCardioProgram,
@@ -29,6 +29,8 @@ export default function ProgramsPage() {
   const router = useRouter()
   const [userId, setUserId] = useState<string | null>(null)
   const [loading, setLoading] = useState(true)
+  const [syncStatus, setSyncStatus] = useState<string>('Initializing...')
+  const [syncError, setSyncError] = useState<string | null>(null)
 
   // Strength programs state
   const [strengthPrograms, setStrengthPrograms] = useState<Program[]>([])
@@ -65,24 +67,18 @@ export default function ProgramsPage() {
 
     const fetchData = async () => {
       try {
+        setSyncError(null)
         console.log('[PowerSync] Fetching data for user:', userId)
 
-        // Wait for PowerSync to connect
-        if (!powerSync.connected) {
-          console.log('[PowerSync] Waiting for connection...')
-          const timeoutPromise = new Promise((_, reject) =>
-            setTimeout(() => reject(new Error('PowerSync connection timeout after 10s')), 10000)
-          )
-          await Promise.race([powerSync.waitForReady(), timeoutPromise])
-          console.log('[PowerSync] Connected successfully')
-        }
-
-        // Check sync status for debugging
-        console.log('[PowerSync] Sync status:', {
-          connected: powerSync.connected,
-          hasSynced: powerSync.currentStatus?.hasSynced,
-          lastSyncedAt: powerSync.currentStatus?.lastSyncedAt,
-        })
+        // Wait for initial sync to complete before querying
+        await waitForInitialSync(
+          (message) => {
+            if (isSubscribed) {
+              setSyncStatus(message)
+            }
+          },
+          30000 // 30 second timeout
+        )
 
         // Query 1: Active strength programs
         const strengthResults = await powerSync.getAll(
@@ -229,20 +225,28 @@ export default function ProgramsPage() {
           setArchivedCardioPrograms(archivedCardioResults.map(transformCardioProgram))
         }
 
+        setSyncStatus('Loading programs...')
         console.log('[PowerSync] Data fetch completed')
         setLoading(false)
       } catch (error) {
-        console.error('[PowerSync] Query failed:', error)
+        console.error('[PowerSync] Failed to load programs:', error)
+
+        // Set user-friendly error message
+        let errorMessage = 'Failed to load programs. Please try again.'
         if (error instanceof Error) {
-          // Check for common issues
-          if (error.message.includes('no such column')) {
-            console.error('[PowerSync] Column missing in schema. Check that PowerSync schema matches database.')
-          } else if (error.message.includes('no such table')) {
-            console.error('[PowerSync] Table missing. Check that sync rules are configured and initial sync completed.')
-          } else if (error.message.includes('timeout')) {
-            console.error('[PowerSync] Connection timeout. Check network and PowerSync service status.')
+          if (error.message.includes('timeout') || error.message.includes('Sync is taking longer')) {
+            errorMessage = 'Sync is taking longer than expected. Check your network connection.'
+          } else if (error.message.includes('disconnected') || error.message.includes('Lost connection')) {
+            errorMessage = 'Lost connection during sync. Please check your network.'
+          } else if (error.message.includes('no such column') || error.message.includes('no such table')) {
+            errorMessage = 'Database sync error. Please contact support.'
+          } else {
+            errorMessage = error.message
           }
         }
+
+        setSyncError(errorMessage)
+        setSyncStatus('Sync failed')
         setLoading(false)
       }
     }
@@ -255,7 +259,28 @@ export default function ProgramsPage() {
   }, [userId])
 
   if (loading || !userId) {
-    return <div className="flex items-center justify-center h-screen">Loading programs...</div>
+    return (
+      <div className="flex flex-col items-center justify-center h-screen space-y-4">
+        {syncError ? (
+          <>
+            <div className="text-red-600 text-lg font-semibold">
+              {syncError}
+            </div>
+            <button
+              onClick={() => window.location.reload()}
+              className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
+            >
+              Retry
+            </button>
+          </>
+        ) : (
+          <>
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
+            <div className="text-gray-600">{syncStatus}</div>
+          </>
+        )}
+      </div>
+    )
   }
 
   return (
