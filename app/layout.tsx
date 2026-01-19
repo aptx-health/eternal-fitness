@@ -152,20 +152,6 @@ export default function RootLayout({
                 const splash = document.getElementById('splash-screen');
                 if (!splash) return;
 
-                // Check if running as PWA
-                const isPWA = window.matchMedia('(display-mode: standalone)').matches ||
-                              window.navigator.standalone === true;
-
-                // Check if mobile device
-                const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) ||
-                                window.innerWidth <= 768;
-
-                // Only show splash on mobile PWA
-                if (!isPWA || !isMobile) {
-                  splash.style.display = 'none';
-                  return;
-                }
-
                 function hideSplash() {
                   if (splash && splash.style.display !== 'none') {
                     splash.style.opacity = '0';
