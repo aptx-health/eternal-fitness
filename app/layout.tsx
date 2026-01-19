@@ -99,7 +99,7 @@ export default function RootLayout({
           left: 0,
           width: '100vw',
           height: '100vh',
-          backgroundColor: '#000000',
+          backgroundColor: '#EA580C',
           display: 'flex',
           flexDirection: 'column',
           alignItems: 'center',
@@ -108,31 +108,11 @@ export default function RootLayout({
           transition: 'opacity 0.3s ease-out',
         }}>
           <div style={{
-            display: 'flex',
-            flexDirection: 'column',
-            alignItems: 'center',
-            gap: '20px',
+            fontSize: '72px',
+            fontWeight: 'bold',
+            color: '#FFFFFF',
           }}>
-            <img
-              src="/icon-512.png"
-              alt="Ripit"
-              style={{
-                width: '200px',
-                height: '200px',
-                animation: 'pulse 2s ease-in-out infinite',
-              }}
-            />
-            <div style={{
-              fontFamily: 'var(--font-rajdhani)',
-              fontSize: '48px',
-              fontWeight: 700,
-              color: '#EA580C',
-              textTransform: 'uppercase',
-              letterSpacing: '0.1em',
-              textShadow: '2px 2px 0 rgba(0, 0, 0, 0.5), 0 0 20px rgba(234, 88, 12, 0.3)',
-            }}>
-              RIPIT
-            </div>
+            LOADING...
           </div>
           <div style={{
             position: 'absolute',
