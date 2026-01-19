@@ -73,6 +73,24 @@ export default function ConsolidatedProgramsView({
     }
   }, [searchParams])
 
+  // Prefetch likely next pages for faster navigation
+  useEffect(() => {
+    // Prefetch main training/cardio pages
+    router.prefetch('/training')
+    router.prefetch('/cardio')
+
+    // Prefetch active program pages for even faster access
+    const activeStrengthProgram = strengthPrograms.find(p => p.isActive)
+    const activeCardioProgram = cardioPrograms.find(p => p.isActive)
+
+    if (activeStrengthProgram) {
+      router.prefetch(`/programs/${activeStrengthProgram.id}`)
+    }
+    if (activeCardioProgram) {
+      router.prefetch(`/cardio/programs/${activeCardioProgram.id}`)
+    }
+  }, [router, strengthPrograms, cardioPrograms])
+
   const handleTabChange = (tab: 'strength' | 'cardio') => {
     setActiveTab(tab)
     router.push(`/programs?tab=${tab}`, { scroll: false })
