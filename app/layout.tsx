@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { Geist, Geist_Mono, Rajdhani } from "next/font/google";
 import "./globals.css";
 
@@ -19,15 +19,16 @@ const rajdhani = Rajdhani({
   display: 'swap',
 });
 
+export const viewport: Viewport = {
+  width: "device-width",
+  initialScale: 1,
+  maximumScale: 1,
+};
+
 export const metadata: Metadata = {
   title: "Ripit - Strength Training Tracker",
   description: "Track your strength training workouts",
   manifest: "/site.webmanifest",
-  viewport: {
-    width: "device-width",
-    initialScale: 1,
-    maximumScale: 1,
-  },
   appleWebApp: {
     capable: true,
     statusBarStyle: "black-translucent",
@@ -88,16 +89,108 @@ export default function RootLayout({
             `,
           }}
         />
-        <link rel="apple-touch-startup-image" href="/splash-1170x2532.png" media="screen and (device-width: 390px) and (device-height: 844px) and (-webkit-device-pixel-ratio: 3) and (orientation: portrait)" />
-        <link rel="apple-touch-startup-image" href="/splash-1179x2556.png" media="screen and (device-width: 393px) and (device-height: 852px) and (-webkit-device-pixel-ratio: 3) and (orientation: portrait)" />
-        <link rel="apple-touch-startup-image" href="/splash-1290x2796.png" media="screen and (device-width: 430px) and (device-height: 932px) and (-webkit-device-pixel-ratio: 3) and (orientation: portrait)" />
-        <link rel="apple-touch-startup-image" href="/splash-1125x2436.png" media="screen and (device-width: 375px) and (device-height: 812px) and (-webkit-device-pixel-ratio: 3) and (orientation: portrait)" />
-        <link rel="apple-touch-startup-image" href="/splash-828x1792.png" media="screen and (device-width: 414px) and (device-height: 896px) and (-webkit-device-pixel-ratio: 2) and (orientation: portrait)" />
-        <link rel="apple-touch-startup-image" href="/splash-1242x2688.png" media="screen and (device-width: 414px) and (device-height: 896px) and (-webkit-device-pixel-ratio: 3) and (orientation: portrait)" />
       </head>
       <body
         className={`${geistSans.variable} ${geistMono.variable} ${rajdhani.variable} antialiased`}
       >
+        <div id="splash-screen" style={{
+          position: 'fixed',
+          top: 0,
+          left: 0,
+          width: '100vw',
+          height: '100vh',
+          backgroundColor: '#000000',
+          display: 'flex',
+          flexDirection: 'column',
+          alignItems: 'center',
+          justifyContent: 'center',
+          zIndex: 9999,
+          transition: 'opacity 0.3s ease-out',
+        }}>
+          <img
+            src="/splash-1179x2556.png"
+            alt="Ripit"
+            style={{
+              maxWidth: '100%',
+              maxHeight: '100%',
+              objectFit: 'contain',
+              animation: 'pulse 2s ease-in-out infinite',
+            }}
+          />
+          <div style={{
+            position: 'absolute',
+            bottom: '40px',
+            left: '20px',
+            right: '20px',
+            height: '6px',
+            backgroundColor: '#27272A',
+            borderRadius: '0',
+            overflow: 'hidden',
+          }}>
+            <div style={{
+              height: '100%',
+              backgroundColor: '#EA580C',
+              boxShadow: '0 0 20px rgba(234, 88, 12, 0.8)',
+              animation: 'loadBar 2s ease-in-out infinite',
+            }}></div>
+          </div>
+        </div>
+        <style dangerouslySetInnerHTML={{
+          __html: `
+            @keyframes pulse {
+              0%, 100% { opacity: 1; }
+              50% { opacity: 0.85; }
+            }
+            @keyframes loadBar {
+              0% { width: 0%; }
+              50% { width: 70%; }
+              100% { width: 100%; }
+            }
+          `,
+        }} />
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `
+              (function() {
+                const splash = document.getElementById('splash-screen');
+                if (!splash) return;
+
+                // Check if running as PWA
+                const isPWA = window.matchMedia('(display-mode: standalone)').matches ||
+                              window.navigator.standalone === true;
+
+                // Check if mobile device
+                const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) ||
+                                window.innerWidth <= 768;
+
+                // Only show splash on mobile PWA
+                if (!isPWA || !isMobile) {
+                  splash.style.display = 'none';
+                  return;
+                }
+
+                function hideSplash() {
+                  if (splash && splash.style.display !== 'none') {
+                    splash.style.opacity = '0';
+                    setTimeout(function() {
+                      splash.style.display = 'none';
+                    }, 300);
+                  }
+                }
+
+                // Hide splash on DOMContentLoaded
+                if (document.readyState === 'loading') {
+                  document.addEventListener('DOMContentLoaded', hideSplash);
+                } else {
+                  hideSplash();
+                }
+
+                // Fallback: always hide after 3 seconds max
+                setTimeout(hideSplash, 3000);
+              })();
+            `,
+          }}
+        />
         {children}
       </body>
     </html>
