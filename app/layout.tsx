@@ -152,8 +152,19 @@ export default function RootLayout({
                 const splash = document.getElementById('splash-screen');
                 if (!splash) return;
 
+                const startTime = Date.now();
+                const minDisplayTime = 1000; // Show for at least 1 second
+
                 function hideSplash() {
-                  if (splash && splash.style.display !== 'none') {
+                  if (!splash || splash.style.display === 'none') return;
+
+                  const elapsed = Date.now() - startTime;
+                  const remaining = minDisplayTime - elapsed;
+
+                  if (remaining > 0) {
+                    // Wait until minimum display time is reached
+                    setTimeout(hideSplash, remaining);
+                  } else {
                     splash.style.opacity = '0';
                     setTimeout(function() {
                       splash.style.display = 'none';
@@ -161,7 +172,7 @@ export default function RootLayout({
                   }
                 }
 
-                // Hide splash on DOMContentLoaded
+                // Hide splash on DOMContentLoaded (but respect minimum time)
                 if (document.readyState === 'loading') {
                   document.addEventListener('DOMContentLoaded', hideSplash);
                 } else {
@@ -169,7 +180,14 @@ export default function RootLayout({
                 }
 
                 // Fallback: always hide after 3 seconds max
-                setTimeout(hideSplash, 3000);
+                setTimeout(function() {
+                  if (splash && splash.style.display !== 'none') {
+                    splash.style.opacity = '0';
+                    setTimeout(function() {
+                      splash.style.display = 'none';
+                    }, 300);
+                  }
+                }, 3000);
               })();
             `,
           }}
