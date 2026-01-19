@@ -51,39 +51,71 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en">
+    <html lang="en" suppressHydrationWarning>
       <head>
         <script
           dangerouslySetInnerHTML={{
             __html: `
               (function() {
-                // Check localStorage first, fall back to system preference
-                const stored = localStorage.getItem('darkMode');
-                let isDark;
+                // Theme System: Load preference with migration support
+                const STORAGE_KEY = 'themePreference';
+                const OLD_STORAGE_KEY = 'darkMode';
+                const DEFAULT_THEME = 'doom';
 
-                if (stored !== null) {
-                  isDark = stored === 'true';
+                let themeName = DEFAULT_THEME;
+                let mode = 'dark';
+
+                // Check for new format first
+                const stored = localStorage.getItem(STORAGE_KEY);
+                if (stored) {
+                  try {
+                    const parsed = JSON.parse(stored);
+                    themeName = parsed.themeName || DEFAULT_THEME;
+                    mode = parsed.mode || 'dark';
+                  } catch (e) {
+                    console.error('Failed to parse theme preference:', e);
+                  }
                 } else {
-                  isDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+                  // Migrate from old darkMode format
+                  const oldValue = localStorage.getItem(OLD_STORAGE_KEY);
+                  if (oldValue !== null) {
+                    mode = oldValue === 'true' ? 'dark' : 'light';
+                    // Save in new format
+                    const preference = { themeName: DEFAULT_THEME, mode: mode };
+                    localStorage.setItem(STORAGE_KEY, JSON.stringify(preference));
+                    // Remove old key
+                    localStorage.removeItem(OLD_STORAGE_KEY);
+                  } else {
+                    // Use system preference
+                    mode = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+                  }
                 }
 
-                if (isDark) {
-                  document.documentElement.classList.add('dark');
+                // Apply theme to document root
+                const root = document.documentElement;
+                root.dataset.theme = themeName;
+                root.dataset.mode = mode;
+
+                // Maintain legacy .dark class for backward compatibility
+                if (mode === 'dark') {
+                  root.classList.add('dark');
                 } else {
-                  document.documentElement.classList.remove('dark');
+                  root.classList.remove('dark');
                 }
 
-                // Listen for system preference changes only if no user preference is stored
-                if (stored === null) {
+                // Listen for system preference changes (only if no stored preference)
+                if (!stored && !localStorage.getItem(OLD_STORAGE_KEY)) {
                   const darkModeMediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
-                  const updateDarkMode = (e) => {
-                    if (e.matches) {
-                      document.documentElement.classList.add('dark');
+                  const updateMode = (e) => {
+                    const newMode = e.matches ? 'dark' : 'light';
+                    root.dataset.mode = newMode;
+                    if (newMode === 'dark') {
+                      root.classList.add('dark');
                     } else {
-                      document.documentElement.classList.remove('dark');
+                      root.classList.remove('dark');
                     }
                   };
-                  darkModeMediaQuery.addEventListener('change', updateDarkMode);
+                  darkModeMediaQuery.addEventListener('change', updateMode);
                 }
               })();
             `,

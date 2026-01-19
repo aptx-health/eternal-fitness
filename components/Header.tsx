@@ -3,7 +3,7 @@
 import { useState } from 'react'
 import Link from 'next/link'
 import Image from 'next/image'
-import DarkModeToggle from '@/components/DarkModeToggle'
+import { ThemeSelector } from '@/components/ThemeSelector'
 
 type Props = {
   userEmail: string
@@ -54,7 +54,7 @@ export default function Header({ userEmail }: Props) {
 
             {/* Right: Desktop Menu (hidden on mobile) */}
             <div className="hidden md:flex items-center space-x-4">
-              <DarkModeToggle />
+              <ThemeSelector />
               <span className="text-sm text-muted-foreground">{userEmail}</span>
               <form action="/api/auth/signout" method="POST">
                 <button
@@ -126,12 +126,12 @@ export default function Header({ userEmail }: Props) {
             </span>
           </div>
 
-          {/* Dark Mode Toggle */}
+          {/* Theme Selector */}
           <div className="flex items-center justify-between py-2">
             <span className="text-sm font-semibold text-foreground doom-label">
-              DARK MODE
+              THEME
             </span>
-            <DarkModeToggle />
+            <ThemeSelector />
           </div>
 
           {/* Sign Out Button */}
