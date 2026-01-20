@@ -11,56 +11,52 @@ export default async function ProgramsPage() {
     redirect('/login')
   }
 
-  // Fetch strength programs
-  const strengthPrograms = await prisma.program.findMany({
-    where: {
-      userId: user.id,
-      isArchived: false,
-    },
-    orderBy: { createdAt: 'desc' },
-  })
-
-  const archivedStrengthPrograms = await prisma.program.findMany({
-    where: {
-      userId: user.id,
-      isArchived: true,
-    },
-    orderBy: { archivedAt: 'desc' },
-  })
-
-  // Fetch cardio programs
-  const cardioPrograms = await prisma.cardioProgram.findMany({
-    where: {
-      userId: user.id,
-      isArchived: false,
-    },
-    orderBy: [{ isActive: 'desc' }, { createdAt: 'desc' }],
-    include: {
-      weeks: {
-        orderBy: { weekNumber: 'asc' },
-        include: {
-          sessions: {
-            orderBy: { dayNumber: 'asc' },
+  // Fetch active programs and archived counts in parallel for faster load times
+  const [strengthPrograms, archivedStrengthCount, cardioPrograms, archivedCardioCount] = await Promise.all([
+    prisma.program.findMany({
+      where: {
+        userId: user.id,
+        isArchived: false,
+      },
+      orderBy: { createdAt: 'desc' },
+    }),
+    prisma.program.count({
+      where: {
+        userId: user.id,
+        isArchived: true,
+      },
+    }),
+    prisma.cardioProgram.findMany({
+      where: {
+        userId: user.id,
+        isArchived: false,
+      },
+      orderBy: [{ isActive: 'desc' }, { createdAt: 'desc' }],
+      include: {
+        weeks: {
+          orderBy: { weekNumber: 'asc' },
+          include: {
+            sessions: {
+              orderBy: { dayNumber: 'asc' },
+            },
           },
         },
       },
-    },
-  })
-
-  const archivedCardioPrograms = await prisma.cardioProgram.findMany({
-    where: {
-      userId: user.id,
-      isArchived: true,
-    },
-    orderBy: { archivedAt: 'desc' },
-  })
+    }),
+    prisma.cardioProgram.count({
+      where: {
+        userId: user.id,
+        isArchived: true,
+      },
+    })
+  ])
 
   return (
     <ConsolidatedProgramsView
       strengthPrograms={strengthPrograms}
-      archivedStrengthPrograms={archivedStrengthPrograms}
+      archivedStrengthCount={archivedStrengthCount}
       cardioPrograms={cardioPrograms}
-      archivedCardioPrograms={archivedCardioPrograms}
+      archivedCardioCount={archivedCardioCount}
     />
   )
 }

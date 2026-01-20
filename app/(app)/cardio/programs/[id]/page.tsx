@@ -80,12 +80,6 @@ export default async function ViewCardioProgramPage({
             >
               EDIT
             </Link>
-            <Link
-              href="/cardio/programs"
-              className="px-4 py-2 border-2 border-border text-foreground hover:bg-muted doom-button-3d doom-focus-ring font-semibold uppercase tracking-wider"
-            >
-              BACK
-            </Link>
           </div>
         </div>
 

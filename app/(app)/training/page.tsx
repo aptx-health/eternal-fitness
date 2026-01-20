@@ -14,42 +14,50 @@ export default async function TrainingPage() {
     redirect('/login')
   }
 
-  // Fetch active program with ALL weeks (but lightweight) - single query
-  const activeProgram = await prisma.program.findFirst({
-    where: {
-      userId: user.id,
-      isActive: true,
-      isArchived: false
-    },
-    select: {
-      id: true,
-      name: true,
-      weeks: {
-        select: {
-          id: true,
-          weekNumber: true,
-          workouts: {
-            select: {
-              id: true,
-              name: true,
-              dayNumber: true,
-              completions: {
-                where: { userId: user.id, status: 'completed' },
-                select: { id: true, status: true, completedAt: true },
-                orderBy: { completedAt: 'desc' },
-                take: 1
+  // Fetch active program and workout history count in parallel for faster load times
+  const [activeProgram, workoutHistoryCount] = await Promise.all([
+    prisma.program.findFirst({
+      where: {
+        userId: user.id,
+        isActive: true,
+        isArchived: false
+      },
+      select: {
+        id: true,
+        name: true,
+        weeks: {
+          select: {
+            id: true,
+            weekNumber: true,
+            workouts: {
+              select: {
+                id: true,
+                name: true,
+                dayNumber: true,
+                completions: {
+                  where: { userId: user.id, status: 'completed' },
+                  select: { id: true, status: true, completedAt: true },
+                  orderBy: { completedAt: 'desc' },
+                  take: 1
+                },
+                _count: {
+                  select: { exercises: true }
+                }
               },
-              _count: {
-                select: { exercises: true }
-              }
-            },
-            orderBy: { dayNumber: 'asc' }
-          }
-        },
-        orderBy: { weekNumber: 'asc' }
+              orderBy: { dayNumber: 'asc' }
+            }
+          },
+          orderBy: { weekNumber: 'asc' }
+        }
       }
-    }
-  })
+    }),
+    prisma.workoutCompletion.count({
+      where: {
+        userId: user.id,
+        status: { in: ['completed', 'draft'] }
+      },
+    })
+  ])
 
   // Find current week (first incomplete week) - in JS, very fast
   let currentWeek = null
@@ -60,53 +68,6 @@ export default async function TrainingPage() {
       return completedWorkouts < totalWorkouts
     }) || activeProgram.weeks[activeProgram.weeks.length - 1]
   }
-
-  // Fetch recent workout history
-  const recentCompletions = await prisma.workoutCompletion.findMany({
-    where: {
-      userId: user.id,
-      status: { in: ['completed', 'draft'] }
-    },
-    orderBy: { completedAt: 'desc' },
-    take: 5, // Reduced from 10 to 5 for faster load
-    select: {
-      id: true,
-      status: true,
-      completedAt: true,
-      workout: {
-        select: {
-          id: true,
-          name: true,
-          week: {
-            select: {
-              program: {
-                select: { name: true }
-              }
-            }
-          }
-        }
-      },
-      loggedSets: {
-        select: {
-          id: true,
-          setNumber: true,
-          reps: true,
-          weight: true,
-          weightUnit: true,
-          exercise: {
-            select: {
-              name: true,
-              exerciseGroup: true,
-              order: true
-            }
-          }
-        }
-      },
-      _count: {
-        select: { loggedSets: true }
-      }
-    }
-  })
 
   return (
     <div className="min-h-screen bg-background p-6">
@@ -148,7 +109,7 @@ export default async function TrainingPage() {
           <h2 className="text-2xl font-bold text-foreground doom-heading mb-4">
             WORKOUT HISTORY
           </h2>
-          <WorkoutHistoryList completions={recentCompletions} />
+          <WorkoutHistoryList count={workoutHistoryCount} />
         </div>
       </div>
     </div>

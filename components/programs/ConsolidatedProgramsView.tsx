@@ -40,26 +40,18 @@ type CardioProgram = {
   }>
 }
 
-type ArchivedProgram = {
-  id: string
-  name: string
-  description: string | null
-  archivedAt: Date | null
-  createdAt: Date
-}
-
 type ConsolidatedProgramsViewProps = {
   strengthPrograms: StrengthProgram[]
-  archivedStrengthPrograms: ArchivedProgram[]
+  archivedStrengthCount: number
   cardioPrograms: CardioProgram[]
-  archivedCardioPrograms: ArchivedProgram[]
+  archivedCardioCount: number
 }
 
 export default function ConsolidatedProgramsView({
   strengthPrograms,
-  archivedStrengthPrograms,
+  archivedStrengthCount,
   cardioPrograms,
-  archivedCardioPrograms,
+  archivedCardioCount,
 }: ConsolidatedProgramsViewProps) {
   const searchParams = useSearchParams()
   const router = useRouter()
@@ -72,6 +64,24 @@ export default function ConsolidatedProgramsView({
       setActiveTab(tab)
     }
   }, [searchParams])
+
+  // Prefetch likely next pages for faster navigation
+  useEffect(() => {
+    // Prefetch main training/cardio pages
+    router.prefetch('/training')
+    router.prefetch('/cardio')
+
+    // Prefetch active program pages for even faster access
+    const activeStrengthProgram = strengthPrograms.find(p => p.isActive)
+    const activeCardioProgram = cardioPrograms.find(p => p.isActive)
+
+    if (activeStrengthProgram) {
+      router.prefetch(`/programs/${activeStrengthProgram.id}`)
+    }
+    if (activeCardioProgram) {
+      router.prefetch(`/cardio/programs/${activeCardioProgram.id}`)
+    }
+  }, [router, strengthPrograms, cardioPrograms])
 
   const handleTabChange = (tab: 'strength' | 'cardio') => {
     setActiveTab(tab)
@@ -94,9 +104,9 @@ export default function ConsolidatedProgramsView({
   })
 
   const activePrograms = isStrengthTab ? sortedStrengthPrograms : sortedCardioPrograms
-  const archivedPrograms = isStrengthTab
-    ? archivedStrengthPrograms
-    : archivedCardioPrograms
+  const archivedCount = isStrengthTab
+    ? archivedStrengthCount
+    : archivedCardioCount
   const createProgramUrl = isStrengthTab
     ? '/programs/new'
     : '/cardio/programs/create'
@@ -246,10 +256,10 @@ export default function ConsolidatedProgramsView({
         </div>
 
         {/* Archived Programs */}
-        {archivedPrograms.length > 0 && (
+        {archivedCount > 0 && (
           <div className="mt-6">
             <ArchivedProgramsSection
-              programs={archivedPrograms}
+              count={archivedCount}
               programType={activeTab}
             />
           </div>
