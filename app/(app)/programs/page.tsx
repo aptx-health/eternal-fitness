@@ -3,6 +3,9 @@ import { createClient } from '@/lib/supabase/server'
 import { prisma } from '@/lib/db'
 import ConsolidatedProgramsView from '@/components/programs/ConsolidatedProgramsView'
 
+// Cache page for 30 seconds to improve navigation performance
+export const revalidate = 30
+
 export default async function ProgramsPage() {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
