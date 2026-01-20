@@ -14,8 +14,8 @@ export default async function TrainingPage() {
     redirect('/login')
   }
 
-  // Fetch active program and recent completions in parallel for faster load times
-  const [activeProgram, recentCompletions] = await Promise.all([
+  // Fetch active program and workout history count in parallel for faster load times
+  const [activeProgram, workoutHistoryCount] = await Promise.all([
     prisma.program.findFirst({
       where: {
         userId: user.id,
@@ -51,50 +51,11 @@ export default async function TrainingPage() {
         }
       }
     }),
-    prisma.workoutCompletion.findMany({
+    prisma.workoutCompletion.count({
       where: {
         userId: user.id,
         status: { in: ['completed', 'draft'] }
       },
-      orderBy: { completedAt: 'desc' },
-      take: 5, // Reduced from 10 to 5 for faster load
-      select: {
-        id: true,
-        status: true,
-        completedAt: true,
-        workout: {
-          select: {
-            id: true,
-            name: true,
-            week: {
-              select: {
-                program: {
-                  select: { name: true }
-                }
-              }
-            }
-          }
-        },
-        loggedSets: {
-          select: {
-            id: true,
-            setNumber: true,
-            reps: true,
-            weight: true,
-            weightUnit: true,
-            exercise: {
-              select: {
-                name: true,
-                exerciseGroup: true,
-                order: true
-              }
-            }
-          }
-        },
-        _count: {
-          select: { loggedSets: true }
-        }
-      }
     })
   ])
 
@@ -148,7 +109,7 @@ export default async function TrainingPage() {
           <h2 className="text-2xl font-bold text-foreground doom-heading mb-4">
             WORKOUT HISTORY
           </h2>
-          <WorkoutHistoryList completions={recentCompletions} />
+          <WorkoutHistoryList count={workoutHistoryCount} />
         </div>
       </div>
     </div>

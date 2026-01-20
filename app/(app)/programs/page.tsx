@@ -11,8 +11,8 @@ export default async function ProgramsPage() {
     redirect('/login')
   }
 
-  // Fetch all programs in parallel for faster load times
-  const [strengthPrograms, archivedStrengthPrograms, cardioPrograms, archivedCardioPrograms] = await Promise.all([
+  // Fetch active programs and archived counts in parallel for faster load times
+  const [strengthPrograms, archivedStrengthCount, cardioPrograms, archivedCardioCount] = await Promise.all([
     prisma.program.findMany({
       where: {
         userId: user.id,
@@ -20,12 +20,11 @@ export default async function ProgramsPage() {
       },
       orderBy: { createdAt: 'desc' },
     }),
-    prisma.program.findMany({
+    prisma.program.count({
       where: {
         userId: user.id,
         isArchived: true,
       },
-      orderBy: { archivedAt: 'desc' },
     }),
     prisma.cardioProgram.findMany({
       where: {
@@ -44,21 +43,20 @@ export default async function ProgramsPage() {
         },
       },
     }),
-    prisma.cardioProgram.findMany({
+    prisma.cardioProgram.count({
       where: {
         userId: user.id,
         isArchived: true,
       },
-      orderBy: { archivedAt: 'desc' },
     })
   ])
 
   return (
     <ConsolidatedProgramsView
       strengthPrograms={strengthPrograms}
-      archivedStrengthPrograms={archivedStrengthPrograms}
+      archivedStrengthCount={archivedStrengthCount}
       cardioPrograms={cardioPrograms}
-      archivedCardioPrograms={archivedCardioPrograms}
+      archivedCardioCount={archivedCardioCount}
     />
   )
 }
