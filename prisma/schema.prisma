@@ -108,6 +108,7 @@ model Exercise {
   @@index([workoutId])
   @@index([exerciseDefinitionId])
   @@index([userId])
+  @@index([exerciseDefinitionId, userId]) // For exercise history queries
 }
 
 model PrescribedSet {
@@ -159,6 +160,7 @@ model LoggedSet {
   @@index([exerciseId])
   @@index([completionId])
   @@index([userId])
+  @@index([completionId, exerciseId]) // For filtering logged sets by completion and exercise
 }
 
 // ============================================
@@ -271,6 +273,7 @@ model LoggedCardioSession {
   @@index([prescribedSessionId])
   @@index([userId, completedAt])
   @@index([userId, status, completedAt])
+  @@index([prescribedSessionId, userId, completedAt]) // For filtering logged sessions by prescription
 }
 
 model UserCardioMetricPreferences {
