@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import Link from 'next/link'
 
 type Exercise = {
@@ -38,11 +38,39 @@ type WorkoutCompletion = {
 }
 
 type Props = {
-  completions: WorkoutCompletion[]
+  count: number
 }
 
-export default function WorkoutHistoryList({ completions }: Props) {
+export default function WorkoutHistoryList({ count }: Props) {
+  const [completions, setCompletions] = useState<WorkoutCompletion[]>([])
+  const [isLoading, setIsLoading] = useState(true)
   const [expandedIds, setExpandedIds] = useState<Set<string>>(new Set())
+
+  // Fetch workout history on mount
+  useEffect(() => {
+    if (count > 0) {
+      fetchWorkoutHistory()
+    } else {
+      setIsLoading(false)
+    }
+  }, [count])
+
+  const fetchWorkoutHistory = async () => {
+    setIsLoading(true)
+    try {
+      const response = await fetch('/api/workouts/history?limit=5')
+      if (!response.ok) {
+        throw new Error('Failed to fetch workout history')
+      }
+      const data = await response.json()
+      setCompletions(data.completions)
+    } catch (error) {
+      console.error('Error fetching workout history:', error)
+      alert('Failed to load workout history. Please try again.')
+    } finally {
+      setIsLoading(false)
+    }
+  }
 
   const toggleExpanded = (id: string) => {
     setExpandedIds(prev => {
@@ -56,12 +84,39 @@ export default function WorkoutHistoryList({ completions }: Props) {
     })
   }
 
-  if (completions.length === 0) {
+  if (count === 0) {
     return (
       <div className="bg-card border border-border p-8 text-center doom-noise doom-card">
         <p className="text-muted-foreground">
           No workout history yet. Start logging to see your progress here!
         </p>
+      </div>
+    )
+  }
+
+  if (isLoading) {
+    // Loading skeleton
+    return (
+      <div className="space-y-3">
+        {[1, 2, 3, 4, 5].map((i) => (
+          <div
+            key={i}
+            className="bg-card border border-border rounded-lg p-4 space-y-3"
+          >
+            <div className="flex justify-between items-start">
+              <div className="flex-1 space-y-2">
+                <div className="h-5 bg-muted animate-pulse rounded w-32" />
+                <div className="h-6 bg-muted animate-pulse rounded w-48" />
+              </div>
+              <div className="h-6 w-24 bg-muted animate-pulse rounded" />
+            </div>
+            <div className="space-y-2">
+              <div className="h-4 bg-muted animate-pulse rounded w-full" />
+              <div className="h-4 bg-muted animate-pulse rounded w-5/6" />
+              <div className="h-4 bg-muted animate-pulse rounded w-4/5" />
+            </div>
+          </div>
+        ))}
       </div>
     )
   }
@@ -82,96 +137,84 @@ export default function WorkoutHistoryList({ completions }: Props) {
           exerciseGroups.get(key)!.push(set)
         })
 
-        // Sort exercises by order, then sets by setNumber
-        const sortedExercises = Array.from(exerciseGroups.entries())
-          .sort((a, b) => a[1][0].exercise.order - b[1][0].exercise.order)
-          .map(([key, sets]) => [key, sets.sort((a, b) => a.setNumber - b.setNumber)] as const)
+        // Sort groups by exercise order
+        const sortedGroups = Array.from(exerciseGroups.entries()).sort((a, b) => {
+          const orderA = a[1][0].exercise.order
+          const orderB = b[1][0].exercise.order
+          return orderA - orderB
+        })
 
         return (
           <div
             key={completion.id}
-            className={`border doom-noise doom-card transition ${
+            className={`bg-card border doom-noise doom-card transition ${
               isCompleted
-                ? 'border-success-border bg-success-muted/30'
-                : 'border-warning-border bg-warning-muted/30'
+                ? 'border-success-border doom-workout-completed'
+                : 'border-warning-border'
             }`}
           >
+            {/* Workout Header */}
             <button
               onClick={() => toggleExpanded(completion.id)}
               className="w-full p-4 text-left hover:bg-muted/50 transition"
             >
               <div className="flex justify-between items-start">
                 <div className="flex-1">
-                  <div className="flex items-center gap-3 mb-1">
-                    <Link
-                      href={`/programs/${completion.workout.week.program.name}/workouts/${completion.workout.id}`}
-                      onClick={(e) => e.stopPropagation()}
-                      className="text-lg font-bold text-foreground doom-heading hover:text-primary"
-                    >
-                      {completion.workout.name}
-                    </Link>
-                    {isCompleted && (
-                      <span className="doom-badge doom-badge-completed text-xs">
-                        COMPLETED
-                      </span>
-                    )}
-                    {!isCompleted && (
-                      <span className="doom-badge doom-badge-warning text-xs">
-                        IN PROGRESS
-                      </span>
-                    )}
-                  </div>
+                  <p className="text-sm text-muted-foreground mb-1">
+                    {new Date(completion.completedAt).toLocaleDateString('en-US', {
+                      weekday: 'short',
+                      month: 'short',
+                      day: 'numeric',
+                      year: 'numeric'
+                    })}
+                  </p>
+                  <h3 className="text-lg font-bold text-foreground doom-heading mb-1">
+                    {completion.workout.name}
+                  </h3>
                   <p className="text-sm text-muted-foreground">
                     {completion.workout.week.program.name}
                   </p>
-                  <div className="flex gap-4 mt-2 text-sm text-muted-foreground">
-                    <span>
-                      {new Date(completion.completedAt).toLocaleDateString('en-US', {
-                        month: 'short',
-                        day: 'numeric',
-                        year: 'numeric',
-                        hour: 'numeric',
-                        minute: '2-digit'
-                      })}
-                    </span>
-                    <span>•</span>
-                    <span>{completion._count.loggedSets} sets logged</span>
-                  </div>
                 </div>
-
-                <svg
-                  className={`w-5 h-5 text-muted-foreground transition-transform ${
-                    isExpanded ? 'rotate-90' : ''
-                  }`}
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  stroke="currentColor"
-                >
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-                </svg>
+                <div className="ml-4">
+                  {isCompleted && (
+                    <span className="doom-badge doom-badge-completed">
+                      <svg className="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">
+                        <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                      </svg>
+                      COMPLETED
+                    </span>
+                  )}
+                </div>
+              </div>
+              <div className="mt-3 text-sm text-muted-foreground">
+                {completion._count.loggedSets} {completion._count.loggedSets === 1 ? 'set' : 'sets'} logged
               </div>
             </button>
 
+            {/* Expanded Exercise Details */}
             {isExpanded && (
-              <div className="border-t border-border p-4 space-y-4">
-                {sortedExercises.map(([key, sets]) => {
+              <div className="border-t border-border p-4 bg-muted/30 space-y-4">
+                {sortedGroups.map(([key, sets]) => {
                   const exercise = sets[0].exercise
                   return (
-                    <div key={key} className="bg-muted/50 p-3 rounded">
-                      <h4 className="font-semibold text-foreground mb-2 flex items-center gap-2">
+                    <div key={key} className="space-y-2">
+                      <h4 className="font-semibold text-foreground doom-label">
+                        {exercise.name}
                         {exercise.exerciseGroup && (
-                          <span className="doom-badge text-xs">
+                          <span className="ml-2 text-xs text-muted-foreground">
                             {exercise.exerciseGroup}
                           </span>
                         )}
-                        {exercise.name}
                       </h4>
-                      <div className="space-y-1 text-sm">
-                        {sets.map(set => (
-                          <div key={set.id} className="flex gap-4 text-muted-foreground">
-                            <span className="w-12">Set {set.setNumber}:</span>
-                            <span className="font-mono">
-                              {set.reps} reps × {set.weight}{set.weightUnit}
+                      <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2">
+                        {sets.map((set) => (
+                          <div
+                            key={set.id}
+                            className="bg-card border border-border p-2 text-sm"
+                          >
+                            <span className="text-muted-foreground">Set {set.setNumber}:</span>{' '}
+                            <span className="font-semibold text-foreground doom-stat">
+                              {set.reps} × {set.weight}{set.weightUnit}
                             </span>
                           </div>
                         ))}
@@ -179,6 +222,14 @@ export default function WorkoutHistoryList({ completions }: Props) {
                     </div>
                   )
                 })}
+                <div className="pt-2">
+                  <Link
+                    href={`/programs/${completion.workout.id}`}
+                    className="text-sm text-primary hover:text-primary-hover font-medium"
+                  >
+                    View Full Workout →
+                  </Link>
+                </div>
               </div>
             )}
           </div>

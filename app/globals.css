@@ -631,7 +631,7 @@
 
   /* Primary (Hot Pink) */
   --primary: #ff7edb;     /* neon pink */
-  --primary-foreground: #241B2F;
+  --primary-foreground: #000000;  /* pure black for contrast */
   --primary-hover: #f92aad;
   --primary-active: #e01a95;
   --primary-muted: #3d1a33;
@@ -647,7 +647,7 @@
 
   /* Success (Neon Green) */
   --success: #72f1b8;
-  --success-foreground: #241B2F;
+  --success-foreground: #000000;  /* pure black for contrast */
   --success-hover: #5fe6a8;
   --success-muted: #1a3d2e;
   --success-text: #72f1b8;
@@ -715,7 +715,7 @@
 
   /* Success (Neon Green) */
   --success: #72f1b8;
-  --success-foreground: #241B2F;
+  --success-foreground: #000000;  /* pure black for contrast */
   --success-hover: #8ff5c7;
   --success-muted: #1a3d2e;
   --success-text: #72f1b8;
@@ -749,78 +749,10 @@
   --accent-rgb: 54, 249, 246;
 }
 
-/* DRACULA Theme - Light Mode (Pastel Variant) */
+/* DRACULA Theme - Light Mode */
 [data-theme="dracula"] {
   /* Base colors */
-  --background: #f8f8f2;  /* light cream */
-  --foreground: #282A36;  /* dark blue-gray */
-
-  /* Surface colors */
-  --card: #ffffff;
-  --card-foreground: #282A36;
-  --muted: #e9e9e5;
-  --muted-foreground: #6272A4;
-
-  /* Border colors */
-  --border: #d3d3d0;
-  --input: #e9e9e5;
-
-  /* Primary (Purple) */
-  --primary: #BD93F9;     /* bright purple */
-  --primary-foreground: #ffffff;
-  --primary-hover: #a87fe8;
-  --primary-active: #936bd7;
-  --primary-muted: #f3eeff;
-  --primary-muted-dark: #BD93F9;
-  --primary-rgb: 189, 147, 249;
-
-  /* Secondary (Comment Gray) */
-  --secondary: #6272A4;
-  --secondary-foreground: #ffffff;
-  --secondary-hover: #4e5e90;
-  --secondary-active: #3a4a7c;
-  --secondary-muted: #e3e6f0;
-
-  /* Success (Green) */
-  --success: #50FA7B;
-  --success-foreground: #282A36;
-  --success-hover: #3be665;
-  --success-muted: #e6fff0;
-  --success-text: #50FA7B;
-  --success-border: #50FA7B;
-  --success-rgb: 80, 250, 123;
-
-  /* Warning (Yellow) */
-  --warning: #F1FA8C;
-  --warning-foreground: #282A36;
-  --warning-hover: #e7f077;
-  --warning-muted: #fdfee6;
-  --warning-text: #F1FA8C;
-  --warning-border: #F1FA8C;
-  --warning-rgb: 241, 250, 140;
-
-  /* Error (Red) */
-  --error: #FF5555;
-  --error-foreground: #ffffff;
-  --error-hover: #ff4040;
-  --error-muted: #ffe6e6;
-  --error-text: #FF5555;
-  --error-border: #FF5555;
-  --error-rgb: 255, 85, 85;
-
-  /* Accent (Pink) */
-  --accent: #FF79C6;
-  --accent-foreground: #ffffff;
-  --accent-hover: #ff65b8;
-  --accent-muted: #ffebf5;
-  --accent-text: #FF79C6;
-  --accent-rgb: 255, 121, 198;
-}
-
-/* DRACULA Theme - Dark Mode (Official) */
-[data-theme="dracula"][data-mode="dark"] {
-  /* Base colors */
-  --background: #282A36;  /* official dracula bg */
+  --background: #282A36;  /* official dracula bg (was dark mode) */
   --foreground: #F8F8F2;  /* official dracula fg */
 
   /* Surface colors */
@@ -833,21 +765,21 @@
   --border: #44475A;
   --input: #44475A;
 
-  /* Primary (Purple) */
-  --primary: #BD93F9;     /* official dracula purple */
-  --primary-foreground: #282A36;
-  --primary-hover: #D0B0FF;
-  --primary-active: #a87fe8;
-  --primary-muted: #1f1f2e;
-  --primary-muted-dark: #BD93F9;
-  --primary-rgb: 189, 147, 249;
+  /* Primary (Vibrant Pink) */
+  --primary: #D963BD;     /* vibrant pink accent */
+  --primary-foreground: #F8F8F2;
+  --primary-hover: #E587CC;
+  --primary-active: #C84FAE;
+  --primary-muted: #2e1a26;
+  --primary-muted-dark: #D963BD;
+  --primary-rgb: 217, 99, 189;
 
-  /* Secondary (Comment) */
-  --secondary: #6272A4;
-  --secondary-foreground: #F8F8F2;
-  --secondary-hover: #7a8ac0;
-  --secondary-active: #4e5e90;
-  --secondary-muted: #21222C;
+  /* Secondary (Peach/Orange) */
+  --secondary: #ECAA66;   /* peachy orange for subtle accents */
+  --secondary-foreground: #282A36;
+  --secondary-hover: #F0BB82;
+  --secondary-active: #E8994A;
+  --secondary-muted: #2e2419;
 
   /* Success (Green) */
   --success: #50FA7B;     /* official dracula green */
@@ -876,13 +808,217 @@
   --error-border: #FF5555;
   --error-rgb: 255, 85, 85;
 
-  /* Accent (Pink) */
-  --accent: #FF79C6;      /* official dracula pink */
+  /* Accent (Purple) */
+  --accent: #BD93F9;      /* official dracula purple */
   --accent-foreground: #282A36;
-  --accent-hover: #FF92D0;
-  --accent-muted: #2e1a26;
-  --accent-text: #FF79C6;
-  --accent-rgb: 255, 121, 198;
+  --accent-hover: #D0B0FF;
+  --accent-muted: #1f1f2e;
+  --accent-text: #BD93F9;
+  --accent-rgb: 189, 147, 249;
+}
+
+/* DRACULA Theme - Dark Mode (Even Darker) */
+[data-theme="dracula"][data-mode="dark"] {
+  /* Base colors */
+  --background: #191A21;  /* even darker than official */
+  --foreground: #F8F8F2;
+
+  /* Surface colors */
+  --card: #1E1F29;        /* very dark cards */
+  --card-foreground: #F8F8F2;
+  --muted: #282A36;       /* original bg as muted */
+  --muted-foreground: #6272A4;
+
+  /* Border colors */
+  --border: #44475A;
+  --input: #282A36;
+
+  /* Primary (Vibrant Pink) */
+  --primary: #D963BD;     /* vibrant pink accent */
+  --primary-foreground: #F8F8F2;
+  --primary-hover: #E587CC;
+  --primary-active: #C84FAE;
+  --primary-muted: #2e1a26;
+  --primary-muted-dark: #D963BD;
+  --primary-rgb: 217, 99, 189;
+
+  /* Secondary (Peach/Orange) */
+  --secondary: #ECAA66;   /* peachy orange for subtle accents */
+  --secondary-foreground: #191A21;
+  --secondary-hover: #F0BB82;
+  --secondary-active: #E8994A;
+  --secondary-muted: #2e2419;
+
+  /* Success (Green) */
+  --success: #50FA7B;     /* official dracula green */
+  --success-foreground: #191A21;
+  --success-hover: #69FF94;
+  --success-muted: #1a2e21;
+  --success-text: #50FA7B;
+  --success-border: #50FA7B;
+  --success-rgb: 80, 250, 123;
+
+  /* Warning (Yellow) */
+  --warning: #F1FA8C;     /* official dracula yellow */
+  --warning-foreground: #191A21;
+  --warning-hover: #F4FCA5;
+  --warning-muted: #2e2e1a;
+  --warning-text: #F1FA8C;
+  --warning-border: #F1FA8C;
+  --warning-rgb: 241, 250, 140;
+
+  /* Error (Red) */
+  --error: #FF5555;       /* official dracula red */
+  --error-foreground: #F8F8F2;
+  --error-hover: #FF6E6E;
+  --error-muted: #2e1a1a;
+  --error-text: #FF5555;
+  --error-border: #FF5555;
+  --error-rgb: 255, 85, 85;
+
+  /* Accent (Purple) */
+  --accent: #BD93F9;      /* official dracula purple */
+  --accent-foreground: #191A21;
+  --accent-hover: #D0B0FF;
+  --accent-muted: #1f1f2e;
+  --accent-text: #BD93F9;
+  --accent-rgb: 189, 147, 249;
+}
+
+/* GITHUB Theme - Light Mode */
+[data-theme="github"] {
+  /* Base colors */
+  --background: #ffffff;  /* pure white */
+  --foreground: #1f2328;  /* github dark text */
+
+  /* Surface colors */
+  --card: #f6f8fa;        /* github canvas */
+  --card-foreground: #1f2328;
+  --muted: #f6f8fa;
+  --muted-foreground: #656d76;  /* github secondary text */
+
+  /* Border colors */
+  --border: #d0d7de;      /* github border */
+  --input: #d0d7de;
+
+  /* Primary (Blue) */
+  --primary: #0969da;     /* github blue */
+  --primary-foreground: #ffffff;
+  --primary-hover: #0860ca;
+  --primary-active: #0757ba;
+  --primary-muted: #ddf4ff;
+  --primary-muted-dark: #0969da;
+  --primary-rgb: 9, 105, 218;
+
+  /* Secondary (Gray) */
+  --secondary: #656d76;
+  --secondary-foreground: #ffffff;
+  --secondary-hover: #57606a;
+  --secondary-active: #424a53;
+  --secondary-muted: #f6f8fa;
+
+  /* Success (Green) */
+  --success: #1a7f37;     /* github green */
+  --success-foreground: #ffffff;
+  --success-hover: #1a7f37;
+  --success-muted: #dafbe1;
+  --success-text: #1a7f37;
+  --success-border: #1a7f37;
+  --success-rgb: 26, 127, 55;
+
+  /* Warning (Orange) */
+  --warning: #bf8700;     /* github orange */
+  --warning-foreground: #ffffff;
+  --warning-hover: #ae7c00;
+  --warning-muted: #fff8c5;
+  --warning-text: #bf8700;
+  --warning-border: #bf8700;
+  --warning-rgb: 191, 135, 0;
+
+  /* Error (Red) */
+  --error: #cf222e;       /* github red */
+  --error-foreground: #ffffff;
+  --error-hover: #c0222e;
+  --error-muted: #ffebe9;
+  --error-text: #cf222e;
+  --error-border: #cf222e;
+  --error-rgb: 207, 34, 46;
+
+  /* Accent (Purple) */
+  --accent: #8250df;      /* github purple */
+  --accent-foreground: #ffffff;
+  --accent-hover: #7640d4;
+  --accent-muted: #fbefff;
+  --accent-text: #8250df;
+  --accent-rgb: 130, 80, 223;
+}
+
+/* GITHUB Theme - Dark Mode */
+[data-theme="github"][data-mode="dark"] {
+  /* Base colors */
+  --background: #0d1117;  /* github dark bg */
+  --foreground: #e6edf3;  /* github dark text */
+
+  /* Surface colors */
+  --card: #161b22;        /* github dark canvas */
+  --card-foreground: #e6edf3;
+  --muted: #21262d;
+  --muted-foreground: #7d8590;  /* github dark secondary */
+
+  /* Border colors */
+  --border: #30363d;      /* github dark border */
+  --input: #30363d;
+
+  /* Primary (Blue) */
+  --primary: #58a6ff;     /* github dark blue */
+  --primary-foreground: #0d1117;
+  --primary-hover: #79b8ff;
+  --primary-active: #388bfd;
+  --primary-muted: #1c2d41;
+  --primary-muted-dark: #58a6ff;
+  --primary-rgb: 88, 166, 255;
+
+  /* Secondary (Gray) */
+  --secondary: #7d8590;
+  --secondary-foreground: #e6edf3;
+  --secondary-hover: #8b949e;
+  --secondary-active: #6e7681;
+  --secondary-muted: #161b22;
+
+  /* Success (Green) */
+  --success: #3fb950;     /* github dark green */
+  --success-foreground: #0d1117;
+  --success-hover: #56d364;
+  --success-muted: #1a3327;
+  --success-text: #3fb950;
+  --success-border: #3fb950;
+  --success-rgb: 63, 185, 80;
+
+  /* Warning (Orange) */
+  --warning: #d29922;     /* github dark orange */
+  --warning-foreground: #0d1117;
+  --warning-hover: #e2a336;
+  --warning-muted: #341a03;
+  --warning-text: #d29922;
+  --warning-border: #d29922;
+  --warning-rgb: 210, 153, 34;
+
+  /* Error (Red) */
+  --error: #f85149;       /* github dark red */
+  --error-foreground: #e6edf3;
+  --error-hover: #ff6b6b;
+  --error-muted: #3d1319;
+  --error-text: #f85149;
+  --error-border: #f85149;
+  --error-rgb: 248, 81, 73;
+
+  /* Accent (Purple) */
+  --accent: #a371f7;      /* github dark purple */
+  --accent-foreground: #0d1117;
+  --accent-hover: #b083f9;
+  --accent-muted: #2e2838;
+  --accent-text: #a371f7;
+  --accent-rgb: 163, 113, 247;
 }
 
 body {
