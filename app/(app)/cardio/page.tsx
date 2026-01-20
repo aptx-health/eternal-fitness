@@ -6,6 +6,9 @@ import CardioHistoryList from '@/components/CardioHistoryList'
 import LogCardioButton from '@/components/LogCardioButton'
 import CardioCurrentWeek from '@/components/CardioCurrentWeek'
 
+// Cache page for 30 seconds to improve navigation performance
+export const revalidate = 30
+
 export default async function CardioPage() {
   // Get authenticated user
   const supabase = await createClient()
