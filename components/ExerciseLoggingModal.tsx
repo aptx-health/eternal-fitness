@@ -634,7 +634,7 @@ export default function ExerciseLoggingModal({
             <button
               onClick={handleCompleteWorkout}
               disabled={isSubmitting || totalLoggedSets === 0}
-              className="py-2.5 bg-success text-white rounded-lg font-semibold hover:bg-success-hover active:bg-success-hover disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+              className="py-2.5 bg-success text-success-foreground rounded-lg font-semibold hover:bg-success-hover active:bg-success-hover disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
               onMouseDown={(e) => {
                 if (isSubmitting || totalLoggedSets === 0) return;
                 e.preventDefault();

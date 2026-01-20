@@ -631,7 +631,7 @@
 
   /* Primary (Hot Pink) */
   --primary: #ff7edb;     /* neon pink */
-  --primary-foreground: #241B2F;
+  --primary-foreground: #000000;  /* pure black for contrast */
   --primary-hover: #f92aad;
   --primary-active: #e01a95;
   --primary-muted: #3d1a33;
@@ -647,7 +647,7 @@
 
   /* Success (Neon Green) */
   --success: #72f1b8;
-  --success-foreground: #241B2F;
+  --success-foreground: #000000;  /* pure black for contrast */
   --success-hover: #5fe6a8;
   --success-muted: #1a3d2e;
   --success-text: #72f1b8;
@@ -715,7 +715,7 @@
 
   /* Success (Neon Green) */
   --success: #72f1b8;
-  --success-foreground: #241B2F;
+  --success-foreground: #000000;  /* pure black for contrast */
   --success-hover: #8ff5c7;
   --success-muted: #1a3d2e;
   --success-text: #72f1b8;
