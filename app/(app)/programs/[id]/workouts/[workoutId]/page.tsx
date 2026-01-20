@@ -2,7 +2,7 @@ import { redirect, notFound } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
 import { prisma } from '@/lib/db'
 import WorkoutDetail from '@/components/WorkoutDetail'
-import { getLastExercisePerformance } from '@/lib/queries/exercise-history'
+import { getBatchExercisePerformance } from '@/lib/queries/exercise-history'
 
 export default async function WorkoutDetailPage({
   params,
@@ -73,21 +73,20 @@ export default async function WorkoutDetailPage({
     notFound()
   }
 
-  // NEW: Fetch exercise history for each exercise
-  const exerciseHistory = await Promise.all(
-    workout.exercises.map(async (exercise) => ({
-      exerciseId: exercise.id,
-      history: await getLastExercisePerformance(
-        exercise.exerciseDefinitionId,
-        user.id,
-        new Date() // Get history before now
-      ),
-    }))
+  // Fetch exercise history for all exercises in a single batch query
+  const exerciseDefinitionIds = workout.exercises.map(ex => ex.exerciseDefinitionId)
+  const historyByDefinition = await getBatchExercisePerformance(
+    exerciseDefinitionIds,
+    user.id,
+    new Date() // Get history before now
   )
 
-  // Convert to map for easy lookup in components
+  // Convert to map by exercise ID (not definition ID) for component lookup
   const historyMap = Object.fromEntries(
-    exerciseHistory.map((h) => [h.exerciseId, h.history])
+    workout.exercises.map((exercise) => [
+      exercise.id,
+      historyByDefinition.get(exercise.exerciseDefinitionId) || null
+    ])
   )
 
   return (
