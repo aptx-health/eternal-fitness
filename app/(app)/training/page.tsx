@@ -5,6 +5,9 @@ import Link from 'next/link'
 import StrengthCurrentWeek from '@/components/StrengthCurrentWeek'
 import WorkoutHistoryList from '@/components/WorkoutHistoryList'
 
+// Cache page for 30 seconds to improve navigation performance
+export const revalidate = 30
+
 export default async function TrainingPage() {
   // Get authenticated user
   const supabase = await createClient()

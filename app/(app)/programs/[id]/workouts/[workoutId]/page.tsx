@@ -2,7 +2,7 @@ import { redirect, notFound } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
 import { prisma } from '@/lib/db'
 import WorkoutDetail from '@/components/WorkoutDetail'
-import { getLastExercisePerformance } from '@/lib/queries/exercise-history'
+import { getBatchExercisePerformance } from '@/lib/queries/exercise-history'
 
 export default async function WorkoutDetailPage({
   params,
@@ -21,26 +21,47 @@ export default async function WorkoutDetailPage({
     redirect('/login')
   }
 
-  // Fetch workout with exercises, prescribed sets, and completion status
+  // Fetch only the workout data needed for display (optimized for LCP)
   const workout = await prisma.workout.findUnique({
     where: {
       id: workoutId,
     },
-    include: {
+    select: {
+      id: true,
+      name: true,
+      dayNumber: true,
       week: {
-        include: {
-          program: true,
+        select: {
+          weekNumber: true,
+          program: {
+            select: {
+              userId: true, // Only for auth check
+            },
+          },
         },
       },
       exercises: {
         orderBy: {
           order: 'asc',
         },
-        include: {
-          exerciseDefinition: true, // NEW: Include exercise definition
+        select: {
+          id: true,
+          name: true,
+          order: true,
+          exerciseGroup: true,
+          notes: true,
+          exerciseDefinitionId: true, // For history lookup
           prescribedSets: {
             orderBy: {
               setNumber: 'asc',
+            },
+            select: {
+              id: true,
+              setNumber: true,
+              reps: true,
+              weight: true,
+              rpe: true,
+              rir: true,
             },
           },
         },
@@ -53,10 +74,23 @@ export default async function WorkoutDetailPage({
           completedAt: 'desc',
         },
         take: 1,
-        include: {
+        select: {
+          id: true,
+          completedAt: true,
+          status: true,
           loggedSets: {
             orderBy: {
               setNumber: 'asc',
+            },
+            select: {
+              id: true,
+              setNumber: true,
+              reps: true,
+              weight: true,
+              weightUnit: true,
+              rpe: true,
+              rir: true,
+              exerciseId: true,
             },
           },
         },
@@ -73,21 +107,20 @@ export default async function WorkoutDetailPage({
     notFound()
   }
 
-  // NEW: Fetch exercise history for each exercise
-  const exerciseHistory = await Promise.all(
-    workout.exercises.map(async (exercise) => ({
-      exerciseId: exercise.id,
-      history: await getLastExercisePerformance(
-        exercise.exerciseDefinitionId,
-        user.id,
-        new Date() // Get history before now
-      ),
-    }))
+  // Fetch exercise history for all exercises in a single batch query
+  const exerciseDefinitionIds = workout.exercises.map(ex => ex.exerciseDefinitionId)
+  const historyByDefinition = await getBatchExercisePerformance(
+    exerciseDefinitionIds,
+    user.id,
+    new Date() // Get history before now
   )
 
-  // Convert to map for easy lookup in components
+  // Convert to map by exercise ID (not definition ID) for component lookup
   const historyMap = Object.fromEntries(
-    exerciseHistory.map((h) => [h.exerciseId, h.history])
+    workout.exercises.map((exercise) => [
+      exercise.id,
+      historyByDefinition.get(exercise.exerciseDefinitionId) || null
+    ])
   )
 
   return (

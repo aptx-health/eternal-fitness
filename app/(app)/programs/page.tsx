@@ -3,6 +3,9 @@ import { createClient } from '@/lib/supabase/server'
 import { prisma } from '@/lib/db'
 import ConsolidatedProgramsView from '@/components/programs/ConsolidatedProgramsView'
 
+// Cache page for 30 seconds to improve navigation performance
+export const revalidate = 30
+
 export default async function ProgramsPage() {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
@@ -26,6 +29,7 @@ export default async function ProgramsPage() {
         isArchived: true,
       },
     }),
+    // Only fetch week and session counts for preview cards, not full data
     prisma.cardioProgram.findMany({
       where: {
         userId: user.id,
@@ -34,12 +38,12 @@ export default async function ProgramsPage() {
       orderBy: [{ isActive: 'desc' }, { createdAt: 'desc' }],
       include: {
         weeks: {
-          orderBy: { weekNumber: 'asc' },
-          include: {
-            sessions: {
-              orderBy: { dayNumber: 'asc' },
-            },
-          },
+          select: {
+            id: true,
+            _count: {
+              select: { sessions: true }
+            }
+          }
         },
       },
     }),
