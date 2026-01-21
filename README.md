@@ -4,86 +4,139 @@ A focused strength training tracker that lets you import programs from CSV and t
 
 ## Quick Start
 
+Want to run FitCSV locally? You have two options for the database: use Supabase (cloud, includes auth) or run PostgreSQL locally in Docker (simpler, no account needed).
+
 ### Prerequisites
 
-- Node.js 20+
-- A Supabase account (free tier works)
-- Doppler CLI for secrets management
+- **Node.js 20+**
+- **Database**: Choose one:
+  - **Option A**: Supabase account (free tier) - [Sign up here](https://supabase.com)
+  - **Option B**: Docker Desktop (for local PostgreSQL)
 
-### 1. Create Supabase Project
+### 1. Set Up Your Database
 
-1. Go to [supabase.com](https://supabase.com) and create a new project
+#### Option A: Supabase (Includes Auth)
+
+1. Go to [supabase.com/dashboard](https://supabase.com/dashboard) and create a new project
 2. Wait for database to provision (~2 minutes)
-3. Note your connection details (you'll add these to Doppler):
-   - **Database URL**: Settings → Database → Connection string (URI)
-   - **Supabase URL & Anon Key**: Settings → API
+3. Collect your credentials:
+   - **Settings → Database**: Copy both connection strings
+     - "Connection pooling" URL (port 6543) → `DATABASE_URL`
+     - "Direct connection" URL (port 5432) → `DIRECT_URL`
+   - **Settings → API**: Copy your credentials
+     - Project URL → `NEXT_PUBLIC_SUPABASE_URL`
+     - anon/public key → `NEXT_PUBLIC_SUPABASE_ANON_KEY`
 
-### 2. Setup Doppler
+#### Option B: Local PostgreSQL (Docker)
+
+```bash
+# Start PostgreSQL in Docker
+docker run -d \
+  --name fitcsv-postgres \
+  -e POSTGRES_PASSWORD=postgres \
+  -e POSTGRES_DB=fitcsv \
+  -p 5432:5432 \
+  postgres:15
+
+# Your connection strings will be:
+# DATABASE_URL="postgresql://postgres:postgres@localhost:5432/fitcsv"
+# DIRECT_URL="postgresql://postgres:postgres@localhost:5432/fitcsv"
+```
+
+**Note**: With local PostgreSQL, you'll need to set up Supabase Auth separately or use an alternative auth solution.
+
+### 2. Configure Environment Variables
+
+Choose between Doppler (recommended) or a simple `.env` file:
+
+#### Option A: Using Doppler (Recommended)
 
 ```bash
 # Install Doppler CLI
-brew install dopplerhq/cli/doppler
+brew install dopplerhq/cli/doppler  # macOS
+# or visit: https://docs.doppler.com/docs/install-cli
 
-# Login
+# Login and setup
 doppler login
+doppler setup  # Create your own project + config
 
-# Setup project
-doppler setup
-
-# Add secrets via Doppler dashboard or CLI:
-doppler secrets set DATABASE_URL="postgresql://..."
-doppler secrets set DIRECT_URL="postgresql://..."
-doppler secrets set NEXT_PUBLIC_SUPABASE_URL="https://..."
+# For Supabase:
+doppler secrets set DATABASE_URL="postgresql://postgres.xxxx:[password]@aws-0-us-east-1.pooler.supabase.com:6543/postgres"
+doppler secrets set DIRECT_URL="postgresql://postgres:[password]@db.xxxx.supabase.co:5432/postgres"
+doppler secrets set NEXT_PUBLIC_SUPABASE_URL="https://xxxx.supabase.co"
 doppler secrets set NEXT_PUBLIC_SUPABASE_ANON_KEY="eyJ..."
+
+# For Local PostgreSQL:
+doppler secrets set DATABASE_URL="postgresql://postgres:postgres@localhost:5432/fitcsv"
+doppler secrets set DIRECT_URL="postgresql://postgres:postgres@localhost:5432/fitcsv"
+doppler secrets set NEXT_PUBLIC_SUPABASE_URL="https://xxxx.supabase.co"  # Still needed for auth
+doppler secrets set NEXT_PUBLIC_SUPABASE_ANON_KEY="eyJ..."  # Still needed for auth
+
+# Common settings:
 doppler secrets set NODE_ENV="development"
 doppler secrets set NEXT_PUBLIC_APP_URL="http://localhost:3000"
 ```
 
-**Note**: The `.env` file in this repo is just a template. Doppler manages all secrets for both local development and production.
+#### Option B: Using .env File (Simpler)
 
-### 3. Install Dependencies & Run Migrations
+```bash
+# Copy the example file
+cp .env.example .env
+
+# Edit .env and configure for your database choice:
+# - See comments in .env.example for Supabase vs Local PostgreSQL
+# - Uncomment the option you're using
+```
+
+### 3. Install Dependencies & Setup Database
 
 ```bash
 # Install packages
 npm install
 
-# Generate Prisma client
+# With Doppler:
 doppler run -- npx prisma generate
-
-# Create initial migration
 doppler run -- npx prisma migrate dev --name init
 
-# Seed database (optional - adds sample program)
-doppler run -- npx prisma db seed
+# With .env file:
+npx prisma generate
+npx prisma migrate dev --name init
 ```
 
 ### 4. Start Development
 
 ```bash
+# With Doppler:
 doppler run -- npm run dev
+
+# With .env file:
+npm run dev
 ```
 
 Open [http://localhost:3000](http://localhost:3000)
 
+**First time?** Create an account at `/signup`, confirm your email, and start tracking workouts!
+
 ## Development Commands
 
-**All commands use Doppler to load secrets:**
+Commands shown with Doppler prefix. If using `.env` file, omit `doppler run --`.
 
 ```bash
 # Development
 doppler run -- npm run dev              # Start dev server
-doppler run -- npx prisma studio        # Database GUI
+doppler run -- npx prisma studio        # Database GUI (browse your data)
 
-# Database
+# Database Operations
 doppler run -- npx prisma migrate dev --name feature_name   # Create migration
-doppler run -- npx prisma db push                           # Quick prototype
-doppler run -- npx prisma generate                          # Generate client
-doppler run -- npx prisma db seed                           # Seed database
+doppler run -- npx prisma db push                           # Quick prototype (no migration files)
+doppler run -- npx prisma generate                          # Regenerate Prisma client
+doppler run -- npx prisma db seed                           # Seed sample data
 
 # Testing & Quality
+doppler run -- npm test                 # Run tests
 npm run lint                            # Run ESLint
 npm run type-check                      # TypeScript check
-npm run build                           # Production build
+npm run build                           # Production build test
 ```
 
 ## CSV Import Format
@@ -97,8 +150,6 @@ week,day,workout_name,exercise,set,reps,weight,rir,notes
 
 **Required columns**: `week`, `day`, `workout_name`, `exercise`, `set`, `reps`, `weight`
 **Optional columns**: `rir`, `rpe`, `notes` (auto-detected)
-
-See [docs/CSV_SPEC.md](docs/CSV_SPEC.md) for complete specification.
 
 ## Project Structure
 
@@ -127,10 +178,19 @@ Vercel deployment is configured via Doppler integration:
 
 All secrets sync automatically from Doppler to Vercel.
 
+## Contributing
+
+Interested in contributing? Check out [CONTRIBUTING.md](CONTRIBUTING.md) for guidelines on:
+- How to submit pull requests
+- Code standards and conventions
+- Current project limitations
+- Testing requirements
+
 ## Documentation
 
-- [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) - Architecture decisions and design
-- [docs/CSV_SPEC.md](docs/CSV_SPEC.md) - CSV format specification
+- [docs/STYLING.md](docs/STYLING.md) - DOOM theme color system
+- [docs/features/CARDIO_DESIGN.md](docs/features/CARDIO_DESIGN.md) - Cardio tracking system design
+- [docs/features/EXERCISE_PERFORMANCE_TRACKING.md](docs/features/EXERCISE_PERFORMANCE_TRACKING.md) - Exercise tracking features
 - [CLAUDE.md](CLAUDE.md) - Guide for Claude Code sessions
 
 ## Tech Stack
