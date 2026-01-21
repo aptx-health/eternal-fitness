@@ -30,20 +30,20 @@ Want to run FitCSV locally? You have two options for the database: use Supabase 
 #### Option B: Local PostgreSQL (Docker)
 
 ```bash
-# Start PostgreSQL in Docker
+# Start PostgreSQL in Docker (using port 5433 to avoid conflicts)
 docker run -d \
   --name fitcsv-postgres \
   -e POSTGRES_PASSWORD=postgres \
   -e POSTGRES_DB=fitcsv \
-  -p 5432:5432 \
+  -p 5433:5432 \
   postgres:15
 
 # Your connection strings will be:
-# DATABASE_URL="postgresql://postgres:postgres@localhost:5432/fitcsv"
-# DIRECT_URL="postgresql://postgres:postgres@localhost:5432/fitcsv"
+# DATABASE_URL="postgresql://postgres:postgres@localhost:5433/fitcsv"
+# DIRECT_URL="postgresql://postgres:postgres@localhost:5433/fitcsv"
 ```
 
-**Note**: With local PostgreSQL, you'll need to set up Supabase Auth separately or use an alternative auth solution.
+**Note**: With local PostgreSQL, you still need Supabase Auth credentials for user authentication. The Docker database only stores your workout data locally.
 
 ### 2. Configure Environment Variables
 
@@ -67,8 +67,8 @@ doppler secrets set NEXT_PUBLIC_SUPABASE_URL="https://xxxx.supabase.co"
 doppler secrets set NEXT_PUBLIC_SUPABASE_ANON_KEY="eyJ..."
 
 # For Local PostgreSQL:
-doppler secrets set DATABASE_URL="postgresql://postgres:postgres@localhost:5432/fitcsv"
-doppler secrets set DIRECT_URL="postgresql://postgres:postgres@localhost:5432/fitcsv"
+doppler secrets set DATABASE_URL="postgresql://postgres:postgres@localhost:5433/fitcsv"
+doppler secrets set DIRECT_URL="postgresql://postgres:postgres@localhost:5433/fitcsv"
 doppler secrets set NEXT_PUBLIC_SUPABASE_URL="https://xxxx.supabase.co"  # Still needed for auth
 doppler secrets set NEXT_PUBLIC_SUPABASE_ANON_KEY="eyJ..."  # Still needed for auth
 
@@ -79,7 +79,23 @@ doppler secrets set NEXT_PUBLIC_APP_URL="http://localhost:3000"
 
 #### Option B: Using .env File (Simpler)
 
+**⚠️ Important: Check for existing `.env` files first!**
+
+Next.js loads environment variables in this order (later files override earlier):
+1. `.env`
+2. `.env.local`
+3. `.env.development`
+4. `.env.development.local`
+
+If you have existing `.env.local` or other env files, they will override `.env`. **You must update ALL existing env files** to point to the same database.
+
 ```bash
+# Check for existing env files
+ls -la .env*
+
+# If you see .env.local, .env.development, etc., update them ALL
+# or delete them to use only .env
+
 # Copy the example file
 cp .env.example .env
 
@@ -177,6 +193,60 @@ Vercel deployment is configured via Doppler integration:
 3. Push to git - Vercel auto-deploys
 
 All secrets sync automatically from Doppler to Vercel.
+
+## Troubleshooting
+
+### "Column does not exist in the current database"
+
+This usually means your `.env.local` file is overriding your `.env` and pointing to a different database:
+
+```bash
+# Check which database URLs are set
+cat .env
+cat .env.local  # This overrides .env!
+
+# Update .env.local to match, or delete it
+rm .env.local
+
+# Clear caches and regenerate Prisma client
+rm -rf .next node_modules/.prisma
+npx prisma generate
+
+# Restart dev server
+npm run dev
+```
+
+### "Cannot find module '.prisma/client/default'"
+
+The Prisma client wasn't fully generated:
+
+```bash
+# Remove and regenerate
+rm -rf node_modules/.prisma node_modules/@prisma/client
+npx prisma generate
+```
+
+### Switching Between Databases
+
+If you switch from one database to another (e.g., local PostgreSQL to Supabase):
+
+```bash
+# 1. Update ALL .env files to point to new database
+vi .env
+vi .env.local  # If it exists
+
+# 2. Clear caches
+rm -rf .next node_modules/.prisma
+
+# 3. Regenerate Prisma client
+npx prisma generate
+
+# 4. Apply schema to new database
+npx prisma db push
+
+# 5. Restart dev server
+npm run dev
+```
 
 ## Contributing
 
