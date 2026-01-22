@@ -247,19 +247,6 @@ export default function ExerciseLoggingModal({
   }
 
   const handleAddExercise = () => {
-    // Check if there's any one-off exercise without logged sets
-    const oneOffExercises = exercises.filter(ex => ex.isOneOff)
-    const hasUnloggedOneOff = oneOffExercises.some(ex => {
-      const exerciseSets = loggedSets.filter(s => s.exerciseId === ex.id)
-      return exerciseSets.length === 0
-    })
-
-    if (hasUnloggedOneOff) {
-      // TODO: Show toast notification
-      alert('Please log at least one set for the newly added exercise before adding another')
-      return
-    }
-
     setShowExerciseSearch(true)
     setPendingAction({ type: 'add', exerciseDefinitionId: '', exerciseName: '' })
   }
