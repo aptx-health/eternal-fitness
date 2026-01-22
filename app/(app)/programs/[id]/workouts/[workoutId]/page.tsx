@@ -81,13 +81,23 @@ export default async function WorkoutDetailPage({
   // Get completion ID for one-off exercise lookup
   const completionId = workout.completions[0]?.id
 
+  // Build where clause - only include one-offs if there's an active completion
+  const whereConditions: Array<{ workoutId?: string; workoutCompletionId?: string; isOneOff?: boolean }> = [
+    { workoutId: workoutId }, // Program exercises
+  ]
+
+  if (completionId) {
+    // Only add one-off condition if we have a completion
+    whereConditions.push({
+      workoutCompletionId: completionId,
+      isOneOff: true
+    })
+  }
+
   // Fetch all exercises (program + one-offs) in a single efficient query
   const exercises = await prisma.exercise.findMany({
     where: {
-      OR: [
-        { workoutId: workoutId }, // Program exercises
-        { workoutCompletionId: completionId, isOneOff: true }, // One-off exercises for this session
-      ],
+      OR: whereConditions,
       userId: user.id,
     },
     orderBy: {
