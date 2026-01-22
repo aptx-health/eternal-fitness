@@ -32,7 +32,6 @@ type Exercise = {
   order: number
   exerciseGroup: string | null
   notes: string | null
-  isOneOff?: boolean
   prescribedSets: PrescribedSet[]
 }
 
@@ -372,7 +371,6 @@ export default function WorkoutDetail({ workout, programId, exerciseHistory }: P
         exercises={workout.exercises}
         workoutId={workout.id}
         workoutName={workout.name}
-        workoutCompletionId={completion?.id} // Pass completion ID for one-off exercises
         onComplete={handleCompleteWorkout}
         exerciseHistory={exerciseHistory} // NEW: Pass exercise history
       />
