@@ -94,6 +94,10 @@ export default function WorkoutDetail({ workout, programId, exerciseHistory }: P
   const isDraft = completion?.status === 'draft'
   const isWorkoutCompleted = completion?.status === 'completed'
 
+  const handleRefresh = () => {
+    router.refresh()
+  }
+
   const handleCompleteWorkout = async (loggedSets: LoggedSetInput[]) => {
     try {
       const response = await fetch(`/api/workouts/${workout.id}/complete`, {
@@ -374,6 +378,7 @@ export default function WorkoutDetail({ workout, programId, exerciseHistory }: P
         workoutName={workout.name}
         workoutCompletionId={completion?.id} // Pass completion ID for one-off exercises
         onComplete={handleCompleteWorkout}
+        onRefresh={handleRefresh}
         exerciseHistory={exerciseHistory} // NEW: Pass exercise history
       />
     </div>

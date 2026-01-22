@@ -12,6 +12,7 @@ import ScopeSelectionDialog from './ScopeSelectionDialog'
 import SetDefinitionModal, { type PrescribedSetInput } from './SetDefinitionModal'
 import ExerciseSearchModal from './ExerciseSearchModal'
 import ActionsMenu, { type ActionItem } from './ActionsMenu'
+import LoadingSuccessModal from './LoadingSuccessModal'
 
 type PrescribedSet = {
   id: string
@@ -58,6 +59,7 @@ type Props = {
   workoutName: string
   workoutCompletionId?: string // Completion ID for one-off exercises
   onComplete: (loggedSets: LoggedSet[]) => Promise<void>
+  onRefresh?: () => void // Callback to refresh exercise data after add/swap
   exerciseHistory?: Record<string, ExerciseHistory | null> // NEW: Exercise history map
 }
 
@@ -69,6 +71,7 @@ export default function ExerciseLoggingModal({
   workoutId,
   workoutCompletionId,
   onComplete,
+  onRefresh,
   exerciseHistory,
 }: Props) {
   const [currentExerciseIndex, setCurrentExerciseIndex] = useState(0)
@@ -94,6 +97,12 @@ export default function ExerciseLoggingModal({
   const [showExerciseSearch, setShowExerciseSearch] = useState(false)
   const [showScopeDialog, setShowScopeDialog] = useState(false)
   const [showSetDefinitionModal, setShowSetDefinitionModal] = useState(false)
+  const [operationStatus, setOperationStatus] = useState<{
+    isLoading: boolean
+    isSuccess: boolean
+    message: string
+    successMessage: string
+  }>({ isLoading: false, isSuccess: false, message: '', successMessage: '' })
   const [pendingAction, setPendingAction] = useState<{
     type: 'replace' | 'add'
     exerciseDefinitionId: string
@@ -280,7 +289,21 @@ export default function ExerciseLoggingModal({
   const handleScopeSelected = async (applyToFuture: boolean) => {
     if (!pendingAction) return
 
+    const startTime = Date.now()
+    const MINIMUM_LOADING_TIME = 1500 // 1.5 seconds
+
+    // Show loading modal immediately
+    setOperationStatus({
+      isLoading: true,
+      isSuccess: false,
+      message: 'Applying changes...',
+      successMessage: ''
+    })
+
     try {
+      let data: any
+      let successMsg: string
+
       if (pendingAction.type === 'replace') {
         // Call replace API
         const response = await fetch(`/api/exercises/${currentExercise.id}/replace`, {
@@ -294,13 +317,8 @@ export default function ExerciseLoggingModal({
 
         if (!response.ok) throw new Error('Failed to replace exercise')
 
-        const data = await response.json()
-
-        // TODO: Show success toast
-        alert(`Exercise replaced${applyToFuture ? ` in ${data.updatedCount} workouts` : ''}`)
-
-        // Refresh the page to show updated exercise
-        window.location.reload()
+        data = await response.json()
+        successMsg = `Exercise replaced${applyToFuture ? ` in ${data.updatedCount} workout${data.updatedCount !== 1 ? 's' : ''}` : ''}!`
       } else {
         // Call add-during-logging API
         const response = await fetch(`/api/workouts/${workoutId}/exercises/add-during-logging`, {
@@ -316,19 +334,56 @@ export default function ExerciseLoggingModal({
 
         if (!response.ok) throw new Error('Failed to add exercise')
 
-        const data = await response.json()
-
-        // TODO: Show success toast
-        alert(`Exercise added${applyToFuture ? ` to ${data.addedToCount} workouts` : ''}`)
-
-        // Refresh the page to show new exercise
-        window.location.reload()
+        data = await response.json()
+        successMsg = `Exercise added${applyToFuture ? ` to ${data.addedToCount} workout${data.addedToCount !== 1 ? 's' : ''}` : ''}!`
       }
+
+      // Calculate remaining time to reach minimum loading time
+      const elapsedTime = Date.now() - startTime
+      const remainingTime = Math.max(0, MINIMUM_LOADING_TIME - elapsedTime)
+
+      // Wait for remaining time before showing success
+      if (remainingTime > 0) {
+        await new Promise(resolve => setTimeout(resolve, remainingTime))
+      }
+
+      // Show success state
+      setOperationStatus({
+        isLoading: false,
+        isSuccess: true,
+        message: '',
+        successMessage: successMsg
+      })
+
+      // Wait 1 second to show success, then refresh data
+      await new Promise(resolve => setTimeout(resolve, 1000))
+
+      // Refresh the exercise data without closing modal
+      if (onRefresh) {
+        onRefresh()
+      }
+
+      // Close dialogs and reset state
+      setShowScopeDialog(false)
+      setPendingAction(null)
+      setPendingSets([])
+      setOperationStatus({
+        isLoading: false,
+        isSuccess: false,
+        message: '',
+        successMessage: ''
+      })
     } catch (error) {
       console.error('Error:', error)
-      // TODO: Show error toast
+      setOperationStatus({
+        isLoading: false,
+        isSuccess: false,
+        message: '',
+        successMessage: ''
+      })
       alert('Failed to update exercise. Please try again.')
-    } finally {
+
+      // Close dialogs on error
       setShowScopeDialog(false)
       setPendingAction(null)
       setPendingSets([])
@@ -885,8 +940,18 @@ export default function ExerciseLoggingModal({
         onSelect={handleScopeSelected}
         actionType={pendingAction.type}
         exerciseName={pendingAction.exerciseName}
+        isLoading={operationStatus.isLoading}
       />
     )}
+
+    {/* Loading/Success Modal - Outside pendingAction check so it persists during cleanup */}
+    <LoadingSuccessModal
+      isOpen={operationStatus.isLoading || operationStatus.isSuccess}
+      isLoading={operationStatus.isLoading}
+      isSuccess={operationStatus.isSuccess}
+      loadingMessage={operationStatus.message}
+      successMessage={operationStatus.successMessage}
+    />
 
     {/* Set Definition Modal */}
     {pendingAction && pendingAction.type === 'add' && (

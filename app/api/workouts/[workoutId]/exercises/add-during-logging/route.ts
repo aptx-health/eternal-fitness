@@ -94,23 +94,44 @@ export async function POST(
 
     if (!applyToFuture) {
       // One-off: Create exercise tied to workout completion only
-      if (!workoutCompletionId) {
-        return NextResponse.json(
-          { error: 'Workout completion ID is required for one-off exercises' },
-          { status: 400 }
-        )
-      }
+      let actualCompletionId = workoutCompletionId
 
-      // Verify workout completion exists and belongs to user
-      const completion = await prisma.workoutCompletion.findUnique({
-        where: { id: workoutCompletionId }
-      })
+      // If no completion ID provided, check if a draft exists or create one
+      if (!actualCompletionId) {
+        const existingDraft = await prisma.workoutCompletion.findFirst({
+          where: {
+            workoutId,
+            userId: user.id,
+            status: 'draft'
+          }
+        })
 
-      if (!completion || completion.userId !== user.id) {
-        return NextResponse.json(
-          { error: 'Workout completion not found' },
-          { status: 404 }
-        )
+        if (existingDraft) {
+          actualCompletionId = existingDraft.id
+        } else {
+          // Create a draft completion
+          const newDraft = await prisma.workoutCompletion.create({
+            data: {
+              workoutId,
+              userId: user.id,
+              status: 'draft',
+              completedAt: new Date()
+            }
+          })
+          actualCompletionId = newDraft.id
+        }
+      } else {
+        // Verify workout completion exists and belongs to user
+        const completion = await prisma.workoutCompletion.findUnique({
+          where: { id: workoutCompletionId }
+        })
+
+        if (!completion || completion.userId !== user.id) {
+          return NextResponse.json(
+            { error: 'Workout completion not found' },
+            { status: 404 }
+          )
+        }
       }
 
       addedExercise = await prisma.$transaction(async (tx) => {
@@ -121,7 +142,7 @@ export async function POST(
             order: nextOrder,
             workoutId: null, // Not part of program structure
             isOneOff: true,
-            workoutCompletionId,
+            workoutCompletionId: actualCompletionId,
             userId: user.id,
           }
         })

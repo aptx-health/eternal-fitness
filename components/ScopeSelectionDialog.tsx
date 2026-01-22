@@ -8,6 +8,7 @@ interface ScopeSelectionDialogProps {
   onSelect: (applyToFuture: boolean) => void
   actionType: 'replace' | 'add'
   exerciseName: string
+  isLoading?: boolean
 }
 
 export default function ScopeSelectionDialog({
@@ -15,11 +16,13 @@ export default function ScopeSelectionDialog({
   onClose,
   onSelect,
   actionType,
-  exerciseName
+  exerciseName,
+  isLoading = false
 }: ScopeSelectionDialogProps) {
   if (!isOpen) return null
 
   const handleSelect = (applyToFuture: boolean) => {
+    if (isLoading) return // Prevent double-clicks
     onSelect(applyToFuture)
     // Don't call onClose() here - let the parent handle it after async work completes
   }
@@ -51,7 +54,8 @@ export default function ScopeSelectionDialog({
           <div className="space-y-3">
             <button
               onClick={() => handleSelect(false)}
-              className="w-full p-4 border-2 border-border rounded-lg hover:border-primary hover:bg-primary-muted transition-colors text-left"
+              disabled={isLoading}
+              className="w-full p-4 border-2 border-border rounded-lg hover:border-primary hover:bg-primary-muted transition-colors text-left disabled:opacity-50 disabled:cursor-not-allowed"
             >
               <div className="font-semibold text-foreground">Just This Workout</div>
               <div className="text-sm text-muted-foreground">One-time change, won't affect program</div>
@@ -59,7 +63,8 @@ export default function ScopeSelectionDialog({
 
             <button
               onClick={() => handleSelect(true)}
-              className="w-full p-4 border-2 border-border rounded-lg hover:border-primary hover:bg-primary-muted transition-colors text-left"
+              disabled={isLoading}
+              className="w-full p-4 border-2 border-border rounded-lg hover:border-primary hover:bg-primary-muted transition-colors text-left disabled:opacity-50 disabled:cursor-not-allowed"
             >
               <div className="font-semibold text-foreground">Update Program</div>
               <div className="text-sm text-muted-foreground">
