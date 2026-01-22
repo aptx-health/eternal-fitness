@@ -788,12 +788,12 @@ export default function ExerciseLoggingModal({
         {/* Bottom Actions */}
         <div className="border-t border-border px-4 py-3 bg-muted flex-shrink-0">
           {/* Single Actions Row */}
-          <div className="grid grid-cols-[45%_45%_10%] gap-2">
+          <div className="grid grid-cols-[55%_35%_10%] gap-2">
             {/* Log Set Button */}
             <button
               onClick={handleLogSet}
               disabled={!canLogSet || hasLoggedAllPrescribed}
-              className="py-3 bg-primary text-white rounded-lg font-semibold hover:bg-primary-hover active:bg-primary-active disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+              className="py-3 bg-accent text-accent-foreground rounded-lg font-semibold hover:bg-accent-hover active:bg-accent-active disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
             >
               Log Set {nextSetNumber}
             </button>
