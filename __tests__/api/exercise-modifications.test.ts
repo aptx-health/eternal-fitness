@@ -1843,8 +1843,8 @@ describe('Exercise Modifications API', () => {
         expect(response.success).toBe(true)
         expect(response.updatedCount).toBe(1)
         expect(response.exercises).toHaveLength(1)
-        expect(response.exercises[0].notes).toBe('Updated form cue')
-        expect(response.exercises[0].prescribedSets).toHaveLength(3)
+        expect(response.exercises![0].notes).toBe('Updated form cue')
+        expect(response.exercises![0].prescribedSets).toHaveLength(3)
 
         // Assert: Verify database state
         const updatedExercise = await prisma.exercise.findUnique({
