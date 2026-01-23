@@ -12,6 +12,7 @@ type AddDuringLoggingRequest = {
     intensityType: 'RIR' | 'RPE' | 'NONE'
     intensityValue?: number
   }>
+  notes?: string
 }
 
 export async function POST(
@@ -34,7 +35,8 @@ export async function POST(
       exerciseDefinitionId,
       applyToFuture,
       workoutCompletionId,
-      prescribedSets
+      prescribedSets,
+      notes
     } = body
 
     // Validate required fields
@@ -143,6 +145,7 @@ export async function POST(
             workoutId: null, // Not part of program structure
             isOneOff: true,
             workoutCompletionId: actualCompletionId,
+            notes: notes || null,
             userId: user.id,
           }
         })
@@ -226,6 +229,7 @@ export async function POST(
               order: nextOrderInWorkout,
               workoutId: targetWorkout.id,
               isOneOff: false,
+              notes: notes || null,
               userId: user.id,
             }
           })

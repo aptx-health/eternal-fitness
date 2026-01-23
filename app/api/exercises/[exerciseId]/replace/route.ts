@@ -11,6 +11,7 @@ type ReplaceExerciseRequest = {
     intensityType: 'RIR' | 'RPE' | 'NONE'
     intensityValue?: number
   }>
+  notes?: string
 }
 
 export async function POST(
@@ -29,7 +30,7 @@ export async function POST(
 
     // Parse request body
     const body = await request.json() as ReplaceExerciseRequest
-    const { newExerciseDefinitionId, applyToFuture, prescribedSets } = body
+    const { newExerciseDefinitionId, applyToFuture, prescribedSets, notes } = body
 
     // Validate required fields
     if (!newExerciseDefinitionId) {
@@ -94,7 +95,8 @@ export async function POST(
           where: { id: exerciseId },
           data: {
             exerciseDefinitionId: newExerciseDefinitionId,
-            name: newExerciseDefinition.name
+            name: newExerciseDefinition.name,
+            notes: notes !== undefined ? notes : undefined // Update notes if provided
           }
         })
 
@@ -181,12 +183,13 @@ export async function POST(
 
         // Update all matching exercises
         for (const exerciseIdToUpdate of exercisesToUpdate) {
-          // Update exercise definition and name
+          // Update exercise definition, name, and notes
           await tx.exercise.update({
             where: { id: exerciseIdToUpdate },
             data: {
               exerciseDefinitionId: newExerciseDefinitionId,
-              name: newExerciseDefinition.name
+              name: newExerciseDefinition.name,
+              notes: notes !== undefined ? notes : undefined // Update notes if provided
             }
           })
 

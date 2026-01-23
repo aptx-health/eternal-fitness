@@ -115,6 +115,7 @@ export default function ExerciseLoggingModal({
     exerciseName: string
   } | null>(null)
   const [pendingSets, setPendingSets] = useState<PrescribedSetInput[]>([])
+  const [pendingNotes, setPendingNotes] = useState<string>('')
   const [navigateToLastExercise, setNavigateToLastExercise] = useState(false)
 
   // Enhanced persistence with localStorage backing
@@ -271,8 +272,9 @@ export default function ExerciseLoggingModal({
       exerciseName: exercise.name
     })
 
-    // Store prescription sets for both add and replace actions
+    // Store prescription sets and notes for both add and replace actions
     setPendingSets(prescription.sets)
+    setPendingNotes(prescription.notes || '')
 
     // Go directly to scope selection for both replace and add
     // (ExerciseSearchModal already collected set definition)
@@ -306,7 +308,8 @@ export default function ExerciseLoggingModal({
           body: JSON.stringify({
             newExerciseDefinitionId: pendingAction.exerciseDefinitionId,
             applyToFuture,
-            prescribedSets: pendingSets // NEW: Send prescribed sets to update
+            prescribedSets: pendingSets,
+            notes: pendingNotes
           })
         })
 
@@ -337,7 +340,8 @@ export default function ExerciseLoggingModal({
             exerciseDefinitionId: pendingAction.exerciseDefinitionId,
             applyToFuture,
             workoutCompletionId: applyToFuture ? undefined : workoutCompletionId,
-            prescribedSets: pendingSets
+            prescribedSets: pendingSets,
+            notes: pendingNotes
           })
         })
 
@@ -392,6 +396,7 @@ export default function ExerciseLoggingModal({
       setShowScopeDialog(false)
       setPendingAction(null)
       setPendingSets([])
+      setPendingNotes('')
       setOperationStatus({
         isLoading: false,
         isSuccess: false,
@@ -412,6 +417,7 @@ export default function ExerciseLoggingModal({
       setShowScopeDialog(false)
       setPendingAction(null)
       setPendingSets([])
+      setPendingNotes('')
     }
   }
 
@@ -1030,6 +1036,7 @@ export default function ExerciseLoggingModal({
           setShowScopeDialog(false)
           setPendingAction(null)
           setPendingSets([])
+          setPendingNotes('')
         }}
         onSelect={handleScopeSelected}
         actionType={pendingAction.type}
