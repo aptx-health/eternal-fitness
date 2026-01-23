@@ -477,7 +477,7 @@ export default function ExerciseLoggingModal({
   if (!isLoaded) {
     return isOpen ? (
       <div className="fixed inset-0 z-50 backdrop-blur-md bg-black/40 dark:bg-black/60 flex items-center justify-center">
-        <div className="bg-card rounded-lg p-8">
+        <div className="bg-card border-2 border-border p-8 doom-noise doom-corners">
           <div className="animate-pulse text-center">Loading workout...</div>
         </div>
       </div>
@@ -519,9 +519,9 @@ export default function ExerciseLoggingModal({
       />
 
       {/* Modal - Full screen on mobile, centered on desktop */}
-      <div className="bg-card w-full h-full sm:h-auto sm:max-h-[90vh] sm:rounded-lg sm:max-w-2xl flex flex-col">
+      <div className="bg-card border-2 border-primary w-full h-full sm:h-auto sm:max-h-[90vh] sm:max-w-2xl flex flex-col doom-noise doom-corners">
         {/* Header */}
-        <div className="bg-primary text-white px-4 py-3 sm:rounded-t-lg flex-shrink-0">
+        <div className="bg-primary text-white px-4 py-3 border-b-2 border-primary-muted-dark flex-shrink-0">
           <div className="flex items-center justify-between">
             <div className="text-sm text-primary-foreground opacity-80">
               Exercise {currentExerciseIndex + 1} of {exercises.length} • {totalLoggedSets}/
@@ -543,7 +543,7 @@ export default function ExerciseLoggingModal({
           <button
             onClick={handlePreviousExercise}
             disabled={currentExerciseIndex === 0}
-            className={`p-3 rounded-lg transition-all duration-200 border-2 border-transparent ${
+            className={`p-3  transition-all duration-200 border-2 border-transparent ${
               currentExerciseIndex === 0
                 ? 'bg-muted opacity-30 cursor-not-allowed'
                 : 'bg-primary-muted hover:bg-primary hover:border-primary hover:text-white'
@@ -570,7 +570,7 @@ export default function ExerciseLoggingModal({
           <button
             onClick={handleNextExercise}
             disabled={currentExerciseIndex === exercises.length - 1}
-            className={`p-3 rounded-lg transition-all duration-200 border-2 border-transparent ${
+            className={`p-3  transition-all duration-200 border-2 border-transparent ${
               currentExerciseIndex === exercises.length - 1
                 ? 'bg-muted opacity-30 cursor-not-allowed'
                 : 'bg-primary-muted hover:bg-primary hover:border-primary hover:text-white'
@@ -589,7 +589,7 @@ export default function ExerciseLoggingModal({
               <h4 className="text-sm font-semibold text-foreground mb-2">
                 Last Time ({new Date(exerciseHistory[currentExercise.id]!.completedAt).toLocaleDateString()})
               </h4>
-              <div className="bg-primary-muted rounded-lg p-3 space-y-1 border border-primary-muted-dark">
+              <div className="bg-primary-muted  p-3 space-y-1 border border-primary-muted-dark">
                 {exerciseHistory[currentExercise.id]!.sets.map((set) => (
                   <div key={set.setNumber} className="text-sm text-primary">
                     Set {set.setNumber}: {set.reps} reps @ {set.weight}{set.weightUnit}
@@ -604,7 +604,7 @@ export default function ExerciseLoggingModal({
           {/* Prescribed Sets Reference */}
           <div className="mb-4">
             <h4 className="text-sm font-semibold text-foreground mb-2">Today&apos;s Target</h4>
-            <div className="bg-muted rounded-lg p-3 space-y-1">
+            <div className="bg-muted  p-3 space-y-1">
               {currentPrescribedSets.map((set) => (
                 <div key={set.id} className="text-sm text-foreground">
                   Set {set.setNumber}: {set.reps} reps @ {set.weight || '—'}
@@ -623,7 +623,7 @@ export default function ExerciseLoggingModal({
                 {currentExerciseLoggedSets.map((set) => (
                   <div
                     key={`${set.exerciseId}-${set.setNumber}`}
-                    className="bg-success-muted border border-success-border rounded-lg p-3 flex items-center justify-between"
+                    className="bg-success-muted border border-success-border  p-3 flex items-center justify-between"
                   >
                     <div className="text-sm">
                       <span className="font-semibold text-foreground font-semibold">Set {set.setNumber}:</span>{' '}
@@ -675,7 +675,7 @@ export default function ExerciseLoggingModal({
                         setCurrentSet({ ...currentSet, reps: e.target.value })
                       }
                       placeholder={prescribedSet?.reps.toString() || '0'}
-                      className="w-full px-4 py-3 text-lg border border-input rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent bg-muted text-foreground"
+                      className="w-full px-4 py-3 text-lg border border-input  focus:ring-2 focus:ring-primary focus:border-transparent bg-muted text-foreground"
                     />
                   </div>
 
@@ -692,7 +692,7 @@ export default function ExerciseLoggingModal({
                         setCurrentSet({ ...currentSet, weight: e.target.value })
                       }
                       placeholder={prescribedSet?.weight?.replace(/[^0-9.]/g, '') || '0'}
-                      className="w-full px-4 py-3 text-lg border border-input rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent bg-muted text-foreground"
+                      className="w-full px-4 py-3 text-lg border border-input  focus:ring-2 focus:ring-primary focus:border-transparent bg-muted text-foreground"
                     />
                   </div>
                 </div>
@@ -701,7 +701,7 @@ export default function ExerciseLoggingModal({
                 <div className="flex gap-2">
                   <button
                     onClick={() => setCurrentSet({ ...currentSet, weightUnit: 'lbs' })}
-                    className={`flex-1 py-2 rounded-lg font-medium transition-colors ${
+                    className={`flex-1 py-2  font-medium transition-colors ${
                       currentSet.weightUnit === 'lbs'
                         ? 'bg-primary text-white'
                         : 'bg-muted text-foreground hover:bg-secondary-hover'
@@ -711,7 +711,7 @@ export default function ExerciseLoggingModal({
                   </button>
                   <button
                     onClick={() => setCurrentSet({ ...currentSet, weightUnit: 'kg' })}
-                    className={`flex-1 py-2 rounded-lg font-medium transition-colors ${
+                    className={`flex-1 py-2  font-medium transition-colors ${
                       currentSet.weightUnit === 'kg'
                         ? 'bg-primary text-white'
                         : 'bg-muted text-foreground hover:bg-secondary-hover'
@@ -739,7 +739,7 @@ export default function ExerciseLoggingModal({
                             setCurrentSet({ ...currentSet, rir: e.target.value })
                           }
                           placeholder={prescribedSet?.rir?.toString() || '—'}
-                          className="w-full px-4 py-3 text-lg border border-input rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent bg-muted text-foreground"
+                          className="w-full px-4 py-3 text-lg border border-input  focus:ring-2 focus:ring-primary focus:border-transparent bg-muted text-foreground"
                         />
                       </div>
                     )}
@@ -759,7 +759,7 @@ export default function ExerciseLoggingModal({
                             setCurrentSet({ ...currentSet, rpe: e.target.value })
                           }
                           placeholder={prescribedSet?.rpe?.toString() || '—'}
-                          className="w-full px-4 py-3 text-lg border border-input rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent bg-muted text-foreground"
+                          className="w-full px-4 py-3 text-lg border border-input  focus:ring-2 focus:ring-primary focus:border-transparent bg-muted text-foreground"
                         />
                       </div>
                     )}
@@ -772,7 +772,7 @@ export default function ExerciseLoggingModal({
 
           {/* Exercise Complete Message */}
           {hasLoggedAllPrescribed && (
-            <div className="bg-success-muted border border-success-border rounded-lg p-4 text-center">
+            <div className="bg-success-muted border border-success-border  p-4 text-center">
               <div className="text-success-text font-semibold mb-2">
                 ✓ All prescribed sets logged!
               </div>
@@ -793,7 +793,7 @@ export default function ExerciseLoggingModal({
             <button
               onClick={handleLogSet}
               disabled={!canLogSet || hasLoggedAllPrescribed}
-              className="py-3 bg-accent text-accent-foreground rounded-lg font-semibold hover:bg-accent-hover active:bg-accent-active disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+              className="py-3 bg-accent text-accent-foreground  font-semibold hover:bg-accent-hover active:bg-accent-active disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
             >
               Log Set {nextSetNumber}
             </button>
@@ -802,7 +802,7 @@ export default function ExerciseLoggingModal({
             <button
               onClick={handleCompleteWorkout}
               disabled={isSubmitting || totalLoggedSets === 0}
-              className="py-3 bg-success text-success-foreground rounded-lg font-semibold hover:bg-success-hover active:bg-success-hover disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+              className="py-3 bg-success text-success-foreground  font-semibold hover:bg-success-hover active:bg-success-hover disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
               onMouseDown={(e) => {
                 if (isSubmitting || totalLoggedSets === 0) return;
                 e.preventDefault();
@@ -816,7 +816,7 @@ export default function ExerciseLoggingModal({
             <ActionsMenu
               variant="accent"
               size="md"
-              className="h-full"
+              className="h-full aspect-square"
               actions={[
                 {
                   label: 'Add an exercise',
@@ -837,7 +837,7 @@ export default function ExerciseLoggingModal({
             {/* Workout completion confirmation modal */}
             {isConfirming && (
               <div className="fixed inset-0 backdrop-blur-md bg-black/40 dark:bg-black/60 flex items-center justify-center z-60">
-                <div className="bg-card p-6 rounded-lg text-center min-w-[300px]">
+                <div className="bg-card p-6  text-center min-w-[300px]">
                   {!isSubmitting ? (
                     <>
                       <p className="text-lg mb-4 text-foreground">Complete this workout?</p>
@@ -871,7 +871,7 @@ export default function ExerciseLoggingModal({
             {/* Deletion confirmation modal */}
             {showDeleteConfirm.show && (
               <div className="fixed inset-0 backdrop-blur-md bg-black/40 dark:bg-black/60 flex items-center justify-center z-60">
-                <div className="bg-card p-6 rounded-lg text-center max-w-sm">
+                <div className="bg-card p-6  text-center max-w-sm">
                   <div className="text-warning mb-4">
                     <svg className="w-12 h-12 mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.732-.833-2.5 0L4.268 15.5c-.77.833.192 2.5 1.732 2.5z" />

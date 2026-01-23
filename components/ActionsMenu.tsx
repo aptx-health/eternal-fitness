@@ -139,7 +139,7 @@ export default function ActionsMenu({
           ref={buttonRef}
           onClick={handleMenuToggle}
           disabled={disabled}
-          className={`${label ? 'py-3 px-4' : sizeClasses[size]} flex items-center justify-center gap-2 cursor-pointer border-2 border-border transition-all focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 focus:ring-offset-background disabled:opacity-50 disabled:cursor-not-allowed rounded-lg ${variantClasses[variant]} ${className.includes('w-full') ? 'w-full' : label ? 'w-auto' : ''} ${className.includes('h-full') ? 'h-full' : ''}`}
+          className={`${label ? 'py-3 px-4' : sizeClasses[size]} flex items-center justify-center gap-2 cursor-pointer border-2 border-border transition-all focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 focus:ring-offset-background disabled:opacity-50 disabled:cursor-not-allowed ${variantClasses[variant]} ${className.includes('w-full') ? 'w-full' : label ? 'w-auto' : ''} ${className.includes('h-full') ? 'h-full' : ''}`}
           aria-label={label || 'Actions menu'}
           aria-expanded={isMenuOpen}
         >
