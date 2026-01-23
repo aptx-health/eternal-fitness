@@ -920,7 +920,7 @@ export default function ExerciseLoggingModal({
         {/* Bottom Actions */}
         <div className="border-t border-border px-4 py-3 bg-muted flex-shrink-0">
           {/* Single Actions Row */}
-          <div className="grid grid-cols-[55%_35%_10%] gap-3">
+          <div className="grid grid-cols-[53%_34%_10%] sm:grid-cols-[55%_35%_10%] gap-3">
             {/* Log Set Button */}
             <button
               onClick={handleLogSet}
