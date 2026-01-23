@@ -364,13 +364,24 @@ export default function ExerciseLoggingModal({
         successMessage: successMsg
       })
 
-      // Wait 1 second to show success, then refresh data
+      // Wait 1 second to show success
       await new Promise(resolve => setTimeout(resolve, 1000))
 
-      // Refresh the exercise data without closing modal
+      // Show refreshing state
+      setOperationStatus({
+        isLoading: true,
+        isSuccess: false,
+        message: 'Refreshing workout...',
+        successMessage: ''
+      })
+
+      // Trigger refresh and wait for it to complete
       if (onRefresh) {
         onRefresh()
       }
+
+      // Wait 2.5 seconds for refresh to complete
+      await new Promise(resolve => setTimeout(resolve, 2500))
 
       // Close dialogs and reset state
       setShowScopeDialog(false)
