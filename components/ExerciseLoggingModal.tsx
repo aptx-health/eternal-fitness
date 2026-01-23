@@ -115,6 +115,7 @@ export default function ExerciseLoggingModal({
     exerciseName: string
   } | null>(null)
   const [pendingSets, setPendingSets] = useState<PrescribedSetInput[]>([])
+  const [navigateToLastExercise, setNavigateToLastExercise] = useState(false)
 
   // Enhanced persistence with localStorage backing
   const { loggedSets, setLoggedSets, isLoaded, clearStoredWorkout } = useWorkoutStorage(workoutId)
@@ -270,13 +271,11 @@ export default function ExerciseLoggingModal({
       exerciseName: exercise.name
     })
 
-    // Store prescription sets for add action
-    if (pendingAction.type === 'add') {
-      setPendingSets(prescription.sets)
-    }
+    // Store prescription sets for both add and replace actions
+    setPendingSets(prescription.sets)
 
     // Go directly to scope selection for both replace and add
-    // (ExerciseSearchModal already collected set definition for add)
+    // (ExerciseSearchModal already collected set definition)
     setShowExerciseSearch(false)
     setShowScopeDialog(true)
   }
@@ -306,7 +305,8 @@ export default function ExerciseLoggingModal({
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
             newExerciseDefinitionId: pendingAction.exerciseDefinitionId,
-            applyToFuture
+            applyToFuture,
+            prescribedSets: pendingSets // NEW: Send prescribed sets to update
           })
         })
 
@@ -382,6 +382,11 @@ export default function ExerciseLoggingModal({
 
       // Wait 2.5 seconds for refresh to complete
       await new Promise(resolve => setTimeout(resolve, 2500))
+
+      // If we added an exercise, navigate to it (it will be at the end)
+      if (pendingAction.type === 'add') {
+        setNavigateToLastExercise(true)
+      }
 
       // Close dialogs and reset state
       setShowScopeDialog(false)
@@ -534,6 +539,14 @@ export default function ExerciseLoggingModal({
       setCurrentExerciseIndex(exercises.length - 1)
     }
   }, [exercises, isOpen, currentExerciseIndex, currentExercise?.id, onClose])
+
+  // Navigate to newly added exercise
+  useEffect(() => {
+    if (navigateToLastExercise && exercises.length > 0) {
+      setCurrentExerciseIndex(exercises.length - 1)
+      setNavigateToLastExercise(false)
+    }
+  }, [navigateToLastExercise, exercises.length])
 
   // Don't render until storage is loaded to prevent flash of empty state
   if (!isLoaded) {

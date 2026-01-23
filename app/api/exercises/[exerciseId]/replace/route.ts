@@ -5,6 +5,12 @@ import { prisma } from '@/lib/db'
 type ReplaceExerciseRequest = {
   newExerciseDefinitionId: string
   applyToFuture: boolean
+  prescribedSets?: Array<{
+    setNumber: number
+    reps: string
+    intensityType: 'RIR' | 'RPE' | 'NONE'
+    intensityValue?: number
+  }>
 }
 
 export async function POST(
@@ -23,7 +29,7 @@ export async function POST(
 
     // Parse request body
     const body = await request.json() as ReplaceExerciseRequest
-    const { newExerciseDefinitionId, applyToFuture } = body
+    const { newExerciseDefinitionId, applyToFuture, prescribedSets } = body
 
     // Validate required fields
     if (!newExerciseDefinitionId) {
@@ -82,31 +88,59 @@ export async function POST(
 
     if (!applyToFuture || !exercise.workout) {
       // Just update this single exercise
-      const updated = await prisma.exercise.update({
-        where: { id: exerciseId },
-        data: {
-          exerciseDefinitionId: newExerciseDefinitionId,
-          name: newExerciseDefinition.name
-        },
-        include: {
-          prescribedSets: {
-            orderBy: { setNumber: 'asc' }
-          },
-          exerciseDefinition: {
-            select: {
-              id: true,
-              name: true,
-              primaryFAUs: true,
-              secondaryFAUs: true,
-              equipment: true,
-              instructions: true
+      const updated = await prisma.$transaction(async (tx) => {
+        // Update exercise
+        const updatedExercise = await tx.exercise.update({
+          where: { id: exerciseId },
+          data: {
+            exerciseDefinitionId: newExerciseDefinitionId,
+            name: newExerciseDefinition.name
+          }
+        })
+
+        // If prescribed sets are provided, replace them
+        if (prescribedSets && prescribedSets.length > 0) {
+          // Delete old prescribed sets
+          await tx.prescribedSet.deleteMany({
+            where: { exerciseId }
+          })
+
+          // Create new prescribed sets
+          await tx.prescribedSet.createMany({
+            data: prescribedSets.map(set => ({
+              setNumber: set.setNumber,
+              reps: set.reps,
+              rpe: set.intensityType === 'RPE' ? set.intensityValue : null,
+              rir: set.intensityType === 'RIR' ? set.intensityValue : null,
+              exerciseId,
+              userId: user.id
+            }))
+          })
+        }
+
+        // Return exercise with all relations
+        return await tx.exercise.findUnique({
+          where: { id: exerciseId },
+          include: {
+            prescribedSets: {
+              orderBy: { setNumber: 'asc' }
+            },
+            exerciseDefinition: {
+              select: {
+                id: true,
+                name: true,
+                primaryFAUs: true,
+                secondaryFAUs: true,
+                equipment: true,
+                instructions: true
+              }
             }
           }
-        }
+        })
       })
 
       updatedCount = 1
-      updatedExercises = [updated]
+      updatedExercises = [updated!]
     } else {
       // Apply to future weeks
       const currentWeek = exercise.workout.week
@@ -146,17 +180,36 @@ export async function POST(
         }
 
         // Update all matching exercises
-        await tx.exercise.updateMany({
-          where: {
-            id: {
-              in: exercisesToUpdate
+        for (const exerciseIdToUpdate of exercisesToUpdate) {
+          // Update exercise definition and name
+          await tx.exercise.update({
+            where: { id: exerciseIdToUpdate },
+            data: {
+              exerciseDefinitionId: newExerciseDefinitionId,
+              name: newExerciseDefinition.name
             }
-          },
-          data: {
-            exerciseDefinitionId: newExerciseDefinitionId,
-            name: newExerciseDefinition.name
+          })
+
+          // If prescribed sets are provided, replace them
+          if (prescribedSets && prescribedSets.length > 0) {
+            // Delete old prescribed sets
+            await tx.prescribedSet.deleteMany({
+              where: { exerciseId: exerciseIdToUpdate }
+            })
+
+            // Create new prescribed sets
+            await tx.prescribedSet.createMany({
+              data: prescribedSets.map(set => ({
+                setNumber: set.setNumber,
+                reps: set.reps,
+                rpe: set.intensityType === 'RPE' ? set.intensityValue : null,
+                rir: set.intensityType === 'RIR' ? set.intensityValue : null,
+                exerciseId: exerciseIdToUpdate,
+                userId: user.id
+              }))
+            })
           }
-        })
+        }
 
         updatedCount = exercisesToUpdate.length
 
