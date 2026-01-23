@@ -159,9 +159,9 @@ export default function ExerciseLoggingModal({
   )
 
   const currentExercise = exercises[currentExerciseIndex]
-  const currentPrescribedSets = currentExercise.prescribedSets
+  const currentPrescribedSets = currentExercise?.prescribedSets || []
   const currentExerciseLoggedSets = loggedSets.filter(
-    (s) => s.exerciseId === currentExercise.id
+    (s) => s.exerciseId === currentExercise?.id
   )
   const nextSetNumber = currentExerciseLoggedSets.length + 1
   const prescribedSet = currentPrescribedSets.find(
@@ -173,8 +173,8 @@ export default function ExerciseLoggingModal({
   const hasRir = currentPrescribedSets.some((s) => s.rir !== null)
 
   // Check if this exercise is part of a superset
-  const isSuperset = currentExercise.exerciseGroup !== null
-  const supersetLabel = currentExercise.exerciseGroup
+  const isSuperset = currentExercise?.exerciseGroup !== null
+  const supersetLabel = currentExercise?.exerciseGroup
 
   const handleLogSet = useCallback(() => {
     if (!currentSet.reps || !currentSet.weight) return
@@ -213,7 +213,7 @@ export default function ExerciseLoggingModal({
       rpe: '',
       rir: '',
     })
-  }, [currentSet, currentExercise.id, nextSetNumber, setLoggedSets, addSets, addPendingSets])
+  }, [currentSet, currentExercise?.id, nextSetNumber, setLoggedSets, addSets, addPendingSets])
 
   const handleNextExercise = () => {
     if (currentExerciseIndex < exercises.length - 1) {
@@ -449,7 +449,7 @@ export default function ExerciseLoggingModal({
 
     // Direct deletion for safe operations
     performDeleteSet(exerciseId, setNumber)
-  }, [currentExercise.id, loggedSets])
+  }, [currentExercise?.id, loggedSets])
 
   const performDeleteSet = useCallback((exerciseId: string, setNumber: number) => {
     console.log(`🗑️ Deleting set ${setNumber} for exercise ${exerciseId}`)
@@ -557,6 +557,23 @@ export default function ExerciseLoggingModal({
 
   // Early returns after all hooks
   if (!isOpen) return null
+
+  // Guard against invalid exercise index (can happen briefly after deletion)
+  if (!currentExercise) {
+    // If no exercises left, close modal
+    if (exercises.length === 0) {
+      onClose()
+      return null
+    }
+    // Otherwise, show loading while useEffect adjusts the index
+    return (
+      <div className="fixed inset-0 z-50 backdrop-blur-md bg-black/40 dark:bg-black/60 flex items-center justify-center">
+        <div className="bg-card border-2 border-border p-8 doom-noise doom-corners">
+          <div className="animate-pulse text-center">Loading...</div>
+        </div>
+      </div>
+    )
+  }
 
   return (
     <>
