@@ -788,12 +788,12 @@ export default function ExerciseLoggingModal({
         {/* Bottom Actions */}
         <div className="border-t border-border px-4 py-3 bg-muted flex-shrink-0">
           {/* Single Actions Row */}
-          <div className="grid grid-cols-[55%_35%_10%] gap-2">
+          <div className="grid grid-cols-[55%_35%_10%] gap-3">
             {/* Log Set Button */}
             <button
               onClick={handleLogSet}
               disabled={!canLogSet || hasLoggedAllPrescribed}
-              className="py-3 bg-accent text-accent-foreground  font-semibold hover:bg-accent-hover active:bg-accent-active disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+              className="py-3 bg-accent text-accent-foreground font-bold uppercase tracking-wider doom-corners transition-all hover:shadow-lg hover:shadow-accent/50 disabled:opacity-50 disabled:cursor-not-allowed"
             >
               Log Set {nextSetNumber}
             </button>
@@ -802,14 +802,21 @@ export default function ExerciseLoggingModal({
             <button
               onClick={handleCompleteWorkout}
               disabled={isSubmitting || totalLoggedSets === 0}
-              className="py-3 bg-success text-success-foreground  font-semibold hover:bg-success-hover active:bg-success-hover disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+              className="py-3 bg-success text-success-foreground font-bold uppercase tracking-wider doom-corners transition-all hover:shadow-lg hover:shadow-success/50 disabled:opacity-50 disabled:cursor-not-allowed"
               onMouseDown={(e) => {
                 if (isSubmitting || totalLoggedSets === 0) return;
                 e.preventDefault();
                 setIsConfirming(true);
               }}
             >
-              {isSubmitting ? 'Saving...' : `Complete (${totalLoggedSets})`}
+              {isSubmitting ? (
+                'Saving...'
+              ) : (
+                <div className="flex flex-col items-center justify-center leading-tight">
+                  <span className="text-sm">Complete</span>
+                  <span className="text-xs opacity-80">{totalLoggedSets}/{totalPrescribedSets}</span>
+                </div>
+              )}
             </button>
 
             {/* Actions Menu */}
