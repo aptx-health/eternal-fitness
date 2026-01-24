@@ -34,16 +34,16 @@ export default function Header({ userEmail }: Props) {
             <div className="flex items-center gap-4 sm:gap-8">
               <button
                 onClick={handleLogoClick}
-                className="flex items-center gap-2 hover:opacity-80 transition-opacity"
+                className="hover:opacity-80 transition-opacity"
               >
                 <Image
-                  src="/frog-icon-64x64.png"
-                  alt="Ripit"
-                  width={32}
-                  height={32}
-                  className="rounded"
+                  src="/rf-logo@1x.png"
+                  alt="Ripit Fitness"
+                  width={100}
+                  height={40}
+                  className="h-8 w-auto"
+                  priority
                 />
-                <span className="text-xl font-bold text-foreground">Ripit</span>
               </button>
               <div className="flex items-center gap-3 sm:gap-4">
                 <Link
