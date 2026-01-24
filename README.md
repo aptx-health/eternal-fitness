@@ -1,4 +1,8 @@
-# FitCSV
+<div align="center">
+  <img src="public/frog-banner-horizontal.png" alt="Ripit Fitness" />
+</div>
+
+# Ripit Fitness
 
 A focused strength training tracker that lets you import programs from CSV and track workouts without rigid app constraints.
 
@@ -6,7 +10,7 @@ A focused strength training tracker that lets you import programs from CSV and t
 
 ## Quick Start
 
-Want to run FitCSV locally? Two setup options:
+Want to run Ripit Fitness locally? Two setup options:
 
 ### Option 1: Local Development (Quickest - No Accounts Needed!)
 
@@ -39,17 +43,17 @@ Perfect for contributors who want to quickly test changes without setting up ext
 
 **1. Clone and install:**
 ```bash
-git clone https://github.com/aptx-health/eternal-fitness.git
-cd eternal-fitness
+git clone https://github.com/aptx-health/ripit-fitness.git
+cd ripit-fitness
 npm install
 ```
 
 **2. Start PostgreSQL in Docker:**
 ```bash
 docker run -d \
-  --name fitcsv-postgres \
+  --name ripit-postgres \
   -e POSTGRES_PASSWORD=postgres \
-  -e POSTGRES_DB=fitcsv \
+  -e POSTGRES_DB=ripit \
   -p 5433:5432 \
   postgres:15
 ```
@@ -150,8 +154,8 @@ doppler setup
 
 # Configure secrets (mock auth example)
 doppler secrets set USE_MOCK_AUTH=true
-doppler secrets set DATABASE_URL="postgresql://postgres:postgres@localhost:5433/fitcsv"
-doppler secrets set DIRECT_URL="postgresql://postgres:postgres@localhost:5433/fitcsv"
+doppler secrets set DATABASE_URL="postgresql://postgres:postgres@localhost:5433/ripit"
+doppler secrets set DIRECT_URL="postgresql://postgres:postgres@localhost:5433/ripit"
 
 # Run commands with Doppler
 doppler run -- npm run dev
