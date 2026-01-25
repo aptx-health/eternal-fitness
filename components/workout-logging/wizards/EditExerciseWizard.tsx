@@ -160,11 +160,11 @@ export function EditExerciseWizard({
         // Wait 1 second to show success message
         await new Promise((resolve) => setTimeout(resolve, 1000))
 
-        // Refresh workout data
-        await onComplete()
-
-        // Close wizard
+        // Close wizard first to avoid flash during refresh
         onOpenChange(false)
+
+        // Then refresh workout data
+        await onComplete()
       } catch (error) {
         console.error('Error updating exercise:', error)
         setIsLoading(false)
