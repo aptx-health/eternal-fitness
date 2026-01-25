@@ -103,6 +103,12 @@ export default function WorkoutDetail({ workout, programId, exerciseHistory }: P
     router.refresh()
   }
 
+  const handleCloseModal = () => {
+    setIsLoggingModalOpen(false)
+    // Refresh to show updated draft status
+    router.refresh()
+  }
+
   const handleCompleteWorkout = async (loggedSets: LoggedSetInput[]) => {
     try {
       const response = await fetch(`/api/workouts/${workout.id}/complete`, {
@@ -384,7 +390,7 @@ export default function WorkoutDetail({ workout, programId, exerciseHistory }: P
       <ExerciseLoggingModal
         key={modalKey}
         isOpen={isLoggingModalOpen}
-        onClose={() => setIsLoggingModalOpen(false)}
+        onClose={handleCloseModal}
         exercises={workout.exercises}
         workoutId={workout.id}
         workoutName={workout.name}
