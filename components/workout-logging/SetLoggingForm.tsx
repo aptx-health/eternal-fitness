@@ -116,30 +116,6 @@ export default function SetLoggingForm({
           </div>
         </div>
 
-        {/* Weight Unit Toggle */}
-        <div className="flex gap-2">
-          <button
-            onClick={() => onSetChange({ ...currentSet, weightUnit: 'lbs' })}
-            className={`flex-1 py-2  font-medium transition-colors ${
-              currentSet.weightUnit === 'lbs'
-                ? 'bg-primary text-white'
-                : 'bg-muted text-foreground hover:bg-secondary-hover'
-            }`}
-          >
-            lbs
-          </button>
-          <button
-            onClick={() => onSetChange({ ...currentSet, weightUnit: 'kg' })}
-            className={`flex-1 py-2  font-medium transition-colors ${
-              currentSet.weightUnit === 'kg'
-                ? 'bg-primary text-white'
-                : 'bg-muted text-foreground hover:bg-secondary-hover'
-            }`}
-          >
-            kg
-          </button>
-        </div>
-
         {/* Optional RPE/RIR */}
         {(hasRpe || hasRir) && (
           <div className="grid grid-cols-2 gap-3">

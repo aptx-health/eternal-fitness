@@ -15,6 +15,14 @@ import ExerciseNavigation from './workout-logging/ExerciseNavigation'
 import SetList from './workout-logging/SetList'
 import SetLoggingForm from './workout-logging/SetLoggingForm'
 import ExerciseActionsFooter from './workout-logging/ExerciseActionsFooter'
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+  DialogFooter,
+} from '@/components/ui/radix/dialog'
 
 type PrescribedSet = {
   id: string
@@ -94,6 +102,7 @@ export default function ExerciseLoggingModal({
     setNumber?: number
     isDeleteAll?: boolean
   }>({ show: false })
+  const [showExitConfirm, setShowExitConfirm] = useState(false)
 
   // Exercise swap and add state
   const [showExerciseSearch, setShowExerciseSearch] = useState(false)
@@ -261,6 +270,25 @@ export default function ExerciseLoggingModal({
       exerciseName: currentExercise.name
     })
     setShowEditExerciseModal(true)
+  }
+
+  const handleExitWorkout = () => {
+    setShowExitConfirm(true)
+  }
+
+  const handleExitSaveAsDraft = () => {
+    // Keep logged sets in localStorage (already handled by useWorkoutStorage)
+    console.log('Saving workout as draft...')
+    setShowExitConfirm(false)
+    onClose()
+  }
+
+  const handleExitDiscard = () => {
+    // Clear all logged sets from localStorage
+    console.log('Discarding workout...')
+    clearStoredWorkout()
+    setShowExitConfirm(false)
+    onClose()
   }
 
   const handleEditExerciseSubmit = (sets: PrescribedSetInput[], notes?: string) => {
@@ -652,7 +680,6 @@ export default function ExerciseLoggingModal({
             syncStatus={syncState.status}
             pendingSetsCount={syncState.pendingSets}
             onSyncClick={() => setShowSyncDetails(true)}
-            onClose={onClose}
           />
 
           {/* Exercise Navigation */}
@@ -696,19 +723,12 @@ export default function ExerciseLoggingModal({
             hasLoggedAllPrescribed={hasLoggedAllPrescribed}
             isSubmitting={isSubmitting}
             onLogSet={handleLogSet}
-            onCompleteWorkout={(e?: React.MouseEvent) => {
-              if (e && (isSubmitting || totalLoggedSets === 0)) return
-              if (e) {
-                e.preventDefault()
-                setIsConfirming(true)
-              } else {
-                handleCompleteWorkout()
-              }
-            }}
+            onCompleteWorkout={() => setIsConfirming(true)}
             onAddExercise={handleAddExercise}
             onEditExercise={handleEditExercise}
             onReplaceExercise={handleReplaceExercise}
             onDeleteExercise={handleDeleteExercise}
+            onExitWorkout={handleExitWorkout}
           />
 
           {/* Workout completion confirmation modal */}
@@ -775,6 +795,7 @@ export default function ExerciseLoggingModal({
               </div>
             </div>
           )}
+
         </div>
       </div>
 
@@ -830,6 +851,44 @@ export default function ExerciseLoggingModal({
         loadingMessage={operationStatus.message}
         successMessage={operationStatus.successMessage}
       />
+
+      {/* Exit workout confirmation dialog */}
+      <Dialog open={showExitConfirm} onOpenChange={setShowExitConfirm}>
+        <DialogContent showClose={false}>
+          <DialogHeader>
+            <DialogTitle>Exit Workout?</DialogTitle>
+            <DialogDescription>
+              {totalLoggedSets > 0
+                ? 'You have logged sets. What would you like to do?'
+                : 'Are you sure you want to exit?'}
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter>
+            <div className="flex flex-col w-full gap-3 mt-4">
+              {totalLoggedSets > 0 && (
+                <button
+                  onClick={handleExitSaveAsDraft}
+                  className="w-full px-4 py-2.5 bg-orange-600 border-2 border-orange-600 text-white font-semibold hover:bg-orange-700 hover:border-orange-700 transition-colors"
+                >
+                  Save as Draft
+                </button>
+              )}
+              <button
+                onClick={handleExitDiscard}
+                className="w-full px-4 py-2.5 bg-red-600 border-2 border-red-600 text-white font-semibold hover:bg-red-700 hover:border-red-700 transition-colors"
+              >
+                {totalLoggedSets > 0 ? 'Discard All' : 'Exit'}
+              </button>
+              <button
+                onClick={() => setShowExitConfirm(false)}
+                className="w-full px-4 py-2.5 bg-transparent border-2 border-zinc-600 text-zinc-300 font-semibold hover:bg-zinc-700 hover:text-orange-50 transition-colors"
+              >
+                Cancel
+              </button>
+            </div>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </>
   )
 }

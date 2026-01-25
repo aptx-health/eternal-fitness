@@ -1,7 +1,7 @@
 'use client'
 
 import ActionsMenu, { type ActionItem } from '../ActionsMenu'
-import { Plus, RefreshCw, Pencil, Trash2 } from 'lucide-react'
+import { Plus, RefreshCw, Pencil, Trash2, LogOut } from 'lucide-react'
 
 interface ExerciseActionsFooterProps {
   currentExerciseName: string
@@ -17,6 +17,7 @@ interface ExerciseActionsFooterProps {
   onEditExercise: () => void
   onReplaceExercise: () => void
   onDeleteExercise: () => void
+  onExitWorkout: () => void
 }
 
 export default function ExerciseActionsFooter({
@@ -33,6 +34,7 @@ export default function ExerciseActionsFooter({
   onEditExercise,
   onReplaceExercise,
   onDeleteExercise,
+  onExitWorkout,
 }: ExerciseActionsFooterProps) {
   const actions: ActionItem[] = [
     {
@@ -61,6 +63,14 @@ export default function ExerciseActionsFooter({
       variant: 'danger' as const,
       requiresConfirmation: true,
       confirmationMessage: `Are you sure you want to delete "${currentExerciseName}"?`
+    },
+    {
+      label: 'Exit workout',
+      icon: LogOut,
+      onClick: onExitWorkout,
+      disabled: false,
+      variant: 'danger' as const,
+      requiresConfirmation: false
     }
   ]
 
