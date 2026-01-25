@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { useSearchParams, useRouter } from 'next/navigation'
+import { useSearchParams } from 'next/navigation'
 import Link from 'next/link'
 import ProgramCard from './ProgramCard'
 import StrengthMetadata from './StrengthMetadata'
@@ -52,23 +52,22 @@ export default function ConsolidatedProgramsView({
   archivedCardioCount,
 }: ConsolidatedProgramsViewProps) {
   const searchParams = useSearchParams()
-  const router = useRouter()
   const initialTab = searchParams.get('tab') === 'cardio' ? 'cardio' : 'strength'
   const [activeTab, setActiveTab] = useState<'strength' | 'cardio'>(initialTab)
 
+  // Sync state from URL on initial load or direct navigation (e.g., shared links)
   useEffect(() => {
     const tab = searchParams.get('tab')
     if (tab === 'cardio' || tab === 'strength') {
-      // Only update if different to prevent unnecessary re-renders
       setActiveTab(current => current === tab ? current : tab)
     }
   }, [searchParams])
 
-
   const handleTabChange = (tab: 'strength' | 'cardio') => {
-    // Don't update state here - let the URL change trigger the useEffect
-    // This prevents double state updates and potential loops
-    router.push(`/programs?tab=${tab}`, { scroll: false })
+    // Update state immediately for instant UI response
+    setActiveTab(tab)
+    // Update URL without going through Next.js router (avoids routing overhead)
+    window.history.replaceState(null, '', `/programs?tab=${tab}`)
   }
 
   const isStrengthTab = activeTab === 'strength'
