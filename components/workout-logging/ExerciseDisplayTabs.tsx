@@ -46,6 +46,7 @@ interface ExerciseDisplayTabsProps {
   loggedSets: LoggedSet[]
   exerciseHistory: ExerciseHistory | null
   onDeleteSet: (setNumber: number) => void
+  loggingForm: React.ReactNode
 }
 
 const FAU_DISPLAY_NAMES: Record<string, string> = {
@@ -75,13 +76,14 @@ export default function ExerciseDisplayTabs({
   loggedSets,
   exerciseHistory,
   onDeleteSet,
+  loggingForm,
 }: ExerciseDisplayTabsProps) {
   const loggedCount = loggedSets.length
   const totalCount = prescribedSets.length
 
   return (
     <Tabs defaultValue="log-sets" className="w-full h-full flex flex-col">
-      <TabsList>
+      <TabsList className="flex-shrink-0">
         <TabsTrigger value="log-sets">
           <span>Log Sets</span>
           {loggedCount > 0 && (
@@ -90,60 +92,21 @@ export default function ExerciseDisplayTabs({
             </span>
           )}
         </TabsTrigger>
-        <TabsTrigger value="set-details">Set Details</TabsTrigger>
-        <TabsTrigger value="exercise-info">Exercise Info</TabsTrigger>
+        <TabsTrigger value="notes">Notes</TabsTrigger>
         {exerciseHistory && <TabsTrigger value="history">History</TabsTrigger>}
       </TabsList>
 
-      <TabsContent value="log-sets" className="flex-1 overflow-y-auto px-1">
+      <TabsContent value="log-sets" className="flex-1 overflow-y-auto px-1 flex flex-col gap-3">
         <SetList
           prescribedSets={prescribedSets}
           loggedSets={loggedSets}
-          exerciseHistory={exerciseHistory}
+          exerciseHistory={null}
           onDeleteSet={onDeleteSet}
         />
+        {loggingForm}
       </TabsContent>
 
-      <TabsContent value="set-details" className="flex-1 overflow-y-auto px-1">
-        <div className="space-y-3">
-          {prescribedSets.map((set) => (
-            <div
-              key={set.id}
-              className="flex items-center gap-4 p-4 bg-muted rounded-xl border border-border"
-            >
-              <div className="w-14 text-center font-semibold text-base sm:text-lg text-muted-foreground">
-                Set {set.setNumber}
-              </div>
-              <div className="flex-1 grid grid-cols-2 sm:grid-cols-4 gap-3 text-base">
-                <div>
-                  <div className="text-sm text-muted-foreground mb-1">Reps</div>
-                  <div className="font-semibold text-lg text-foreground">{set.reps}</div>
-                </div>
-                {set.weight && (
-                  <div>
-                    <div className="text-sm text-muted-foreground mb-1">Weight</div>
-                    <div className="font-semibold text-lg text-foreground">{set.weight}</div>
-                  </div>
-                )}
-                {set.rpe !== null && (
-                  <div>
-                    <div className="text-sm text-muted-foreground mb-1">RPE</div>
-                    <div className="font-semibold text-lg text-foreground">{set.rpe}</div>
-                  </div>
-                )}
-                {set.rir !== null && (
-                  <div>
-                    <div className="text-sm text-muted-foreground mb-1">RIR</div>
-                    <div className="font-semibold text-lg text-foreground">{set.rir}</div>
-                  </div>
-                )}
-              </div>
-            </div>
-          ))}
-        </div>
-      </TabsContent>
-
-      <TabsContent value="exercise-info" className="flex-1 overflow-y-auto px-1">
+      <TabsContent value="notes" className="flex-1 overflow-y-auto px-1">
         <div className="space-y-6">
           {exercise.exerciseDefinition?.instructions && (
             <div>

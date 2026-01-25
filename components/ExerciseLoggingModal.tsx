@@ -493,25 +493,25 @@ export default function ExerciseLoggingModal({
             onNext={handleNextExercise}
           />
 
-          {/* Scrollable content area with tabs */}
-          <div className="flex-1 overflow-hidden px-4 py-4">
+          {/* Content area with tabs - tabs handle their own scrolling */}
+          <div className="flex-1 overflow-hidden px-4 py-2">
             <ExerciseDisplayTabs
               exercise={currentExercise}
               prescribedSets={currentPrescribedSets}
               loggedSets={currentExerciseLoggedSets}
               exerciseHistory={exerciseHistory?.[currentExercise.id] || null}
               onDeleteSet={handleDeleteSet}
-            />
-
-            {/* Set Logging Form */}
-            <SetLoggingForm
-              prescribedSet={prescribedSet}
-              nextSetNumber={nextSetNumber}
-              hasLoggedAllPrescribed={hasLoggedAllPrescribed}
-              hasRpe={hasRpe}
-              hasRir={hasRir}
-              currentSet={currentSet}
-              onSetChange={setCurrentSet}
+              loggingForm={
+                <SetLoggingForm
+                  prescribedSet={prescribedSet}
+                  nextSetNumber={nextSetNumber}
+                  hasLoggedAllPrescribed={hasLoggedAllPrescribed}
+                  hasRpe={hasRpe}
+                  hasRir={hasRir}
+                  currentSet={currentSet}
+                  onSetChange={setCurrentSet}
+                />
+              }
             />
           </div>
 

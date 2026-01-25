@@ -57,7 +57,7 @@ export default function SetLoggingForm({
 
   if (hasLoggedAllPrescribed) {
     return (
-      <div className="bg-success-muted border border-success-border  p-4 text-center">
+      <div className="bg-success-muted border border-success-border rounded-xl p-4 text-center flex-shrink-0">
         <div className="text-success-text font-semibold mb-2">
           ✓ All prescribed sets logged!
         </div>
@@ -69,11 +69,11 @@ export default function SetLoggingForm({
   }
 
   return (
-    <div className="mb-4">
-      <h4 className="text-sm font-semibold text-foreground mb-3">
+    <div className="flex-shrink-0">
+      <h4 className="text-base sm:text-lg font-semibold text-foreground mb-3">
         Log Set {nextSetNumber}
         {prescribedSet && (
-          <span className="text-muted-foreground font-normal ml-2">
+          <span className="text-sm sm:text-base text-muted-foreground font-normal ml-2">
             (Target: {prescribedSet.reps} reps @ {prescribedSet.weight || '—'})
           </span>
         )}
