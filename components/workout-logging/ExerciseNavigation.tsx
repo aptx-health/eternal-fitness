@@ -46,15 +46,12 @@ export default function ExerciseNavigation({
       <div className="text-center flex-1 px-2">
         <div className="flex items-center justify-center gap-2">
           {isSuperset && (
-            <span className="px-2 py-1 bg-accent-muted text-accent-text text-xs font-bold rounded">
+            <span className="px-2 py-1 bg-accent-muted text-accent-text text-sm font-bold rounded">
               Superset {supersetLabel}
             </span>
           )}
-          <h3 className="text-lg font-semibold text-foreground">{currentExercise.name}</h3>
+          <h3 className="text-xl sm:text-2xl font-semibold text-foreground">{currentExercise.name}</h3>
         </div>
-        {currentExercise.notes && (
-          <p className="text-sm text-muted-foreground mt-1">{currentExercise.notes}</p>
-        )}
       </div>
 
       <button

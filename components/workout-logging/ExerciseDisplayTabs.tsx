@@ -85,7 +85,7 @@ export default function ExerciseDisplayTabs({
         <TabsTrigger value="log-sets">
           <span>Log Sets</span>
           {loggedCount > 0 && (
-            <span className="ml-2 text-xs px-1.5 py-0.5 rounded-full bg-success/20 text-success">
+            <span className="ml-2 text-xs sm:text-sm px-2 py-0.5 rounded-full bg-success/20 text-success font-semibold">
               {loggedCount}/{totalCount}
             </span>
           )}
@@ -105,36 +105,36 @@ export default function ExerciseDisplayTabs({
       </TabsContent>
 
       <TabsContent value="set-details" className="flex-1 overflow-y-auto px-1">
-        <div className="space-y-2">
+        <div className="space-y-3">
           {prescribedSets.map((set) => (
             <div
               key={set.id}
-              className="flex items-center gap-4 p-3 bg-muted rounded-xl border border-border"
+              className="flex items-center gap-4 p-4 bg-muted rounded-xl border border-border"
             >
-              <div className="w-12 text-center font-medium text-muted-foreground">
+              <div className="w-14 text-center font-semibold text-base sm:text-lg text-muted-foreground">
                 Set {set.setNumber}
               </div>
-              <div className="flex-1 grid grid-cols-2 sm:grid-cols-4 gap-2 text-sm">
+              <div className="flex-1 grid grid-cols-2 sm:grid-cols-4 gap-3 text-base">
                 <div>
-                  <div className="text-xs text-muted-foreground">Reps</div>
-                  <div className="font-medium text-foreground">{set.reps}</div>
+                  <div className="text-sm text-muted-foreground mb-1">Reps</div>
+                  <div className="font-semibold text-lg text-foreground">{set.reps}</div>
                 </div>
                 {set.weight && (
                   <div>
-                    <div className="text-xs text-muted-foreground">Weight</div>
-                    <div className="font-medium text-foreground">{set.weight}</div>
+                    <div className="text-sm text-muted-foreground mb-1">Weight</div>
+                    <div className="font-semibold text-lg text-foreground">{set.weight}</div>
                   </div>
                 )}
                 {set.rpe !== null && (
                   <div>
-                    <div className="text-xs text-muted-foreground">RPE</div>
-                    <div className="font-medium text-foreground">{set.rpe}</div>
+                    <div className="text-sm text-muted-foreground mb-1">RPE</div>
+                    <div className="font-semibold text-lg text-foreground">{set.rpe}</div>
                   </div>
                 )}
                 {set.rir !== null && (
                   <div>
-                    <div className="text-xs text-muted-foreground">RIR</div>
-                    <div className="font-medium text-foreground">{set.rir}</div>
+                    <div className="text-sm text-muted-foreground mb-1">RIR</div>
+                    <div className="font-semibold text-lg text-foreground">{set.rir}</div>
                   </div>
                 )}
               </div>
@@ -144,11 +144,11 @@ export default function ExerciseDisplayTabs({
       </TabsContent>
 
       <TabsContent value="exercise-info" className="flex-1 overflow-y-auto px-1">
-        <div className="space-y-4">
+        <div className="space-y-6">
           {exercise.exerciseDefinition?.instructions && (
             <div>
-              <h4 className="text-sm font-semibold text-foreground mb-2">Instructions</h4>
-              <p className="text-sm text-muted-foreground leading-relaxed">
+              <h4 className="text-base sm:text-lg font-semibold text-foreground mb-3">Instructions</h4>
+              <p className="text-base sm:text-lg text-muted-foreground leading-relaxed">
                 {exercise.exerciseDefinition.instructions}
               </p>
             </div>
@@ -156,12 +156,12 @@ export default function ExerciseDisplayTabs({
 
           {exercise.exerciseDefinition?.primaryFAUs && exercise.exerciseDefinition.primaryFAUs.length > 0 && (
             <div>
-              <h4 className="text-sm font-semibold text-foreground mb-2">Primary Muscles</h4>
+              <h4 className="text-base sm:text-lg font-semibold text-foreground mb-3">Primary Muscles</h4>
               <div className="flex flex-wrap gap-2">
                 {exercise.exerciseDefinition.primaryFAUs.map((fau) => (
                   <span
                     key={fau}
-                    className="px-3 py-1 text-xs font-medium bg-primary/20 text-primary rounded-full"
+                    className="px-3 py-1.5 text-sm sm:text-base font-medium bg-primary/20 text-primary rounded-full"
                   >
                     {FAU_DISPLAY_NAMES[fau] || fau}
                   </span>
@@ -172,12 +172,12 @@ export default function ExerciseDisplayTabs({
 
           {exercise.exerciseDefinition?.secondaryFAUs && exercise.exerciseDefinition.secondaryFAUs.length > 0 && (
             <div>
-              <h4 className="text-sm font-semibold text-foreground mb-2">Secondary Muscles</h4>
+              <h4 className="text-base sm:text-lg font-semibold text-foreground mb-3">Secondary Muscles</h4>
               <div className="flex flex-wrap gap-2">
                 {exercise.exerciseDefinition.secondaryFAUs.map((fau) => (
                   <span
                     key={fau}
-                    className="px-3 py-1 text-xs font-medium bg-muted text-foreground rounded-full"
+                    className="px-3 py-1.5 text-sm sm:text-base font-medium bg-muted text-foreground rounded-full"
                   >
                     {FAU_DISPLAY_NAMES[fau] || fau}
                   </span>
@@ -188,12 +188,12 @@ export default function ExerciseDisplayTabs({
 
           {exercise.exerciseDefinition?.equipment && exercise.exerciseDefinition.equipment.length > 0 && (
             <div>
-              <h4 className="text-sm font-semibold text-foreground mb-2">Equipment</h4>
+              <h4 className="text-base sm:text-lg font-semibold text-foreground mb-3">Equipment</h4>
               <div className="flex flex-wrap gap-2">
                 {exercise.exerciseDefinition.equipment.map((item) => (
                   <span
                     key={item}
-                    className="px-3 py-1 text-xs font-medium bg-muted text-foreground rounded-full border border-border"
+                    className="px-3 py-1.5 text-sm sm:text-base font-medium bg-muted text-foreground rounded-full border border-border"
                   >
                     {item}
                   </span>
@@ -204,8 +204,8 @@ export default function ExerciseDisplayTabs({
 
           {exercise.notes && (
             <div>
-              <h4 className="text-sm font-semibold text-foreground mb-2">Notes</h4>
-              <p className="text-sm text-muted-foreground leading-relaxed">
+              <h4 className="text-base sm:text-lg font-semibold text-foreground mb-3">Notes</h4>
+              <p className="text-base sm:text-lg text-muted-foreground leading-relaxed">
                 {exercise.notes}
               </p>
             </div>
@@ -215,47 +215,47 @@ export default function ExerciseDisplayTabs({
 
       {exerciseHistory && (
         <TabsContent value="history" className="flex-1 overflow-y-auto px-1">
-          <div className="space-y-4">
+          <div className="space-y-6">
             <div>
-              <h4 className="text-sm font-semibold text-foreground mb-1">Last Performed</h4>
-              <p className="text-sm text-muted-foreground">
+              <h4 className="text-base sm:text-lg font-semibold text-foreground mb-2">Last Performed</h4>
+              <p className="text-base sm:text-lg text-muted-foreground">
                 {new Date(exerciseHistory.completedAt).toLocaleDateString()} -{' '}
                 {exerciseHistory.workoutName}
               </p>
             </div>
 
             <div>
-              <h4 className="text-sm font-semibold text-foreground mb-2">Sets Completed</h4>
-              <div className="space-y-2">
+              <h4 className="text-base sm:text-lg font-semibold text-foreground mb-3">Sets Completed</h4>
+              <div className="space-y-3">
                 {exerciseHistory.sets.map((set) => (
                   <div
                     key={set.setNumber}
-                    className="flex items-center gap-4 p-3 bg-muted rounded-xl border border-border"
+                    className="flex items-center gap-4 p-4 bg-muted rounded-xl border border-border"
                   >
-                    <div className="w-12 text-center font-medium text-muted-foreground">
+                    <div className="w-14 text-center font-semibold text-base sm:text-lg text-muted-foreground">
                       Set {set.setNumber}
                     </div>
-                    <div className="flex-1 grid grid-cols-2 sm:grid-cols-4 gap-2 text-sm">
+                    <div className="flex-1 grid grid-cols-2 sm:grid-cols-4 gap-3 text-base">
                       <div>
-                        <div className="text-xs text-muted-foreground">Reps</div>
-                        <div className="font-medium text-foreground">{set.reps}</div>
+                        <div className="text-sm text-muted-foreground mb-1">Reps</div>
+                        <div className="font-semibold text-lg text-foreground">{set.reps}</div>
                       </div>
                       <div>
-                        <div className="text-xs text-muted-foreground">Weight</div>
-                        <div className="font-medium text-foreground">
+                        <div className="text-sm text-muted-foreground mb-1">Weight</div>
+                        <div className="font-semibold text-lg text-foreground">
                           {set.weight} {set.weightUnit}
                         </div>
                       </div>
                       {set.rpe !== null && (
                         <div>
-                          <div className="text-xs text-muted-foreground">RPE</div>
-                          <div className="font-medium text-foreground">{set.rpe}</div>
+                          <div className="text-sm text-muted-foreground mb-1">RPE</div>
+                          <div className="font-semibold text-lg text-foreground">{set.rpe}</div>
                         </div>
                       )}
                       {set.rir !== null && (
                         <div>
-                          <div className="text-xs text-muted-foreground">RIR</div>
-                          <div className="font-medium text-foreground">{set.rir}</div>
+                          <div className="text-sm text-muted-foreground mb-1">RIR</div>
+                          <div className="font-semibold text-lg text-foreground">{set.rir}</div>
                         </div>
                       )}
                     </div>
