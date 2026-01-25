@@ -25,6 +25,7 @@ export function DeleteExerciseWizard({
 
   const [isLoading, setIsLoading] = useState(false)
   const [isSuccess, setIsSuccess] = useState(false)
+  const [isRefreshing, setIsRefreshing] = useState(false)
   const [errorMessage, setErrorMessage] = useState<string | null>(null)
 
   // Reset wizard state when opened
@@ -34,6 +35,7 @@ export function DeleteExerciseWizard({
       setApplyToFuture(false)
       setIsLoading(false)
       setIsSuccess(false)
+      setIsRefreshing(false)
       setErrorMessage(null)
     }
   }, [open])
@@ -79,11 +81,15 @@ export function DeleteExerciseWizard({
         // Wait 1 second to show success message
         await new Promise((resolve) => setTimeout(resolve, 1000))
 
-        // Close wizard first to avoid flash during refresh
-        onOpenChange(false)
+        // Show refreshing state
+        setIsSuccess(false)
+        setIsRefreshing(true)
 
-        // Then refresh workout data
+        // Refresh workout data
         await onComplete()
+
+        // Close wizard after refresh completes
+        onOpenChange(false)
       } catch (error) {
         console.error('Error deleting exercise:', error)
         setIsLoading(false)
@@ -115,12 +121,12 @@ export function DeleteExerciseWizard({
     },
     {
       id: 'loading',
-      title: isLoading ? 'Deleting Exercise' : isSuccess ? 'Success!' : 'Error',
+      title: isLoading ? 'Deleting Exercise' : isSuccess ? 'Success!' : isRefreshing ? 'Refreshing' : 'Error',
       component: (
         <LoadingSuccessStep
-          isLoading={isLoading}
+          isLoading={isLoading || isRefreshing}
           isSuccess={isSuccess}
-          loadingMessage="Deleting exercise..."
+          loadingMessage={isRefreshing ? "Refreshing workout..." : "Deleting exercise..."}
           successMessage={`Exercise deleted${applyToFuture ? ' from all future workouts' : ''}!`}
         />
       ),

@@ -35,6 +35,7 @@ export function SwapExerciseWizard({
 
   const [isLoading, setIsLoading] = useState(false)
   const [isSuccess, setIsSuccess] = useState(false)
+  const [isRefreshing, setIsRefreshing] = useState(false)
   const [errorMessage, setErrorMessage] = useState<string | null>(null)
 
   // Reset wizard state when opened
@@ -46,6 +47,7 @@ export function SwapExerciseWizard({
       setApplyToFuture(false)
       setIsLoading(false)
       setIsSuccess(false)
+      setIsRefreshing(false)
       setErrorMessage(null)
     }
   }, [open])
@@ -107,11 +109,15 @@ export function SwapExerciseWizard({
         // Wait 1 second to show success message
         await new Promise((resolve) => setTimeout(resolve, 1000))
 
-        // Close wizard first to avoid flash during refresh
-        onOpenChange(false)
+        // Show refreshing state
+        setIsSuccess(false)
+        setIsRefreshing(true)
 
-        // Then refresh workout data
+        // Refresh workout data
         await onComplete()
+
+        // Close wizard after refresh completes
+        onOpenChange(false)
       } catch (error) {
         console.error('Error replacing exercise:', error)
         setIsLoading(false)
@@ -181,12 +187,12 @@ export function SwapExerciseWizard({
     },
     {
       id: 'loading',
-      title: isLoading ? 'Replacing Exercise' : isSuccess ? 'Success!' : 'Error',
+      title: isLoading ? 'Replacing Exercise' : isSuccess ? 'Success!' : isRefreshing ? 'Refreshing' : 'Error',
       component: (
         <LoadingSuccessStep
-          isLoading={isLoading}
+          isLoading={isLoading || isRefreshing}
           isSuccess={isSuccess}
-          loadingMessage="Replacing exercise..."
+          loadingMessage={isRefreshing ? "Refreshing workout..." : "Replacing exercise..."}
           successMessage={`Exercise replaced${applyToFuture ? ' in all future workouts' : ''}!`}
         />
       ),

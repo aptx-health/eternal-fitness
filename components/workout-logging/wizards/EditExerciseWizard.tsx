@@ -53,6 +53,7 @@ export function EditExerciseWizard({
 
   const [isLoading, setIsLoading] = useState(false)
   const [isSuccess, setIsSuccess] = useState(false)
+  const [isRefreshing, setIsRefreshing] = useState(false)
   const [errorMessage, setErrorMessage] = useState<string | null>(null)
 
   // Convert exercise data to ExerciseDefinition format
@@ -100,6 +101,7 @@ export function EditExerciseWizard({
       setApplyToFuture(false)
       setIsLoading(false)
       setIsSuccess(false)
+      setIsRefreshing(false)
       setErrorMessage(null)
     }
   }, [open])
@@ -160,11 +162,15 @@ export function EditExerciseWizard({
         // Wait 1 second to show success message
         await new Promise((resolve) => setTimeout(resolve, 1000))
 
-        // Close wizard first to avoid flash during refresh
-        onOpenChange(false)
+        // Show refreshing state
+        setIsSuccess(false)
+        setIsRefreshing(true)
 
-        // Then refresh workout data
+        // Refresh workout data
         await onComplete()
+
+        // Close wizard after refresh completes
+        onOpenChange(false)
       } catch (error) {
         console.error('Error updating exercise:', error)
         setIsLoading(false)
@@ -222,12 +228,12 @@ export function EditExerciseWizard({
     },
     {
       id: 'loading',
-      title: isLoading ? 'Updating Exercise' : isSuccess ? 'Success!' : 'Error',
+      title: isLoading ? 'Updating Exercise' : isSuccess ? 'Success!' : isRefreshing ? 'Refreshing' : 'Error',
       component: (
         <LoadingSuccessStep
-          isLoading={isLoading}
+          isLoading={isLoading || isRefreshing}
           isSuccess={isSuccess}
-          loadingMessage="Updating exercise..."
+          loadingMessage={isRefreshing ? "Refreshing workout..." : "Updating exercise..."}
           successMessage={`Exercise updated${applyToFuture ? ' in all future workouts' : ''}!`}
         />
       ),
