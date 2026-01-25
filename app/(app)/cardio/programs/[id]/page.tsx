@@ -1,9 +1,8 @@
 import { getCurrentUser } from '@/lib/auth/server'
 import { prisma } from '@/lib/db'
 import { redirect } from 'next/navigation'
-import Link from 'next/link'
 import CardioWeekView from '@/components/CardioWeekView'
-import { CardioProgramActions } from '@/components/CardioProgramActions'
+import { ProgramHeader } from '@/components/ProgramHeader'
 
 export default async function ViewCardioProgramPage({
   params
@@ -74,42 +73,16 @@ export default async function ViewCardioProgramPage({
   return (
     <div className="min-h-screen bg-background p-6">
       <div className="max-w-6xl mx-auto space-y-6">
-        {/* Header */}
-        <div className="space-y-2">
-          {/* Title row with actions */}
-          <div className="flex items-start justify-between gap-3">
-            <h1 className="text-2xl sm:text-4xl font-bold text-foreground doom-title">
-              {program.name}
-            </h1>
-            {/* Mobile: icon dropdown, Desktop: text button */}
-            <div className="sm:hidden">
-              <CardioProgramActions programId={program.id} />
-            </div>
-            <div className="hidden sm:block">
-              <Link
-                href={`/cardio/programs/${program.id}/edit`}
-                className="px-4 py-2 border border-primary text-primary hover:bg-primary-muted doom-button-3d doom-focus-ring font-semibold uppercase tracking-wider"
-              >
-                EDIT
-              </Link>
-            </div>
-          </div>
-          {/* Status badge */}
-          {program.isActive && (
-            <span className="inline-block px-3 py-1 bg-primary text-primary-foreground text-sm font-semibold doom-label">
-              ACTIVE
-            </span>
-          )}
-          {/* Description */}
-          {program.description && (
-            <p className="text-muted-foreground">{program.description}</p>
-          )}
-          {/* Stats */}
-          <div className="flex gap-4 text-sm text-muted-foreground">
-            <span>{program.weeks.length} week{program.weeks.length !== 1 ? 's' : ''}</span>
-            <span>{program.weeks.reduce((sum, w) => sum + w.sessions.length, 0)} total sessions</span>
-          </div>
-        </div>
+        <ProgramHeader
+          title={program.name}
+          description={program.description}
+          isActive={program.isActive}
+          editHref={`/cardio/programs/${program.id}/edit`}
+          stats={[
+            { label: program.weeks.length === 1 ? 'week' : 'weeks', value: program.weeks.length },
+            { label: 'total sessions', value: program.weeks.reduce((sum, w) => sum + w.sessions.length, 0) },
+          ]}
+        />
 
         {/* Weeks */}
         <div className="space-y-6">
