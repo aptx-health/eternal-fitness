@@ -74,9 +74,9 @@ export default async function ViewCardioProgramPage({
     <div className="min-h-screen bg-background p-6">
       <div className="max-w-6xl mx-auto space-y-6">
         {/* Header */}
-        <div className="flex justify-between items-start">
+        <div className="flex flex-col sm:flex-row sm:justify-between sm:items-start gap-4">
           <div className="flex-1">
-            <div className="flex items-center gap-3 mb-2">
+            <div className="flex items-center gap-3 mb-2 flex-wrap">
               <h1 className="text-4xl font-bold text-foreground doom-title">
                 {program.name}
               </h1>
@@ -94,7 +94,7 @@ export default async function ViewCardioProgramPage({
               <span>{program.weeks.reduce((sum, w) => sum + w.sessions.length, 0)} total sessions</span>
             </div>
           </div>
-          <div className="flex gap-2">
+          <div className="flex justify-center sm:justify-end gap-2">
             <Link
               href={`/cardio/programs/${program.id}/edit`}
               className="px-4 py-2 border border-primary text-primary hover:bg-primary-muted doom-button-3d doom-focus-ring font-semibold uppercase tracking-wider"
