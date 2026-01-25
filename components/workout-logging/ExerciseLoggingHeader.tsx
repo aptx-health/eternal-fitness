@@ -1,13 +1,14 @@
 'use client'
 
 import SyncStatusIcon from '../SyncStatusIcon'
+import { type SyncStatus } from '@/hooks/useSyncState'
 
 interface ExerciseLoggingHeaderProps {
   currentExerciseIndex: number
   totalExercises: number
   totalLoggedSets: number
   totalPrescribedSets: number
-  syncStatus: 'idle' | 'syncing' | 'error'
+  syncStatus: SyncStatus
   pendingSetsCount: number
   onSyncClick: () => void
   onClose: () => void

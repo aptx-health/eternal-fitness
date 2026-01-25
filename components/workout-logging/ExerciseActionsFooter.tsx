@@ -78,9 +78,13 @@ export default function ExerciseActionsFooter({
 
         {/* Complete Workout Button */}
         <button
-          onClick={onCompleteWorkout}
           disabled={isSubmitting || totalLoggedSets === 0}
           className="py-3 bg-success text-success-foreground font-bold uppercase tracking-wider doom-corners transition-all hover:shadow-lg hover:shadow-success/50 disabled:opacity-50 disabled:cursor-not-allowed"
+          onMouseDown={(e) => {
+            if (isSubmitting || totalLoggedSets === 0) return;
+            e.preventDefault();
+            onCompleteWorkout();
+          }}
         >
           {isSubmitting ? (
             'Saving...'
