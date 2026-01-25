@@ -5,6 +5,7 @@ import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { Clock } from 'lucide-react'
 import ExerciseLoggingModal from './ExerciseLoggingModal'
+import { useWorkoutStorage } from '@/hooks/useWorkoutStorage'
 
 type PrescribedSet = {
   id: string
@@ -88,7 +89,11 @@ type LoggedSetInput = {
 export default function WorkoutDetail({ workout, programId, exerciseHistory }: Props) {
   const router = useRouter()
   const [isLoggingModalOpen, setIsLoggingModalOpen] = useState(false)
+  const [modalKey, setModalKey] = useState(0)
   const completion = workout.completions[0]
+
+  // Get localStorage clear function
+  const { clearStoredWorkout } = useWorkoutStorage(workout.id)
 
   // Determine workout status
   const isDraft = completion?.status === 'draft'
@@ -139,6 +144,12 @@ export default function WorkoutDetail({ workout, programId, exerciseHistory }: P
       if (!response.ok) {
         throw new Error('Failed to clear workout')
       }
+
+      // Clear localStorage for this workout
+      clearStoredWorkout()
+
+      // Force modal to remount when reopened (clears stale state)
+      setModalKey(prev => prev + 1)
 
       router.refresh()
     } catch (error) {
@@ -371,6 +382,7 @@ export default function WorkoutDetail({ workout, programId, exerciseHistory }: P
 
       {/* Logging Modal */}
       <ExerciseLoggingModal
+        key={modalKey}
         isOpen={isLoggingModalOpen}
         onClose={() => setIsLoggingModalOpen(false)}
         exercises={workout.exercises}
