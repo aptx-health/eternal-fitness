@@ -63,8 +63,9 @@ export default function CommunityProgramCard({
         throw new Error(errorData.error || 'Failed to add program')
       }
 
-      // Redirect to programs page to see the newly added program
-      router.push('/programs')
+      // Redirect to programs page with appropriate tab based on program type
+      const tab = program.programType === 'cardio' ? 'cardio' : 'strength'
+      router.push(`/programs?tab=${tab}`)
     } catch (err) {
       console.error('Error adding program:', err)
       setError(err instanceof Error ? err.message : 'Failed to add program')

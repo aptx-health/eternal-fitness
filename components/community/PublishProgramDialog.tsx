@@ -222,8 +222,7 @@ export default function PublishProgramDialog({
               <div className="flex gap-3 justify-end">
                 <button
                   onClick={handleClose}
-                  disabled={state === 'publishing'}
-                  className="px-4 py-2 border border-border text-foreground rounded-lg hover:bg-muted transition-colors disabled:opacity-50"
+                  className="px-4 py-2 border border-border text-foreground rounded-lg hover:bg-muted transition-colors"
                 >
                   Cancel
                 </button>
