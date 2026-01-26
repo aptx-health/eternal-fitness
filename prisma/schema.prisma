@@ -20,6 +20,7 @@ model Program {
   programType   String    @default("strength")
   isArchived    Boolean   @default(false)
   archivedAt    DateTime?
+  copyStatus    String?   @default("ready")
   weeks         Week[]
 
   @@index([userId, isActive])
@@ -167,6 +168,7 @@ model CardioProgram {
   isUserCreated Boolean      @default(false)
   createdAt     DateTime     @default(now())
   updatedAt     DateTime     @updatedAt
+  copyStatus    String?      @default("ready")
   weeks         CardioWeek[]
 
   @@index([userId, isActive])

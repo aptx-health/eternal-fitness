@@ -10,6 +10,7 @@ type ProgramCardProps = {
   primaryActions: ReactNode
   utilityActionsDesktop?: ReactNode
   utilityActionsMobile?: ReactNode
+  copyStatus?: string | null
 }
 
 export default function ProgramCard({
@@ -20,7 +21,9 @@ export default function ProgramCard({
   primaryActions,
   utilityActionsDesktop,
   utilityActionsMobile,
+  copyStatus,
 }: ProgramCardProps) {
+  const isCloning = copyStatus === 'cloning'
   return (
     <div
       className={`
@@ -35,29 +38,38 @@ export default function ProgramCard({
       {/* Header */}
       <div className="flex justify-between items-start mb-2">
         <div className="flex-1">
-          {isActive && (
+          {isActive && !isCloning && (
             <span className="inline-block px-2 py-1 bg-accent text-accent-foreground text-xs font-semibold mb-2 doom-label uppercase tracking-wider">
               ACTIVE
+            </span>
+          )}
+          {isCloning && (
+            <span className="inline-block px-2 py-1 bg-primary/20 text-primary text-xs font-semibold mb-2 doom-label uppercase tracking-wider animate-pulse">
+              CLONING...
             </span>
           )}
           <h2
             className={`font-bold text-foreground doom-heading uppercase ${
               isActive ? 'text-2xl' : 'text-xl'
-            }`}
+            } ${isCloning ? 'opacity-50' : ''}`}
           >
             {name}
           </h2>
           {description && (
-            <p className="text-muted-foreground mt-1 text-sm leading-relaxed">
+            <p className={`text-muted-foreground mt-1 text-sm leading-relaxed ${isCloning ? 'opacity-50' : ''}`}>
               {description}
             </p>
           )}
-          {metadata && <div className="mt-2">{metadata}</div>}
+          {metadata && (
+            <div className={`mt-2 ${isCloning ? 'opacity-50' : ''}`}>
+              {metadata}
+            </div>
+          )}
         </div>
       </div>
 
       {/* Actions */}
-      <div className="mt-4">
+      <div className={`mt-4 ${isCloning ? 'pointer-events-none opacity-30' : ''}`}>
         {/* Desktop Layout */}
         <div className="hidden md:flex md:items-center md:justify-between">
           <div className="flex gap-3">{primaryActions}</div>

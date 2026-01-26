@@ -1,7 +1,7 @@
 'use client'
 
-import { useState, useEffect } from 'react'
-import { useSearchParams } from 'next/navigation'
+import { useState, useEffect, useRef } from 'react'
+import { useSearchParams, useRouter } from 'next/navigation'
 import Link from 'next/link'
 import ProgramCard from './ProgramCard'
 import StrengthMetadata from './StrengthMetadata'
@@ -15,6 +15,7 @@ import {
   CardioUtilityActions,
 } from './CardioActions'
 import ArchivedProgramsSection from './ArchivedProgramsSection'
+import { useToast } from '@/components/ToastProvider'
 
 type StrengthProgram = {
   id: string
@@ -22,6 +23,7 @@ type StrengthProgram = {
   description: string | null
   isActive: boolean
   createdAt: Date
+  copyStatus: string | null
 }
 
 type CardioProgram = {
@@ -30,6 +32,7 @@ type CardioProgram = {
   description: string | null
   isActive: boolean
   createdAt: Date
+  copyStatus: string | null
   weeks: Array<{
     id: string
     _count: {
@@ -52,8 +55,14 @@ export default function ConsolidatedProgramsView({
   archivedCardioCount,
 }: ConsolidatedProgramsViewProps) {
   const searchParams = useSearchParams()
+  const router = useRouter()
+  const toast = useToast()
   const initialTab = searchParams.get('tab') === 'cardio' ? 'cardio' : 'strength'
   const [activeTab, setActiveTab] = useState<'strength' | 'cardio'>(initialTab)
+  const [cloningProgramId, setCloningProgramId] = useState<string | null>(null)
+  const [completedClones, setCompletedClones] = useState<Set<string>>(new Set())
+  const [localCopyStatuses, setLocalCopyStatuses] = useState<Record<string, string>>({})
+  const pollingIntervalRef = useRef<NodeJS.Timeout | null>(null)
 
   // Sync state from URL on initial load or direct navigation (e.g., shared links)
   useEffect(() => {
@@ -62,6 +71,129 @@ export default function ConsolidatedProgramsView({
       setActiveTab(current => current === tab ? current : tab)
     }
   }, [searchParams])
+
+  // Poll for cloning status if programId is in URL
+  useEffect(() => {
+    const cloningId = searchParams.get('cloning')
+
+    // Don't start polling if already completed
+    if (cloningId && completedClones.has(cloningId)) {
+      return
+    }
+
+    if (cloningId && cloningId !== cloningProgramId) {
+      setCloningProgramId(cloningId)
+      startPolling(cloningId)
+    }
+
+    return () => {
+      if (pollingIntervalRef.current) {
+        clearInterval(pollingIntervalRef.current)
+        pollingIntervalRef.current = null
+      }
+    }
+  }, [searchParams])
+
+  const startPolling = async (programId: string) => {
+    // Check immediately
+    const shouldContinue = await checkCopyStatus(programId)
+
+    if (!shouldContinue) {
+      return
+    }
+
+    // Then poll every 2 seconds
+    const intervalId = setInterval(async () => {
+      const shouldContinue = await checkCopyStatus(programId)
+
+      if (!shouldContinue) {
+        clearInterval(intervalId)
+        // Also clear the ref if it still exists
+        if (pollingIntervalRef.current === intervalId) {
+          pollingIntervalRef.current = null
+        }
+      }
+    }, 2000)
+
+    // Store in ref for external cleanup
+    pollingIntervalRef.current = intervalId
+  }
+
+  const checkCopyStatus = async (programId: string): Promise<boolean> => {
+    // Don't check again if we've already completed this clone
+    if (completedClones.has(programId)) {
+      return false
+    }
+
+    try {
+      const response = await fetch(`/api/programs/${programId}/copy-status`)
+
+      if (!response.ok) {
+        // Program not found - likely failed and was deleted
+        if (!completedClones.has(programId)) {
+          setCompletedClones(prev => new Set(prev).add(programId))
+          toast.error('Failed to copy program', 'The program cloning failed. Please try again.')
+          cleanupCloningState()
+          router.refresh()
+        }
+        return false
+      }
+
+      const data = await response.json()
+
+      if (data.status === 'ready') {
+        // Cloning complete!
+        if (!completedClones.has(programId)) {
+          setCompletedClones(prev => new Set(prev).add(programId))
+          // Update local state immediately so card updates
+          setLocalCopyStatuses(prev => ({ ...prev, [programId]: 'ready' }))
+          toast.success('Program added!', `${data.name} has been added to your programs.`)
+
+          // Clean up URL and stop polling
+          cleanupCloningState()
+
+          // Refresh to get latest data - completedClones check will prevent re-polling
+          router.refresh()
+        }
+        return false
+      }
+
+      if (data.status === 'not_found') {
+        // Program was deleted (cloning failed)
+        if (!completedClones.has(programId)) {
+          setCompletedClones(prev => new Set(prev).add(programId))
+          toast.error('Failed to copy program', 'The program cloning failed. Please try again.')
+          cleanupCloningState()
+          router.refresh()
+        }
+        return false
+      }
+
+      // Still cloning
+      return true
+    } catch (error) {
+      console.error('Error checking copy status:', error)
+      // Continue polling on error
+      return true
+    }
+  }
+
+  const cleanupCloningState = () => {
+    // Clear the polling interval first
+    if (pollingIntervalRef.current) {
+      clearInterval(pollingIntervalRef.current)
+      pollingIntervalRef.current = null
+    }
+
+    setCloningProgramId(null)
+
+    // Use current activeTab state instead of reading from URL
+    // This prevents overwriting user's manual tab switches
+    window.history.replaceState(null, '', `/programs?tab=${activeTab}`)
+
+    // Note: We keep localCopyStatuses to preserve the 'ready' state
+    // It will be cleared on next full page load
+  }
 
   const handleTabChange = (tab: 'strength' | 'cardio') => {
     // Update state immediately for instant UI response
@@ -164,36 +296,42 @@ export default function ConsolidatedProgramsView({
                 </Link>
               </div>
             ) : (
-              sortedStrengthPrograms.map((program) => (
-                <ProgramCard
-                  key={program.id}
-                  isActive={program.isActive}
-                  name={program.name}
-                  description={program.description}
-                  metadata={<StrengthMetadata />}
-                  primaryActions={
-                    <StrengthPrimaryActions
-                      programId={program.id}
-                      isActive={program.isActive}
-                    />
-                  }
-                  utilityActionsDesktop={
-                    <StrengthUtilityActions
-                      programId={program.id}
-                      programName={program.name}
-                      isActive={program.isActive}
-                    />
-                  }
-                  utilityActionsMobile={
-                    <StrengthUtilityActions
-                      programId={program.id}
-                      programName={program.name}
-                      isActive={program.isActive}
-                      isMobile={true}
-                    />
-                  }
-                />
-              ))
+              sortedStrengthPrograms.map((program) => {
+                // Use local copy status if available, otherwise use prop value
+                const copyStatus = localCopyStatuses[program.id] ?? program.copyStatus
+
+                return (
+                  <ProgramCard
+                    key={program.id}
+                    isActive={program.isActive}
+                    name={program.name}
+                    description={program.description}
+                    copyStatus={copyStatus}
+                    metadata={<StrengthMetadata />}
+                    primaryActions={
+                      <StrengthPrimaryActions
+                        programId={program.id}
+                        isActive={program.isActive}
+                      />
+                    }
+                    utilityActionsDesktop={
+                      <StrengthUtilityActions
+                        programId={program.id}
+                        programName={program.name}
+                        isActive={program.isActive}
+                      />
+                    }
+                    utilityActionsMobile={
+                      <StrengthUtilityActions
+                        programId={program.id}
+                        programName={program.name}
+                        isActive={program.isActive}
+                        isMobile={true}
+                      />
+                    }
+                  />
+                )
+              })
             )}
           </div>
           {archivedStrengthCount > 0 && (
@@ -232,12 +370,16 @@ export default function ConsolidatedProgramsView({
                   0
                 )
 
+                // Use local copy status if available, otherwise use prop value
+                const copyStatus = localCopyStatuses[program.id] ?? program.copyStatus
+
                 return (
                   <ProgramCard
                     key={program.id}
                     isActive={program.isActive}
                     name={program.name}
                     description={program.description}
+                    copyStatus={copyStatus}
                     metadata={
                       <CardioMetadata
                         weekCount={weekCount}

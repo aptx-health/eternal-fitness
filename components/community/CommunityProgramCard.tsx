@@ -63,9 +63,11 @@ export default function CommunityProgramCard({
         throw new Error(errorData.error || 'Failed to add program')
       }
 
-      // Redirect to programs page with appropriate tab based on program type
+      const data = await response.json()
+
+      // Redirect to programs page with cloning parameter for status polling
       const tab = program.programType === 'cardio' ? 'cardio' : 'strength'
-      router.push(`/programs?tab=${tab}`)
+      router.push(`/programs?tab=${tab}&cloning=${data.programId}`)
     } catch (err) {
       console.error('Error adding program:', err)
       setError(err instanceof Error ? err.message : 'Failed to add program')
