@@ -48,7 +48,7 @@ export default function ProgramCard({
               <span className="inline-block px-2 py-1 bg-primary/20 text-primary text-xs font-semibold doom-label uppercase tracking-wider animate-pulse">
                 CLONING...
               </span>
-              <p className="text-xs text-muted-foreground mt-1">
+              <p className="text-sm text-foreground/70 mt-2 font-medium">
                 Large programs may take up to 60 seconds
               </p>
             </div>
