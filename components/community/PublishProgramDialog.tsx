@@ -3,7 +3,8 @@
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import * as Dialog from '@radix-ui/react-dialog'
-import { X, Upload, CheckCircle2, AlertCircle, Loader2 } from 'lucide-react'
+import { X, Upload, CheckCircle2, AlertCircle } from 'lucide-react'
+import { LoadingFrog } from '@/components/ui/loading-frog'
 
 type PublishProgramDialogProps = {
   open: boolean
@@ -118,8 +119,19 @@ export default function PublishProgramDialog({
           {/* Content based on state */}
           {state === 'validating' && (
             <div className="text-center py-8">
-              <Loader2 className="w-8 h-8 text-primary mx-auto mb-4 animate-spin" />
+              <div className="flex justify-center mb-4">
+                <LoadingFrog size={64} speed={0.6} />
+              </div>
               <p className="text-sm text-muted-foreground">Validating program...</p>
+            </div>
+          )}
+
+          {state === 'publishing' && (
+            <div className="text-center py-8">
+              <div className="flex justify-center mb-4">
+                <LoadingFrog size={64} speed={0.6} />
+              </div>
+              <p className="text-sm text-muted-foreground">Publishing to community...</p>
             </div>
           )}
 
@@ -217,20 +229,10 @@ export default function PublishProgramDialog({
                 </button>
                 <button
                   onClick={handlePublish}
-                  disabled={state === 'publishing'}
-                  className="px-4 py-2 bg-primary text-primary-foreground rounded-lg hover:bg-primary-hover transition-colors disabled:opacity-50 flex items-center gap-2"
+                  className="px-4 py-2 bg-primary text-primary-foreground rounded-lg hover:bg-primary-hover transition-colors flex items-center gap-2"
                 >
-                  {state === 'publishing' ? (
-                    <>
-                      <Loader2 className="w-4 h-4 animate-spin" />
-                      Publishing...
-                    </>
-                  ) : (
-                    <>
-                      <Upload className="w-4 h-4" />
-                      Publish to Community
-                    </>
-                  )}
+                  <Upload className="w-4 h-4" />
+                  Publish to Community
                 </button>
               </div>
             </>

@@ -7,6 +7,56 @@ export interface CloneResult {
 }
 
 /**
+ * Generates a unique program name by checking for existing programs and auto-incrementing
+ * Examples:
+ * - "My Program (Community)" if no conflict
+ * - "My Program (Community) (2)" if first name exists
+ * - "My Program (Community) (3)" if first two exist
+ */
+async function generateUniqueProgramName(
+  prisma: PrismaClient,
+  baseName: string,
+  userId: string
+): Promise<string> {
+  const suffix = ' (Community)';
+  let candidateName = `${baseName}${suffix}`;
+
+  // Check if the base name with (Community) suffix is available
+  const existingWithBase = await prisma.program.findFirst({
+    where: {
+      userId: userId,
+      name: candidateName,
+    },
+  });
+
+  if (!existingWithBase) {
+    return candidateName;
+  }
+
+  // Name is taken, start checking numbered variants
+  let counter = 2;
+  while (counter < 100) { // Safety limit to prevent infinite loop
+    candidateName = `${baseName}${suffix} (${counter})`;
+
+    const existing = await prisma.program.findFirst({
+      where: {
+        userId: userId,
+        name: candidateName,
+      },
+    });
+
+    if (!existing) {
+      return candidateName;
+    }
+
+    counter++;
+  }
+
+  // Fallback: append timestamp if somehow we hit 100 variants
+  return `${baseName}${suffix} (${Date.now()})`;
+}
+
+/**
  * Clones a community program to a user's personal collection
  */
 export async function cloneCommunityProgram(
@@ -46,10 +96,17 @@ export async function cloneCommunityProgram(
 
     // Deep copy the entire program structure in a transaction
     const clonedProgram = await prisma.$transaction(async (tx) => {
-      // Create the new program
+      // Generate unique name for the cloned program
+      const uniqueName = await generateUniqueProgramName(
+        tx as PrismaClient,
+        communityProgram.name,
+        userId
+      );
+
+      // Create the new program with unique name
       const newProgram = await tx.program.create({
         data: {
-          name: `${communityProgram.name} (Community)`,
+          name: uniqueName,
           description: communityProgram.description,
           userId: userId,
           isActive: false, // Cloned programs start as inactive

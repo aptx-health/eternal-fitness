@@ -104,12 +104,20 @@ export default function ConsolidatedProgramsView({
                 Create and manage your training programs
               </p>
             </div>
-            <Link
-              href={createProgramUrl}
-              className="px-6 py-3 bg-primary text-primary-foreground hover:bg-primary-hover doom-button-3d doom-focus-ring font-semibold uppercase tracking-wider"
-            >
-              CREATE PROGRAM
-            </Link>
+            <div className="flex flex-col sm:flex-row gap-3">
+              <Link
+                href={createProgramUrl}
+                className="px-4 py-2 bg-primary text-primary-foreground hover:bg-primary-hover doom-button-3d doom-focus-ring font-semibold uppercase tracking-wider text-sm text-center whitespace-nowrap"
+              >
+                CREATE PROGRAM
+              </Link>
+              <Link
+                href="/community"
+                className="px-4 py-2 border-2 border-accent text-accent hover:bg-accent-muted doom-button-3d doom-focus-ring font-semibold uppercase tracking-wider text-sm text-center whitespace-nowrap"
+              >
+                COMMUNITY
+              </Link>
+            </div>
           </div>
 
           {/* Tabs */}
