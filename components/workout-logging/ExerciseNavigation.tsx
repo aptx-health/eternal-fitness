@@ -33,10 +33,10 @@ export default function ExerciseNavigation({
       <button
         onClick={onPrevious}
         disabled={currentExerciseIndex === 0}
-        className={`p-3  transition-all duration-200 border-2 border-transparent ${
+        className={`p-3 rounded-xl transition-all ${
           currentExerciseIndex === 0
             ? 'bg-muted opacity-30 cursor-not-allowed'
-            : 'bg-primary-muted hover:bg-primary hover:border-primary hover:text-white'
+            : 'bg-primary-muted hover:bg-primary hover:text-white'
         }`}
         aria-label="Previous exercise"
       >
@@ -46,7 +46,7 @@ export default function ExerciseNavigation({
       <div className="text-center flex-1 px-2">
         <div className="flex items-center justify-center gap-2">
           {isSuperset && (
-            <span className="px-2 py-1 bg-accent-muted text-accent-text text-sm font-bold rounded">
+            <span className="px-3 py-1 bg-accent-muted text-accent-text text-sm font-bold rounded-full">
               Superset {supersetLabel}
             </span>
           )}
@@ -57,10 +57,10 @@ export default function ExerciseNavigation({
       <button
         onClick={onNext}
         disabled={currentExerciseIndex === totalExercises - 1}
-        className={`p-3  transition-all duration-200 border-2 border-transparent ${
+        className={`p-3 rounded-xl transition-all ${
           currentExerciseIndex === totalExercises - 1
             ? 'bg-muted opacity-30 cursor-not-allowed'
-            : 'bg-primary-muted hover:bg-primary hover:border-primary hover:text-white'
+            : 'bg-primary-muted hover:bg-primary hover:text-white'
         }`}
         aria-label="Next exercise"
       >

@@ -420,7 +420,7 @@ export default function ExerciseLoggingModal({
   if (!isLoaded) {
     return isOpen ? (
       <div className="fixed inset-0 z-50 backdrop-blur-md bg-black/40 dark:bg-black/60 flex items-center justify-center">
-        <div className="bg-card border-2 border-border p-8 doom-noise doom-corners">
+        <div className="bg-card border border-border rounded-2xl p-8 shadow-xl">
           <div className="animate-pulse text-center">Loading workout...</div>
         </div>
       </div>
@@ -449,7 +449,7 @@ export default function ExerciseLoggingModal({
     // Otherwise, show loading while useEffect adjusts the index
     return (
       <div className="fixed inset-0 z-50 backdrop-blur-md bg-black/40 dark:bg-black/60 flex items-center justify-center">
-        <div className="bg-card border-2 border-border p-8 doom-noise doom-corners">
+        <div className="bg-card border border-border rounded-2xl p-8 shadow-xl">
           <div className="animate-pulse text-center">Loading...</div>
         </div>
       </div>
@@ -472,7 +472,7 @@ export default function ExerciseLoggingModal({
         />
 
         {/* Modal - Full screen on mobile, centered on desktop */}
-        <div className="bg-card border-2 border-primary w-full h-full sm:h-auto sm:max-h-[90vh] sm:max-w-2xl flex flex-col doom-noise doom-corners">
+        <div className="bg-card border border-border sm:rounded-2xl w-full h-full sm:h-[85vh] sm:max-h-[85vh] sm:max-w-2xl flex flex-col shadow-xl">
           {/* Header with Sync Status */}
           <ExerciseLoggingHeader
             currentExerciseIndex={currentExerciseIndex}
@@ -536,20 +536,20 @@ export default function ExerciseLoggingModal({
           {/* Workout completion confirmation modal */}
           {isConfirming && (
             <div className="fixed inset-0 backdrop-blur-md bg-black/40 dark:bg-black/60 flex items-center justify-center z-60">
-              <div className="bg-card p-6  text-center min-w-[300px]">
+              <div className="bg-card border border-border rounded-2xl p-6 sm:p-8 text-center min-w-[300px] shadow-xl">
                 {!isSubmitting ? (
                   <>
-                    <p className="text-lg mb-4 text-foreground">Complete this workout?</p>
-                    <div className="flex justify-center space-x-3">
+                    <p className="text-lg sm:text-xl mb-6 text-foreground font-semibold">Complete this workout?</p>
+                    <div className="flex justify-center gap-3">
                       <button
                         onClick={() => setIsConfirming(false)}
-                        className="px-4 py-2 bg-muted text-foreground rounded hover:bg-secondary-hover"
+                        className="px-4 sm:px-6 py-2.5 sm:py-3 text-base bg-muted text-foreground rounded-xl hover:bg-secondary transition-colors font-medium"
                       >
                         Cancel
                       </button>
                       <button
                         onClick={handleCompleteWorkout}
-                        className="px-4 py-2 bg-success text-white rounded hover:bg-success-hover"
+                        className="px-4 sm:px-6 py-2.5 sm:py-3 text-base bg-success text-white rounded-xl hover:bg-success/90 transition-colors font-medium"
                       >
                         Confirm
                       </button>
@@ -570,26 +570,26 @@ export default function ExerciseLoggingModal({
           {/* Deletion confirmation modal */}
           {showDeleteConfirm.show && (
             <div className="fixed inset-0 backdrop-blur-md bg-black/40 dark:bg-black/60 flex items-center justify-center z-60">
-              <div className="bg-card p-6  text-center max-w-sm">
+              <div className="bg-card border border-border rounded-2xl p-6 sm:p-8 text-center max-w-sm shadow-xl">
                 <div className="text-warning mb-4">
                   <svg className="w-12 h-12 mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.732-.833-2.5 0L4.268 15.5c-.77.833.192 2.5 1.732 2.5z" />
                   </svg>
                 </div>
-                <h3 className="text-lg font-semibold text-foreground mb-2">Delete Last Set?</h3>
-                <p className="text-sm text-muted-foreground mb-4">
+                <h3 className="text-lg sm:text-xl font-semibold text-foreground mb-2">Delete Last Set?</h3>
+                <p className="text-sm sm:text-base text-muted-foreground mb-6">
                   This will remove the only remaining set for this exercise. Are you sure?
                 </p>
-                <div className="flex justify-center space-x-3">
+                <div className="flex justify-center gap-3">
                   <button
                     onClick={() => setShowDeleteConfirm({ show: false })}
-                    className="px-4 py-2 bg-muted text-foreground rounded hover:bg-secondary-hover"
+                    className="px-4 sm:px-6 py-2.5 sm:py-3 text-base bg-muted text-foreground rounded-xl hover:bg-secondary transition-colors font-medium"
                   >
                     Cancel
                   </button>
                   <button
                     onClick={handleConfirmDelete}
-                    className="px-4 py-2 bg-error text-white rounded hover:bg-error-hover"
+                    className="px-4 sm:px-6 py-2.5 sm:py-3 text-base bg-error text-white rounded-xl hover:bg-error/90 transition-colors font-medium"
                   >
                     Delete Set
                   </button>

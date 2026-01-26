@@ -75,13 +75,13 @@ export default function ExerciseActionsFooter({
   ]
 
   return (
-    <div className="border-t border-border px-4 py-3 bg-muted flex-shrink-0">
+    <div className="border-t border-border px-4 py-3 bg-muted flex-shrink-0 sm:rounded-b-2xl">
       <div className="grid grid-cols-[53%_34%_10%] sm:grid-cols-[55%_35%_10%] gap-3">
         {/* Log Set Button */}
         <button
           onClick={onLogSet}
           disabled={!canLogSet || hasLoggedAllPrescribed}
-          className="py-3 bg-accent text-accent-foreground font-bold uppercase tracking-wider doom-corners transition-all hover:shadow-lg hover:shadow-accent/50 disabled:opacity-50 disabled:cursor-not-allowed"
+          className="py-3 bg-accent text-accent-foreground font-semibold rounded-xl transition-all hover:bg-accent/90 disabled:opacity-50 disabled:cursor-not-allowed"
         >
           Log Set {nextSetNumber}
         </button>
@@ -89,7 +89,7 @@ export default function ExerciseActionsFooter({
         {/* Complete Workout Button */}
         <button
           disabled={isSubmitting || totalLoggedSets === 0}
-          className="py-3 bg-success text-success-foreground font-bold uppercase tracking-wider doom-corners transition-all hover:shadow-lg hover:shadow-success/50 disabled:opacity-50 disabled:cursor-not-allowed"
+          className="py-3 bg-success text-success-foreground font-semibold rounded-xl transition-all hover:bg-success/90 disabled:opacity-50 disabled:cursor-not-allowed"
           onMouseDown={(e) => {
             if (isSubmitting || totalLoggedSets === 0) return;
             e.preventDefault();

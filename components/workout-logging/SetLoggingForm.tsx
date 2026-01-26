@@ -94,7 +94,7 @@ export default function SetLoggingForm({
                 onSetChange({ ...currentSet, reps: e.target.value })
               }
               placeholder={prescribedSet?.reps.toString() || '0'}
-              className="w-full px-4 py-3 text-lg border border-input  focus:ring-2 focus:ring-primary focus:border-transparent bg-muted text-foreground"
+              className="w-full px-4 py-3 text-lg border border-input rounded-xl focus:ring-2 focus:ring-primary focus:border-transparent bg-muted text-foreground"
             />
           </div>
 
@@ -111,7 +111,7 @@ export default function SetLoggingForm({
                 onSetChange({ ...currentSet, weight: e.target.value })
               }
               placeholder={prescribedSet?.weight?.replace(/[^0-9.]/g, '') || '0'}
-              className="w-full px-4 py-3 text-lg border border-input  focus:ring-2 focus:ring-primary focus:border-transparent bg-muted text-foreground"
+              className="w-full px-4 py-3 text-lg border border-input rounded-xl focus:ring-2 focus:ring-primary focus:border-transparent bg-muted text-foreground"
             />
           </div>
         </div>
@@ -134,7 +134,7 @@ export default function SetLoggingForm({
                     onSetChange({ ...currentSet, rir: e.target.value })
                   }
                   placeholder={prescribedSet?.rir?.toString() || '—'}
-                  className="w-full px-4 py-3 text-lg border border-input  focus:ring-2 focus:ring-primary focus:border-transparent bg-muted text-foreground"
+                  className="w-full px-4 py-3 text-lg border border-input rounded-xl focus:ring-2 focus:ring-primary focus:border-transparent bg-muted text-foreground"
                 />
               </div>
             )}
@@ -154,7 +154,7 @@ export default function SetLoggingForm({
                     onSetChange({ ...currentSet, rpe: e.target.value })
                   }
                   placeholder={prescribedSet?.rpe?.toString() || '—'}
-                  className="w-full px-4 py-3 text-lg border border-input  focus:ring-2 focus:ring-primary focus:border-transparent bg-muted text-foreground"
+                  className="w-full px-4 py-3 text-lg border border-input rounded-xl focus:ring-2 focus:ring-primary focus:border-transparent bg-muted text-foreground"
                 />
               </div>
             )}
