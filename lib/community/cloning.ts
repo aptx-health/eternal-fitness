@@ -104,6 +104,7 @@ async function cloneStrengthProgram(
 
 /**
  * Background process to clone strength program data
+ * Processes each week in its own transaction for better resilience on slow networks
  */
 async function cloneStrengthProgramData(
   prisma: PrismaClient,
@@ -111,11 +112,23 @@ async function cloneStrengthProgramData(
   programData: any,
   userId: string
 ): Promise<void> {
+  const totalWeeks = programData.weeks.length;
+
   try {
-    // Clone all data in single atomic transaction using nested creates
-    // This dramatically reduces queries: from ~600+ to just 9 (one per week)
-    await prisma.$transaction(async (tx) => {
-      for (const week of programData.weeks) {
+    // Process each week in a separate transaction
+    // This prevents long-running transactions that timeout on mobile networks
+    for (let i = 0; i < programData.weeks.length; i++) {
+      const week = programData.weeks[i];
+
+      // Update progress status
+      const progressStatus = `cloning_week_${i + 1}_of_${totalWeeks}`;
+      await prisma.program.update({
+        where: { id: programId },
+        data: { copyStatus: progressStatus },
+      });
+
+      // Clone this week in its own transaction with nested creates
+      await prisma.$transaction(async (tx) => {
         await tx.week.create({
           data: {
             weekNumber: week.weekNumber,
@@ -152,8 +165,8 @@ async function cloneStrengthProgramData(
             },
           },
         });
-      }
-    }, { timeout: 60000 }); // 60 second timeout for very large programs
+      }, { timeout: 30000 }); // 30 second timeout per week (generous for individual weeks)
+    }
 
     // Mark as ready
     await prisma.program.update({
@@ -217,6 +230,7 @@ async function cloneCardioProgram(
 
 /**
  * Background process to clone cardio program data
+ * Processes each week in its own transaction for better resilience on slow networks
  */
 async function cloneCardioProgramData(
   prisma: PrismaClient,
@@ -224,11 +238,23 @@ async function cloneCardioProgramData(
   programData: any,
   userId: string
 ): Promise<void> {
+  const totalWeeks = programData.weeks.length;
+
   try {
-    // Clone all data in single atomic transaction using nested creates
-    // This dramatically reduces queries from multiple roundtrips to one per week
-    await prisma.$transaction(async (tx) => {
-      for (const week of programData.weeks) {
+    // Process each week in a separate transaction
+    // This prevents long-running transactions that timeout on mobile networks
+    for (let i = 0; i < programData.weeks.length; i++) {
+      const week = programData.weeks[i];
+
+      // Update progress status
+      const progressStatus = `cloning_week_${i + 1}_of_${totalWeeks}`;
+      await prisma.cardioProgram.update({
+        where: { id: programId },
+        data: { copyStatus: progressStatus },
+      });
+
+      // Clone this week in its own transaction with nested creates
+      await prisma.$transaction(async (tx) => {
         await tx.cardioWeek.create({
           data: {
             weekNumber: week.weekNumber,
@@ -251,8 +277,8 @@ async function cloneCardioProgramData(
             },
           },
         });
-      }
-    }, { timeout: 60000 }); // 60 second timeout for very large programs
+      }, { timeout: 30000 }); // 30 second timeout per week (generous for individual weeks)
+    }
 
     // Mark as ready
     await prisma.cardioProgram.update({

@@ -11,6 +11,10 @@ type ProgramCardProps = {
   utilityActionsDesktop?: ReactNode
   utilityActionsMobile?: ReactNode
   copyStatus?: string | null
+  cloningProgress?: {
+    currentWeek: number
+    totalWeeks: number
+  } | null
 }
 
 export default function ProgramCard({
@@ -22,8 +26,9 @@ export default function ProgramCard({
   utilityActionsDesktop,
   utilityActionsMobile,
   copyStatus,
+  cloningProgress,
 }: ProgramCardProps) {
-  const isCloning = copyStatus === 'cloning'
+  const isCloning = copyStatus === 'cloning' || copyStatus?.startsWith('cloning_week_')
   return (
     <div
       className={`
@@ -49,7 +54,10 @@ export default function ProgramCard({
                 CLONING...
               </span>
               <p className="text-sm text-foreground/70 mt-2 font-medium">
-                Large programs may take up to 60 seconds
+                {cloningProgress
+                  ? `Copying week ${cloningProgress.currentWeek} of ${cloningProgress.totalWeeks}...`
+                  : 'Large programs may take up to 60 seconds'
+                }
               </p>
             </div>
           )}

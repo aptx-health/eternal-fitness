@@ -40,13 +40,27 @@ export async function GET(
     });
 
     if (strengthProgram) {
+      const copyStatus = strengthProgram.copyStatus || 'ready';
+
+      // Parse progress from status like "cloning_week_3_of_9"
+      let progressInfo = null;
+      if (copyStatus.startsWith('cloning_week_')) {
+        const match = copyStatus.match(/cloning_week_(\d+)_of_(\d+)/);
+        if (match) {
+          progressInfo = {
+            currentWeek: parseInt(match[1], 10),
+            totalWeeks: parseInt(match[2], 10),
+          };
+        }
+      }
+
       // Detect stuck clones
-      if (strengthProgram.copyStatus === 'cloning') {
+      if (copyStatus === 'cloning' || copyStatus.startsWith('cloning_week_')) {
         const cloneAge = Date.now() - new Date(strengthProgram.createdAt).getTime();
         const hasData = strengthProgram._count.weeks > 0;
 
         // If cloning completed (has weeks), mark as ready
-        if (hasData) {
+        if (hasData && copyStatus === 'cloning') {
           await prisma.program.update({
             where: { id: programId },
             data: { copyStatus: 'ready' }
@@ -59,8 +73,8 @@ export async function GET(
           });
         }
 
-        // If stuck for >60 seconds with no data, delete it
-        if (cloneAge > 60000 && !hasData) {
+        // If stuck for >90 seconds, delete it (increased from 60s to account for per-week processing)
+        if (cloneAge > 90000) {
           await prisma.program.delete({
             where: { id: programId }
           });
@@ -73,9 +87,10 @@ export async function GET(
       }
 
       return NextResponse.json({
-        status: strengthProgram.copyStatus || 'ready',
+        status: copyStatus,
         programType: 'strength',
         name: strengthProgram.name,
+        progress: progressInfo,
       });
     }
 
@@ -97,13 +112,27 @@ export async function GET(
     });
 
     if (cardioProgram) {
+      const copyStatus = cardioProgram.copyStatus || 'ready';
+
+      // Parse progress from status like "cloning_week_3_of_9"
+      let progressInfo = null;
+      if (copyStatus.startsWith('cloning_week_')) {
+        const match = copyStatus.match(/cloning_week_(\d+)_of_(\d+)/);
+        if (match) {
+          progressInfo = {
+            currentWeek: parseInt(match[1], 10),
+            totalWeeks: parseInt(match[2], 10),
+          };
+        }
+      }
+
       // Detect stuck clones
-      if (cardioProgram.copyStatus === 'cloning') {
+      if (copyStatus === 'cloning' || copyStatus.startsWith('cloning_week_')) {
         const cloneAge = Date.now() - new Date(cardioProgram.createdAt).getTime();
         const hasData = cardioProgram._count.weeks > 0;
 
         // If cloning completed (has weeks), mark as ready
-        if (hasData) {
+        if (hasData && copyStatus === 'cloning') {
           await prisma.cardioProgram.update({
             where: { id: programId },
             data: { copyStatus: 'ready' }
@@ -116,8 +145,8 @@ export async function GET(
           });
         }
 
-        // If stuck for >60 seconds with no data, delete it
-        if (cloneAge > 60000 && !hasData) {
+        // If stuck for >90 seconds, delete it (increased from 60s to account for per-week processing)
+        if (cloneAge > 90000) {
           await prisma.cardioProgram.delete({
             where: { id: programId }
           });
@@ -130,9 +159,10 @@ export async function GET(
       }
 
       return NextResponse.json({
-        status: cardioProgram.copyStatus || 'ready',
+        status: copyStatus,
         programType: 'cardio',
         name: cardioProgram.name,
+        progress: progressInfo,
       });
     }
 

@@ -62,6 +62,7 @@ export default function ConsolidatedProgramsView({
   const [cloningProgramId, setCloningProgramId] = useState<string | null>(null)
   const [completedClones, setCompletedClones] = useState<Set<string>>(new Set())
   const [localCopyStatuses, setLocalCopyStatuses] = useState<Record<string, string>>({})
+  const [cloningProgress, setCloningProgress] = useState<Record<string, { currentWeek: number; totalWeeks: number }>>({})
   const [deletedPrograms, setDeletedPrograms] = useState<Set<string>>(new Set())
   const pollingIntervalRef = useRef<NodeJS.Timeout | null>(null)
   const completedClonesRef = useRef<Set<string>>(new Set())
@@ -145,6 +146,11 @@ export default function ConsolidatedProgramsView({
 
       const data = await response.json()
 
+      // Update progress info if available
+      if (data.progress) {
+        setCloningProgress(prev => ({ ...prev, [programId]: data.progress }))
+      }
+
       if (data.status === 'ready') {
         // Cloning complete!
         if (!completedClonesRef.current.has(programId)) {
@@ -152,6 +158,12 @@ export default function ConsolidatedProgramsView({
           setCompletedClones(prev => new Set(prev).add(programId))
           // Update local state immediately so card updates
           setLocalCopyStatuses(prev => ({ ...prev, [programId]: 'ready' }))
+          // Clear progress info
+          setCloningProgress(prev => {
+            const updated = { ...prev }
+            delete updated[programId]
+            return updated
+          })
           toast.success('Program added!', `${data.name} has been added to your programs.`)
 
           // Clean up URL and stop polling
@@ -311,6 +323,7 @@ export default function ConsolidatedProgramsView({
               sortedStrengthPrograms.map((program) => {
                 // Use local copy status if available, otherwise use prop value
                 const copyStatus = localCopyStatuses[program.id] ?? program.copyStatus
+                const progress = cloningProgress[program.id]
 
                 return (
                   <ProgramCard
@@ -319,6 +332,7 @@ export default function ConsolidatedProgramsView({
                     name={program.name}
                     description={program.description}
                     copyStatus={copyStatus}
+                    cloningProgress={progress}
                     metadata={<StrengthMetadata />}
                     primaryActions={
                       <StrengthPrimaryActions
@@ -384,6 +398,7 @@ export default function ConsolidatedProgramsView({
 
                 // Use local copy status if available, otherwise use prop value
                 const copyStatus = localCopyStatuses[program.id] ?? program.copyStatus
+                const progress = cloningProgress[program.id]
 
                 return (
                   <ProgramCard
@@ -392,6 +407,7 @@ export default function ConsolidatedProgramsView({
                     name={program.name}
                     description={program.description}
                     copyStatus={copyStatus}
+                    cloningProgress={progress}
                     metadata={
                       <CardioMetadata
                         weekCount={weekCount}
