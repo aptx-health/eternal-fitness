@@ -1,0 +1,57 @@
+name: Deploy Clone Worker to Cloud Run
+
+on:
+  push:
+    branches:
+      - main
+      - feature/community-workouts-v1
+    paths:
+      - 'cloud-functions/clone-program/**'
+      - 'prisma/schema.prisma'
+      - '.github/workflows/deploy-clone-worker.yml'
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Authenticate to GCP
+        uses: google-github-actions/auth@v2
+        with:
+          credentials_json: ${{ secrets.GCP_DEPLOY_SERVICE_ACCOUNT_KEY }}
+
+      - name: Configure gcloud
+        uses: google-github-actions/setup-gcloud@v2
+
+      - name: Configure Docker for Artifact Registry
+        run: gcloud auth configure-docker us-central1-docker.pkg.dev --quiet
+
+      - name: Copy Prisma schema into worker build context
+        run: |
+          mkdir -p cloud-functions/clone-program/prisma
+          cp prisma/schema.prisma cloud-functions/clone-program/prisma/schema.prisma
+
+      - name: Build Docker image
+        run: |
+          IMAGE="us-docker.pkg.dev/ripit-fitness/program-clone-worker/clone-program:${{ github.sha }}"
+          docker build -t "$IMAGE" ./cloud-functions/clone-program
+          docker tag "$IMAGE" "us-docker.pkg.dev/ripit-fitness/program-clone-worker/clone-program:latest"
+
+      - name: Push Docker image to Artifact Registry
+        run: |
+          docker push "us-docker.pkg.dev/ripit-fitness/program-clone-worker/clone-program:${{ github.sha }}"
+          docker push "us-docker.pkg.dev/ripit-fitness/program-clone-worker/clone-program:latest"
+
+      - name: Deploy to Cloud Run
+        uses: google-github-actions/deploy-cloudrun@v2
+        with:
+          service: clone-program
+          image: us-docker.pkg.dev/ripit-fitness/program-clone-worker/clone-program:${{ github.sha }}
+          region: us-central1
+          timeout: 540s
+          memory: 1Gi
+          env: |
+            DATABASE_URL=${{ secrets.CLONE_WORKER_DATABASE_URL }}
+          no-allow-unauthenticated: true

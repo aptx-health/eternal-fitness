@@ -1,4 +1,5 @@
 import { PrismaClient } from '@prisma/client';
+import { publishProgramCloneJob } from '@/lib/gcp/pubsub';
 
 export interface CloneResult {
   success: boolean;
@@ -61,7 +62,7 @@ async function generateUniqueProgramName(
 }
 
 /**
- * Clones a strength community program with background processing
+ * Clones a strength community program via Pub/Sub background processing
  */
 async function cloneStrengthProgram(
   prisma: PrismaClient,
@@ -91,9 +92,12 @@ async function cloneStrengthProgram(
     },
   });
 
-  // Clone in background (fire and forget)
-  cloneStrengthProgramData(prisma, shellProgram.id, programData, userId).catch((error) => {
-    console.error('Failed to clone strength program:', error);
+  // Publish clone job to Pub/Sub — Cloud Run worker processes it asynchronously
+  await publishProgramCloneJob({
+    programId: shellProgram.id,
+    userId: userId,
+    programData: programData,
+    programType: 'strength',
   });
 
   return {
@@ -103,92 +107,7 @@ async function cloneStrengthProgram(
 }
 
 /**
- * Background process to clone strength program data
- * Processes each week in its own transaction for better resilience on slow networks
- */
-async function cloneStrengthProgramData(
-  prisma: PrismaClient,
-  programId: string,
-  programData: any,
-  userId: string
-): Promise<void> {
-  const totalWeeks = programData.weeks.length;
-
-  try {
-    // Process each week in a separate transaction
-    // This prevents long-running transactions that timeout on mobile networks
-    for (let i = 0; i < programData.weeks.length; i++) {
-      const week = programData.weeks[i];
-
-      // Update progress status
-      const progressStatus = `cloning_week_${i + 1}_of_${totalWeeks}`;
-      await prisma.program.update({
-        where: { id: programId },
-        data: { copyStatus: progressStatus },
-      });
-
-      // Clone this week in its own transaction with nested creates
-      await prisma.$transaction(async (tx) => {
-        await tx.week.create({
-          data: {
-            weekNumber: week.weekNumber,
-            programId: programId,
-            userId: userId,
-            workouts: {
-              create: week.workouts.map((workout: any) => ({
-                name: workout.name,
-                dayNumber: workout.dayNumber,
-                userId: userId,
-                exercises: {
-                  create: workout.exercises.map((exercise: any) => ({
-                    name: exercise.name,
-                    exerciseDefinitionId: exercise.exerciseDefinitionId,
-                    order: exercise.order,
-                    exerciseGroup: exercise.exerciseGroup,
-                    userId: userId,
-                    notes: exercise.notes,
-                    prescribedSets: {
-                      createMany: {
-                        data: (exercise.prescribedSets || []).map((set: any) => ({
-                          setNumber: set.setNumber,
-                          reps: set.reps,
-                          weight: set.weight,
-                          rpe: set.rpe,
-                          rir: set.rir,
-                          userId: userId,
-                        })),
-                      },
-                    },
-                  })),
-                },
-              })),
-            },
-          },
-        });
-      }, { timeout: 30000 }); // 30 second timeout per week (generous for individual weeks)
-    }
-
-    // Mark as ready
-    await prisma.program.update({
-      where: { id: programId },
-      data: { copyStatus: 'ready' },
-    });
-  } catch (error) {
-    console.error('Clone transaction failed, cleaning up:', error);
-
-    // Delete the shell program on failure
-    await prisma.program.delete({
-      where: { id: programId },
-    }).catch((deleteError) => {
-      console.error('Failed to clean up shell program:', deleteError);
-    });
-
-    throw error;
-  }
-}
-
-/**
- * Clones a cardio community program with background processing
+ * Clones a cardio community program via Pub/Sub background processing
  */
 async function cloneCardioProgram(
   prisma: PrismaClient,
@@ -217,86 +136,18 @@ async function cloneCardioProgram(
     },
   });
 
-  // Clone in background (fire and forget)
-  cloneCardioProgramData(prisma, shellProgram.id, programData, userId).catch((error) => {
-    console.error('Failed to clone cardio program:', error);
+  // Publish clone job to Pub/Sub — Cloud Run worker processes it asynchronously
+  await publishProgramCloneJob({
+    programId: shellProgram.id,
+    userId: userId,
+    programData: programData,
+    programType: 'cardio',
   });
 
   return {
     success: true,
     programId: shellProgram.id,
   };
-}
-
-/**
- * Background process to clone cardio program data
- * Processes each week in its own transaction for better resilience on slow networks
- */
-async function cloneCardioProgramData(
-  prisma: PrismaClient,
-  programId: string,
-  programData: any,
-  userId: string
-): Promise<void> {
-  const totalWeeks = programData.weeks.length;
-
-  try {
-    // Process each week in a separate transaction
-    // This prevents long-running transactions that timeout on mobile networks
-    for (let i = 0; i < programData.weeks.length; i++) {
-      const week = programData.weeks[i];
-
-      // Update progress status
-      const progressStatus = `cloning_week_${i + 1}_of_${totalWeeks}`;
-      await prisma.cardioProgram.update({
-        where: { id: programId },
-        data: { copyStatus: progressStatus },
-      });
-
-      // Clone this week in its own transaction with nested creates
-      await prisma.$transaction(async (tx) => {
-        await tx.cardioWeek.create({
-          data: {
-            weekNumber: week.weekNumber,
-            cardioProgramId: programId,
-            userId: userId,
-            sessions: {
-              create: week.sessions.map((session: any) => ({
-                dayNumber: session.dayNumber,
-                name: session.name,
-                description: session.description,
-                targetDuration: session.targetDuration,
-                intensityZone: session.intensityZone,
-                equipment: session.equipment,
-                targetHRRange: session.targetHRRange,
-                targetPowerRange: session.targetPowerRange,
-                intervalStructure: session.intervalStructure,
-                notes: session.notes,
-                userId: userId,
-              })),
-            },
-          },
-        });
-      }, { timeout: 30000 }); // 30 second timeout per week (generous for individual weeks)
-    }
-
-    // Mark as ready
-    await prisma.cardioProgram.update({
-      where: { id: programId },
-      data: { copyStatus: 'ready' },
-    });
-  } catch (error) {
-    console.error('Clone transaction failed, cleaning up:', error);
-
-    // Delete the shell program on failure
-    await prisma.cardioProgram.delete({
-      where: { id: programId },
-    }).catch((deleteError) => {
-      console.error('Failed to clean up shell cardio program:', deleteError);
-    });
-
-    throw error;
-  }
 }
 
 /**

@@ -54,6 +54,16 @@ export async function GET(
         }
       }
 
+      // Failed state — worker set this before returning 500
+      if (copyStatus === 'failed') {
+        return NextResponse.json({
+          status: 'failed',
+          programType: 'strength',
+          name: strengthProgram.name,
+          error: 'Clone failed. Please try again.',
+        });
+      }
+
       // Detect stuck clones
       if (copyStatus === 'cloning' || copyStatus.startsWith('cloning_week_')) {
         const cloneAge = Date.now() - new Date(strengthProgram.createdAt).getTime();
@@ -73,16 +83,19 @@ export async function GET(
           });
         }
 
-        // If stuck for >90 seconds, delete it (increased from 60s to account for per-week processing)
-        if (cloneAge > 90000) {
-          await prisma.program.delete({
-            where: { id: programId }
+        // If stuck for >5 minutes, mark as failed (Cloud Run timeout is 540s)
+        if (cloneAge > 300000) {
+          await prisma.program.update({
+            where: { id: programId },
+            data: { copyStatus: 'failed' }
           });
 
           return NextResponse.json({
-            status: 'not_found',
-            error: 'Clone timed out and was cleaned up',
-          }, { status: 404 });
+            status: 'failed',
+            programType: 'strength',
+            name: strengthProgram.name,
+            error: 'Clone timed out. Please try again.',
+          });
         }
       }
 
@@ -126,6 +139,16 @@ export async function GET(
         }
       }
 
+      // Failed state — worker set this before returning 500
+      if (copyStatus === 'failed') {
+        return NextResponse.json({
+          status: 'failed',
+          programType: 'cardio',
+          name: cardioProgram.name,
+          error: 'Clone failed. Please try again.',
+        });
+      }
+
       // Detect stuck clones
       if (copyStatus === 'cloning' || copyStatus.startsWith('cloning_week_')) {
         const cloneAge = Date.now() - new Date(cardioProgram.createdAt).getTime();
@@ -145,16 +168,19 @@ export async function GET(
           });
         }
 
-        // If stuck for >90 seconds, delete it (increased from 60s to account for per-week processing)
-        if (cloneAge > 90000) {
-          await prisma.cardioProgram.delete({
-            where: { id: programId }
+        // If stuck for >5 minutes, mark as failed (Cloud Run timeout is 540s)
+        if (cloneAge > 300000) {
+          await prisma.cardioProgram.update({
+            where: { id: programId },
+            data: { copyStatus: 'failed' }
           });
 
           return NextResponse.json({
-            status: 'not_found',
-            error: 'Clone timed out and was cleaned up',
-          }, { status: 404 });
+            status: 'failed',
+            programType: 'cardio',
+            name: cardioProgram.name,
+            error: 'Clone timed out. Please try again.',
+          });
         }
       }
 
