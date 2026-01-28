@@ -3,7 +3,7 @@ import { PrismaClient } from '@prisma/client'
 import { ProgramCloneJob, cloneStrengthProgramData, cloneCardioProgramData } from './cloning'
 
 const app = express()
-app.use(express.json())
+app.use(express.json({ limit: '1mb' }))
 
 const prisma = new PrismaClient({
   datasources: {
@@ -34,19 +34,33 @@ app.post('/', async (req, res) => {
     return
   }
 
-  if (!job.programId || !job.userId || !job.programData || !job.programType) {
+  if (!job.communityProgramId || !job.programId || !job.userId || !job.programType) {
     console.error('Invalid job payload:', job)
     res.status(400).send('Bad Request: missing required job fields')
     return
   }
 
-  console.log(`Processing clone job: programId=${job.programId} type=${job.programType} weeks=${job.programData.weeks?.length}`)
+  console.log(`Processing clone job: communityProgramId=${job.communityProgramId} programId=${job.programId} type=${job.programType}`)
 
   try {
+    // Fetch programData from CommunityProgram table
+    const communityProgram = await prisma.communityProgram.findUnique({
+      where: { id: job.communityProgramId },
+      select: { programData: true },
+    })
+
+    if (!communityProgram || !communityProgram.programData) {
+      console.error(`Community program not found or has no data: ${job.communityProgramId}`)
+      res.status(400).send('Bad Request: invalid community program')
+      return
+    }
+
+    const programData = communityProgram.programData as any
+
     if (job.programType === 'cardio') {
-      await cloneCardioProgramData(prisma, job)
+      await cloneCardioProgramData(prisma, job.programId, programData, job.userId)
     } else {
-      await cloneStrengthProgramData(prisma, job)
+      await cloneStrengthProgramData(prisma, job.programId, programData, job.userId)
     }
 
     console.log(`Clone job completed: programId=${job.programId}`)

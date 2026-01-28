@@ -3,9 +3,9 @@ import { PubSub } from '@google-cloud/pubsub'
 const TOPIC_NAME = 'program-clone-jobs'
 
 export interface ProgramCloneJob {
+  communityProgramId: string
   programId: string
   userId: string
-  programData: Record<string, unknown>
   programType: 'strength' | 'cardio'
 }
 

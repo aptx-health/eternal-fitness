@@ -69,8 +69,6 @@ async function cloneStrengthProgram(
   communityProgram: any,
   userId: string
 ): Promise<CloneResult> {
-  const programData = communityProgram.programData as any;
-
   // Generate unique name upfront
   const uniqueName = await generateUniqueProgramName(
     prisma,
@@ -92,11 +90,11 @@ async function cloneStrengthProgram(
     },
   });
 
-  // Publish clone job to Pub/Sub — Cloud Run worker processes it asynchronously
+  // Publish clone job to Pub/Sub — Cloud Run worker fetches programData from CommunityProgram table
   await publishProgramCloneJob({
+    communityProgramId: communityProgram.id,
     programId: shellProgram.id,
     userId: userId,
-    programData: programData,
     programType: 'strength',
   });
 
@@ -114,8 +112,6 @@ async function cloneCardioProgram(
   communityProgram: any,
   userId: string
 ): Promise<CloneResult> {
-  const programData = communityProgram.programData as any;
-
   // Generate unique name upfront
   const uniqueName = await generateUniqueProgramName(
     prisma,
@@ -136,11 +132,11 @@ async function cloneCardioProgram(
     },
   });
 
-  // Publish clone job to Pub/Sub — Cloud Run worker processes it asynchronously
+  // Publish clone job to Pub/Sub — Cloud Run worker fetches programData from CommunityProgram table
   await publishProgramCloneJob({
+    communityProgramId: communityProgram.id,
     programId: shellProgram.id,
     userId: userId,
-    programData: programData,
     programType: 'cardio',
   });
 

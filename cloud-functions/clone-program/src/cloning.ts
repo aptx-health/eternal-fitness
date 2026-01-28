@@ -1,11 +1,9 @@
 import { PrismaClient } from '@prisma/client'
 
 export interface ProgramCloneJob {
+  communityProgramId: string
   programId: string
   userId: string
-  programData: {
-    weeks: WeekData[]
-  }
   programType: 'strength' | 'cardio'
 }
 
@@ -57,9 +55,10 @@ interface CardioSessionData {
  */
 export async function cloneStrengthProgramData(
   prisma: PrismaClient,
-  job: ProgramCloneJob
+  programId: string,
+  programData: { weeks: WeekData[] },
+  userId: string
 ): Promise<void> {
-  const { programId, userId, programData } = job
   const totalWeeks = programData.weeks.length
 
   for (let i = 0; i < programData.weeks.length; i++) {
@@ -122,9 +121,10 @@ export async function cloneStrengthProgramData(
  */
 export async function cloneCardioProgramData(
   prisma: PrismaClient,
-  job: ProgramCloneJob
+  programId: string,
+  programData: { weeks: WeekData[] },
+  userId: string
 ): Promise<void> {
-  const { programId, userId, programData } = job
   const totalWeeks = programData.weeks.length
 
   for (let i = 0; i < programData.weeks.length; i++) {
