@@ -15,10 +15,14 @@ type StrengthActionsProps = {
 export function StrengthPrimaryActions({
   programId,
   isActive,
+  copyStatus,
 }: {
   programId: string
   isActive: boolean
+  copyStatus?: string | null
 }) {
+  const isCloning = copyStatus === 'cloning' || copyStatus?.startsWith('cloning_week_')
+
   return (
     <>
       <Link
@@ -27,12 +31,21 @@ export function StrengthPrimaryActions({
       >
         {isActive ? 'OPEN PROGRAM' : 'VIEW PROGRAM'}
       </Link>
-      <Link
-        href={`/programs/${programId}/edit`}
-        className="px-4 py-2 border border-accent text-accent hover:bg-accent-muted doom-button-3d doom-focus-ring font-semibold uppercase tracking-wider md:inline-block w-full md:w-auto text-center"
-      >
-        EDIT PROGRAM
-      </Link>
+      {isCloning ? (
+        <div
+          className="px-4 py-2 border border-muted text-muted bg-muted/10 doom-button-3d font-semibold uppercase tracking-wider md:inline-block w-full md:w-auto text-center cursor-not-allowed"
+          title="Program is still being cloned. Editing is disabled until cloning completes."
+        >
+          EDIT PROGRAM
+        </div>
+      ) : (
+        <Link
+          href={`/programs/${programId}/edit`}
+          className="px-4 py-2 border border-accent text-accent hover:bg-accent-muted doom-button-3d doom-focus-ring font-semibold uppercase tracking-wider md:inline-block w-full md:w-auto text-center"
+        >
+          EDIT PROGRAM
+        </Link>
+      )}
     </>
   )
 }

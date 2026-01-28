@@ -123,10 +123,17 @@ export async function cloneStrengthProgramData(
     }, { timeout: 30000 })
   }
 
-  await prisma.program.update({
-    where: { id: programId },
-    data: { copyStatus: 'ready' },
-  })
+  // Mark as ready - wrapped separately for better error visibility
+  try {
+    await prisma.program.update({
+      where: { id: programId },
+      data: { copyStatus: 'ready' },
+    })
+    console.log(`Successfully marked strength program ${programId} as ready`)
+  } catch (error) {
+    console.error(`Failed to mark program ${programId} as ready:`, error)
+    throw error
+  }
 }
 
 /**
@@ -189,8 +196,15 @@ export async function cloneCardioProgramData(
     }, { timeout: 30000 })
   }
 
-  await prisma.cardioProgram.update({
-    where: { id: programId },
-    data: { copyStatus: 'ready' },
-  })
+  // Mark as ready - wrapped separately for better error visibility
+  try {
+    await prisma.cardioProgram.update({
+      where: { id: programId },
+      data: { copyStatus: 'ready' },
+    })
+    console.log(`Successfully marked cardio program ${programId} as ready`)
+  } catch (error) {
+    console.error(`Failed to mark cardio program ${programId} as ready:`, error)
+    throw error
+  }
 }

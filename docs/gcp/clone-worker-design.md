@@ -238,3 +238,85 @@ Add to Doppler:
 # View Cloud Run logs
 gcloud run logs read clone-program --region=us-central1 --limit=50
 ```
+
+## Emergency Operations & Cost Control
+
+### Stopping a Runaway Worker
+
+If the worker starts behaving unexpectedly (infinite retries, hammering the database, etc.), stop it immediately:
+
+**Option 1: Disable Eventarc trigger** (recommended — stops new invocations, preserves deployment):
+```bash
+gcloud eventarc triggers delete program-clone-trigger --location=us-central1
+```
+
+**Option 2: Set max instances to 0** (prevents any new invocations):
+```bash
+gcloud run services update clone-program \
+  --region=us-central1 \
+  --max-instances=0
+```
+
+**Option 3: Delete the service** (nuclear option):
+```bash
+gcloud run services delete clone-program --region=us-central1
+```
+
+**Option 4: Purge stuck Pub/Sub messages** (if retries are causing the issue):
+```bash
+# Create a temporary subscription to drain messages
+gcloud pubsub subscriptions create temp-drain --topic=program-clone-jobs
+
+# Purge all pending messages
+gcloud pubsub subscriptions seek temp-drain --time=now
+
+# Delete the temporary subscription
+gcloud pubsub subscriptions delete temp-drain
+```
+
+### Cost Monitoring
+
+Cloud Run only charges when actively processing requests — idle services cost $0. However, to prevent unexpected bills:
+
+**View current Cloud Run costs**:
+```bash
+# Check recent invocations
+gcloud run services describe clone-program --region=us-central1 --format="value(status.traffic[0].latestRevision)"
+
+# View metrics (requires Cloud Monitoring API)
+gcloud monitoring time-series list \
+  --filter='metric.type="run.googleapis.com/request_count"' \
+  --project=ripit-fitness
+```
+
+**Set budget alerts** (recommended):
+1. Go to **GCP Console → Billing → Budgets & alerts**
+2. Create a budget with threshold alerts (e.g., alert at $10/month, $50/month)
+3. Add email notifications
+
+**Cost reality check**:
+- Single clone job: ~30 seconds at 1 vCPU = $0.00072
+- 1,000 clones/month = $0.72
+- 10,000 failed retries = ~$7.20
+
+The real protection is **Option 1** above — disabling the Eventarc trigger stops message delivery without losing the deployed service.
+
+### Re-enabling After Emergency Stop
+
+**Recreate Eventarc trigger**:
+```bash
+gcloud eventarc triggers create program-clone-trigger \
+  --location=us-central1 \
+  --destination-run-service=clone-program \
+  --destination-run-region=us-central1 \
+  --event-filters="type=google.cloud.pubsub.topic.v1.messagePublished" \
+  --transport-topic=projects/ripit-fitness/topics/program-clone-jobs \
+  --service-account=eventarc-trigger-sa@ripit-fitness.iam.gserviceaccount.com
+```
+
+**Re-enable max instances** (if set to 0):
+```bash
+gcloud run services update clone-program \
+  --region=us-central1 \
+  --max-instances=10  # or whatever limit makes sense
+```

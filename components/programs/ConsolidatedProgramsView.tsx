@@ -338,6 +338,7 @@ export default function ConsolidatedProgramsView({
                       <StrengthPrimaryActions
                         programId={program.id}
                         isActive={program.isActive}
+                        copyStatus={copyStatus}
                       />
                     }
                     utilityActionsDesktop={
@@ -418,6 +419,7 @@ export default function ConsolidatedProgramsView({
                       <CardioPrimaryActions
                         programId={program.id}
                         isActive={program.isActive}
+                        copyStatus={copyStatus}
                       />
                     }
                     utilityActionsDesktop={
