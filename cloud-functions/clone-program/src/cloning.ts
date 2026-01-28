@@ -59,6 +59,20 @@ export async function cloneStrengthProgramData(
   programData: { weeks: WeekData[] },
   userId: string
 ): Promise<void> {
+  // Idempotency check: if weeks already exist, job already succeeded (retry scenario)
+  const existingWeekCount = await prisma.week.count({
+    where: { programId },
+  })
+
+  if (existingWeekCount > 0) {
+    console.log(`Program ${programId} already has ${existingWeekCount} weeks - marking as ready (idempotent retry)`)
+    await prisma.program.update({
+      where: { id: programId },
+      data: { copyStatus: 'ready' },
+    })
+    return
+  }
+
   const totalWeeks = programData.weeks.length
 
   for (let i = 0; i < programData.weeks.length; i++) {
@@ -125,6 +139,20 @@ export async function cloneCardioProgramData(
   programData: { weeks: WeekData[] },
   userId: string
 ): Promise<void> {
+  // Idempotency check: if weeks already exist, job already succeeded (retry scenario)
+  const existingWeekCount = await prisma.cardioWeek.count({
+    where: { cardioProgramId: programId },
+  })
+
+  if (existingWeekCount > 0) {
+    console.log(`Cardio program ${programId} already has ${existingWeekCount} weeks - marking as ready (idempotent retry)`)
+    await prisma.cardioProgram.update({
+      where: { id: programId },
+      data: { copyStatus: 'ready' },
+    })
+    return
+  }
+
   const totalWeeks = programData.weeks.length
 
   for (let i = 0; i < programData.weeks.length; i++) {
