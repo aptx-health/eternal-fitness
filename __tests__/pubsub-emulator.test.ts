@@ -4,6 +4,7 @@
 
 import { describe, it, expect, beforeAll, afterAll } from 'vitest';
 import { PubSub } from '@google-cloud/pubsub';
+import { OAuth2Client } from 'google-auth-library';
 import { startPubSubEmulator, stopPubSubEmulator } from '@/lib/test/pubsub-emulator';
 
 describe('Pub/Sub Emulator - Hello World', () => {
@@ -16,8 +17,14 @@ describe('Pub/Sub Emulator - Hello World', () => {
   }, 10000);
 
   it('should publish and receive a message', async () => {
+    // Pass a dummy credential to suppress MetadataLookupWarning —
+    // the emulator doesn't use auth but the client still tries to fetch ADC otherwise.
+    const authClient = new OAuth2Client();
+    authClient.setCredentials({ access_token: 'emulator-test' });
+
     const pubsub = new PubSub({
-      projectId: process.env.PUBSUB_PROJECT_ID || 'test-project'
+      projectId: process.env.PUBSUB_PROJECT_ID || 'test-project',
+      credentials: authClient,
     });
 
     const topicName = 'test-topic-' + Date.now();
