@@ -1,4 +1,5 @@
 import { PubSub } from '@google-cloud/pubsub'
+import { OAuth2Client } from 'google-auth-library'
 
 const TOPIC_NAME = 'program-clone-jobs'
 
@@ -16,9 +17,13 @@ export interface ProgramCloneJob {
  */
 function createPubSubClient(): PubSub {
   if (process.env.PUBSUB_EMULATOR_HOST) {
-    // Emulator mode — no credentials needed
+    // Emulator mode — suppress ADC lookup warning with dummy authClient
+    const authClient = new OAuth2Client()
+    authClient.setCredentials({ access_token: 'emulator' })
+
     return new PubSub({
       projectId: process.env.PUBSUB_PROJECT_ID || 'test-project',
+      authClient,
     })
   }
 

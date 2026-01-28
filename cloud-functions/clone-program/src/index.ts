@@ -1,5 +1,7 @@
 import express from 'express'
 import { PrismaClient } from '@prisma/client'
+import { PubSub } from '@google-cloud/pubsub'
+import { OAuth2Client } from 'google-auth-library'
 import { ProgramCloneJob, cloneStrengthProgramData, cloneCardioProgramData } from './cloning'
 
 const app = express()
@@ -96,4 +98,87 @@ app.get('/', (req, res) => {
 })
 
 const port = process.env.PORT || 8080
-app.listen(port, () => console.log(`Clone worker listening on port ${port}`))
+app.listen(port, () => {
+  console.log(`Clone worker listening on port ${port}`)
+
+  // In local dev mode with emulator, also subscribe to Pub/Sub
+  if (process.env.PUBSUB_EMULATOR_HOST) {
+    console.log('🔧 Local dev mode detected - subscribing to Pub/Sub emulator')
+    startLocalSubscriber()
+  }
+})
+
+/**
+ * Local dev mode: Subscribe to Pub/Sub emulator and process messages
+ * In production, Eventarc delivers messages via HTTP POST instead
+ */
+async function startLocalSubscriber() {
+  // Suppress ADC warning
+  const authClient = new OAuth2Client()
+  authClient.setCredentials({ access_token: 'emulator' })
+
+  const pubsub = new PubSub({
+    projectId: process.env.PUBSUB_PROJECT_ID || 'test-project',
+    authClient,
+  })
+
+  const subscription = pubsub.subscription('program-clone-jobs-sub')
+
+  subscription.on('message', async (message) => {
+    try {
+      const data = message.data.toString()
+      const job: ProgramCloneJob = JSON.parse(data)
+
+      console.log(`📨 Received message from emulator: programId=${job.programId}`)
+
+      // Fetch programData from CommunityProgram table
+      const communityProgram = await prisma.communityProgram.findUnique({
+        where: { id: job.communityProgramId },
+        select: { programData: true },
+      })
+
+      if (!communityProgram || !communityProgram.programData) {
+        console.error(`Community program not found: ${job.communityProgramId}`)
+        message.nack()
+        return
+      }
+
+      const programData = communityProgram.programData as any
+
+      if (job.programType === 'cardio') {
+        await cloneCardioProgramData(prisma, job.programId, programData, job.userId)
+      } else {
+        await cloneStrengthProgramData(prisma, job.programId, programData, job.userId)
+      }
+
+      console.log(`✅ Clone job completed: programId=${job.programId}`)
+      message.ack()
+    } catch (error) {
+      console.error('❌ Error processing message:', error)
+
+      // Mark as failed
+      try {
+        const data = message.data.toString()
+        const job: ProgramCloneJob = JSON.parse(data)
+
+        if (job.programType === 'cardio') {
+          await prisma.cardioProgram.update({
+            where: { id: job.programId },
+            data: { copyStatus: 'failed' },
+          })
+        } else {
+          await prisma.program.update({
+            where: { id: job.programId },
+            data: { copyStatus: 'failed' },
+          })
+        }
+      } catch (statusError) {
+        console.error('Failed to update copyStatus:', statusError)
+      }
+
+      message.nack()
+    }
+  })
+
+  console.log('✅ Subscribed to program-clone-jobs-sub on emulator')
+}
