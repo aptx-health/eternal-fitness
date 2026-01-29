@@ -57,6 +57,39 @@ psql -h localhost -U dustin -d fitcsv_local -f docs/seeds/minimal_community_test
 
 ## Running Locally
 
+### Option 1: Overmind (Recommended - Single Command)
+
+**Install Overmind:**
+```bash
+brew install overmind tmux
+```
+
+**Start everything:**
+```bash
+overmind start
+```
+
+This starts all 3 services in tmux. You'll see:
+- `emulator` - Pub/Sub emulator on port 8681
+- `worker` - Clone worker on port 8082
+- `app` - Next.js on port 3000
+
+**Control individual processes:**
+```bash
+overmind restart worker    # Restart just the worker
+overmind connect app       # Attach to Next.js logs (Ctrl+B then D to detach)
+overmind stop              # Stop everything gracefully
+```
+
+**Force cleanup if needed:**
+```bash
+./scripts/stop-local-dev.sh
+```
+
+---
+
+### Option 2: Manual (3 Terminals)
+
 You need **3 terminals** running simultaneously:
 
 ### Terminal 1: Pub/Sub Emulator
