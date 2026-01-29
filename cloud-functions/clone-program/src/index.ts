@@ -122,7 +122,29 @@ async function startLocalSubscriber() {
     authClient,
   })
 
+  // Wait for subscription to be created by emulator startup script
+  console.log('⏳ Waiting for subscription to be ready...')
   const subscription = pubsub.subscription('program-clone-jobs-sub')
+
+  for (let i = 0; i < 30; i++) {
+    try {
+      const [exists] = await subscription.exists()
+      if (exists) {
+        console.log('✅ Subscription found')
+        break
+      }
+    } catch (error) {
+      // Ignore errors, keep trying
+    }
+
+    if (i === 29) {
+      console.error('❌ Subscription not found after 30 seconds')
+      console.error('   Make sure the emulator process has fully started')
+      return
+    }
+
+    await new Promise(resolve => setTimeout(resolve, 1000))
+  }
 
   subscription.on('message', async (message) => {
     try {
