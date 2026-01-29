@@ -23,8 +23,8 @@ Run type-check and/or tests, then provide a concise summary focusing on failures
 
 2. **Run commands:**
    - Type-check: `doppler run -- npm run type-check`
-   - All tests: `doppler run --config dev_test -- npm test`
-   - Specific test: `doppler run --config dev_test -- npm test [pattern]`
+   - All tests: `doppler run --config dev_test -- npm test -- --run`
+   - Specific test: `doppler run --config dev_test -- npm test [pattern] -- --run`
 
 3. **Parse output and return ONLY:**
 
